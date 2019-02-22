@@ -315,3 +315,8 @@
 (define_constraint "Q"
   "An address operand that is valid for a prefetch instruction"
   (match_operand 0 "prefetch_operand"))
+
+(define_constraint "Dcs"
+  "A 12-bit unsigned immediate for CSR address."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 0, IMM_REACH-1)")))

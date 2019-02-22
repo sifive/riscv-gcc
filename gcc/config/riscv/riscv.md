@@ -117,6 +117,17 @@
   UNSPECV_FSFLAGS
   UNSPECV_FSNVSNAN
 
+  ;; CSR read
+  UNSPECV_CSR_READ
+  ;; CSR read and set bits
+  UNSPECV_CSR_READ_SET_BITS
+  ;; CSR read and clear bits
+  UNSPECV_CSR_READ_CLEAR_BITS
+  ;; CSR read and write
+  UNSPECV_CSR_READ_WRITE
+  ;; CSR write
+  UNSPECV_CSR_WRITE
+
   ;; Interrupt handler instructions.
   UNSPECV_MRET
   UNSPECV_SRET
@@ -184,6 +195,13 @@
    (VTYPE_REGNUM		67)
    (VXRM_REGNUM			68)
    (FRM_REGNUM			69)
+
+   (MSTATUS_REGNUM		0x300)
+   (MEPC_REGNUM			0x341)
+   (MCAUSE_REGNUM		0x342)
+   (MSCRATCHCSW_REGNUM		0x348)
+
+   (MSTATUS_MIE_BIT		8)
 ])
 
 (include "predicates.md")
@@ -4139,6 +4157,44 @@
   "feq.<fmt>\tzero,%0,%1"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "riscv_csr_read"
+  [(set (match_operand 0 "register_operand" "=r")
+	(unspec_volatile [(match_operand 1 "csr_address" "Dcs")]
+			 UNSPECV_CSR_READ))]
+  ""
+  "csrr\t%0,%x1")
+
+(define_insn "riscv_csr_read_set_bits"
+  [(set (match_operand 0 "register_operand" "=r")
+	(unspec_volatile [(match_operand 1 "csr_address" "Dcs")
+			  (match_operand 2 "csr_operand" "rK")]
+			 UNSPECV_CSR_READ_SET_BITS))]
+  ""
+  "csrrsi\t%0,%x1,%2")
+
+(define_insn "riscv_csr_read_clear_bits"
+  [(set (match_operand 0 "register_operand" "=r")
+	(unspec_volatile [(match_operand 1 "csr_address" "Dcs")
+			  (match_operand 2 "csr_operand" "rK")]
+			 UNSPECV_CSR_READ_CLEAR_BITS))]
+  ""
+  "csrrci\t%0,%x1,%2")
+
+(define_insn "riscv_csr_read_write"
+  [(set (match_operand 0 "register_operand" "=r")
+	(unspec_volatile [(match_operand 1 "csr_address" "Dcs")
+			  (match_operand 2 "csr_operand" "rK")]
+			 UNSPECV_CSR_READ_WRITE))]
+  ""
+  "csrrw\t%0,%x1,%2")
+
+(define_insn "riscv_csr_write"
+  [(unspec_volatile [(match_operand 0 "csr_address" "Dcs")
+		     (match_operand 1 "register_operand" "r")]
+		    UNSPECV_CSR_WRITE)]
+  ""
+  "csrw\t%x0,%1")
 
 (define_insn "riscv_mret"
   [(return)

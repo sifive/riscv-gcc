@@ -115,7 +115,7 @@ along with GCC; see the file COPYING3.  If not see
    && !TARGET_64BIT							\
    && (c)->machine->interrupt_handler_p					\
    /* The XTheadInt instructions can only be executed in M-mode.  */	\
-   && (c)->machine->interrupt_mode == MACHINE_MODE)
+   && (c)->machine->interrupt_flags.interrupt_mode == MACHINE_MODE)
 
 /* Information about a function's frame layout.  */
 struct GTY(())  riscv_frame_info {
@@ -183,6 +183,17 @@ struct GTY(()) mode_switching_info {
     }
 };
 
+struct GTY(()) riscv_interrupt_flags {
+  /* For an interrupt handler, indicates the privilege level.  */
+  enum riscv_privilege_levels interrupt_mode : 2;
+  /* True if current function is an SiFive CLIC preemptible interrupt
+     function.  */
+  bool sifive_clic_preemptible_p : 1;
+  /* True if current function is an SiFive CLIC stack swap interrupt
+     function.  */
+  bool sifive_clic_stack_swap_p : 1;
+};
+
 struct GTY(())  machine_function {
   /* The number of extra stack bytes taken up by register varargs.
      This area is allocated by the callee at the very top of the frame.  */
@@ -193,8 +204,8 @@ struct GTY(())  machine_function {
 
   /* True if current function is an interrupt function.  */
   bool interrupt_handler_p;
-  /* For an interrupt handler, indicates the privilege level.  */
-  enum riscv_privilege_levels interrupt_mode;
+  /* For an interrupt handler, hold various argument flag bits.  */
+  struct riscv_interrupt_flags interrupt_flags;
 
   /* True if attributes on current function have been checked.  */
   bool attributes_checked_p;
@@ -659,7 +670,7 @@ static const attribute_spec riscv_gnu_attributes[] =
   {"naked", 0, 0, true, false, false, false, riscv_handle_fndecl_attribute,
    NULL},
   /* This attribute generates prologue/epilogue for interrupt handlers.  */
-  {"interrupt", 0, 1, false, true, true, false, riscv_handle_type_attribute,
+  { "interrupt", 0, 2, false, true, true, false, riscv_handle_type_attribute,
    NULL},
 
   /* The following two are used for the built-in properties of the Vector type
@@ -6551,7 +6562,7 @@ riscv_handle_type_attribute (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
   /* Check for an argument.  */
   if (is_attribute_p ("interrupt", name))
     {
-      if (args)
+      while (args != NULL)
 	{
 	  tree cst = TREE_VALUE (args);
 	  const char *string;
@@ -6567,14 +6578,18 @@ riscv_handle_type_attribute (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
 
 	  string = TREE_STRING_POINTER (cst);
 	  if (strcmp (string, "user") && strcmp (string, "supervisor")
-	      && strcmp (string, "machine"))
+	      && strcmp (string, "machine")
+	      && strcmp (string, "SiFive-CLIC-preemptible")
+	      && strcmp (string, "SiFive-CLIC-stack-swap"))
 	    {
 	      warning (OPT_Wattributes,
-		       "argument to %qE attribute is not %<\"user\"%>, %<\"supervisor\"%>, "
-		       "or %<\"machine\"%>", name);
+		       "unrecognized argument to %qE attribute", name);
 	      *no_add_attrs = true;
 	    }
+	  args = TREE_CHAIN (args);
 	}
+
+      return NULL_TREE;
     }
 
   return NULL_TREE;
@@ -6880,6 +6895,7 @@ riscv_asm_output_opcode (FILE *asm_out_file, const char *p)
    'T'	Print shift-index of inverted single-bit mask OP.
    '~'	Print w if TARGET_64BIT is true; otherwise not print anything.
    'N'  Print register encoding as integer (0-31).
+   'x'	Print CONST_INT OP as a CSR register name or as a hex number.
 
    Note please keep this list and the list in riscv.md in sync.  */
 
@@ -7212,6 +7228,32 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	default:
 	  if (letter == 'z' && op == CONST0_RTX (GET_MODE (op)))
 	    fputs (reg_names[GP_REG_FIRST], file);
+	  else if (letter == 'x' && GET_CODE (op) == CONST_INT)
+	    {
+	      unsigned HOST_WIDE_INT reg_num = UINTVAL (op);
+	      const char *reg_name = NULL;
+
+	      switch (reg_num)
+		{
+		case MSTATUS_REGNUM:
+		  reg_name = "mstatus";
+		  break;
+		case MEPC_REGNUM:
+		  reg_name = "mepc";
+		  break;
+		case MCAUSE_REGNUM:
+		  reg_name = "mcause";
+		  break;
+		case MSCRATCHCSW_REGNUM:
+		  reg_name = "mscratchcsw";
+		  break;
+		}
+
+	      if (reg_name)
+		asm_fprintf (file, "%s", reg_name);
+	      else
+		asm_fprintf (file, "0x%wx", reg_num);
+	    }
 	  else if (letter && letter != 'z')
 	    output_operand_lossage ("invalid use of '%%%c'", letter);
 	  else
@@ -7761,8 +7803,13 @@ riscv_compute_frame_info (void)
 
       /* 1 is for ra  */
       unsigned num_save_restore = 1 + riscv_save_libcall_count (frame->mask);
+
+      /* In an SiFive CLIC preemptible interrupt function, we need extra space
+	 for the initial saves of S0 and S1.  */
+      if (cfun->machine->interrupt_flags.sifive_clic_preemptible_p)
+	x_save_size = RISCV_STACK_ALIGN ((num_x_saved + 2) * UNITS_PER_WORD);
       /* Only use save/restore routines if they don't alter the stack size.  */
-      if (riscv_stack_align (num_save_restore * UNITS_PER_WORD) == x_save_size
+      else if (riscv_stack_align (num_save_restore * UNITS_PER_WORD) == x_save_size
           && !riscv_avoid_save_libcall ())
 	{
 	  /* Libcall saves/restores 3 registers at once, so we need to
@@ -8763,6 +8810,7 @@ riscv_expand_prologue (void)
 {
   struct riscv_frame_info *frame = &cfun->machine->frame;
   poly_int64 remaining_size = frame->total_size;
+  HOST_WIDE_INT interrupt_size = 0;
   unsigned mask = frame->mask;
   unsigned fmask = frame->fmask;
   int spimm, multi_push_additional, stack_adj;
@@ -8861,18 +8909,51 @@ riscv_expand_prologue (void)
       REG_NOTES (insn) = dwarf;
     }
 
+  /* Swap in the stack pointer from the mscratch register.  */
+  if (cfun->machine->interrupt_flags.sifive_clic_stack_swap_p)
+    emit_insn (gen_riscv_csr_read_write (stack_pointer_rtx,
+					 GEN_INT (MSCRATCHCSW_REGNUM),
+					 stack_pointer_rtx));
+
   /* Save the GP, FP registers.  */
   if ((frame->mask | frame->fmask) != 0)
     {
+      HOST_WIDE_INT step1 = riscv_first_stack_step (frame, remaining_size);
+
       if (known_gt (remaining_size, frame->frame_pointer_offset))
 	{
-	  HOST_WIDE_INT step1 = riscv_first_stack_step (frame, remaining_size);
 	  remaining_size -= step1;
 	  insn = gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
 				GEN_INT (-step1));
 	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
 	}
-      riscv_for_each_saved_reg (remaining_size, riscv_save_reg,
+
+      if (cfun->machine->interrupt_flags.sifive_clic_preemptible_p)
+	{
+	  /* Save S0 and S1.  */
+	  riscv_save_restore_reg (word_mode, S0_REGNUM,
+				  step1 - (1 * UNITS_PER_WORD),
+				  riscv_save_reg);
+	  riscv_save_restore_reg (word_mode, S1_REGNUM,
+				  step1 - (2 * UNITS_PER_WORD),
+				  riscv_save_reg);
+	  /* Account for the stack size used by interrupt register saving.  */
+	  interrupt_size = 2 * UNITS_PER_WORD;
+
+	  /* Load cause into s0.  */
+	  emit_insn (gen_riscv_csr_read (gen_rtx_REG (word_mode, S0_REGNUM),
+					 GEN_INT (MCAUSE_REGNUM)));
+	  /* Load epc into s1.  */
+	  emit_insn (gen_riscv_csr_read (gen_rtx_REG (word_mode, S1_REGNUM),
+					 GEN_INT (MEPC_REGNUM)));
+	  /* Re-enable interrupts.  */
+	  emit_insn (gen_riscv_csr_read_set_bits (gen_rtx_REG (word_mode,
+							       GP_REG_FIRST),
+						  GEN_INT (MSTATUS_REGNUM),
+						  GEN_INT (MSTATUS_MIE_BIT)));
+	}
+
+      riscv_for_each_saved_reg (remaining_size + interrupt_size, riscv_save_reg,
 				false, false, false);
     }
 
@@ -8883,6 +8964,10 @@ riscv_expand_prologue (void)
   /* Set up the frame pointer, if we're using one.  */
   if (frame_pointer_needed)
     {
+      if (cfun->machine->interrupt_flags.sifive_clic_preemptible_p)
+	error ("SiFive CLIC preemptible %qs function cannot use a frame pointer",
+	       "interrupt");
+
       insn = gen_add3_insn (hard_frame_pointer_rtx, stack_pointer_rtx,
 			    GEN_INT ((frame->hard_frame_pointer_offset - remaining_size).to_constant ()));
       RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
@@ -9019,6 +9104,7 @@ riscv_expand_epilogue (int style)
   unsigned fmask = frame->fmask;
   unsigned mask_fprs_push = 0;
   poly_int64 step2 = 0;
+  unsigned interrupt_size = 0;
   bool use_multi_pop_normal
     = ((style == NORMAL_RETURN) && riscv_use_multi_push (frame));
   bool use_multi_pop_sibcall
@@ -9228,6 +9314,8 @@ riscv_expand_epilogue (int style)
     }
   else if (use_restore_libcall)
     frame->mask = 0; /* Temporarily fib that we need not restore GPRs.  */
+  else if (cfun->machine->interrupt_flags.sifive_clic_preemptible_p)
+    interrupt_size = 2 * UNITS_PER_WORD;
 
   th_int_mask = th_int_get_mask (frame->mask);
   if (th_int_mask && TH_INT_INTERRUPT (cfun))
@@ -9244,7 +9332,7 @@ riscv_expand_epilogue (int style)
   /* Restore the registers.  */
   riscv_for_each_saved_v_reg (step2, riscv_restore_reg, false);
   riscv_for_each_saved_reg (frame->total_size - step2 - libcall_size
-			      - multipop_size,
+			      - multipop_size + interrupt_size,
 			    riscv_restore_reg, true, style == EXCEPTION_RETURN,
 			    style == SIBCALL_RETURN);
 
@@ -9258,6 +9346,29 @@ riscv_expand_epilogue (int style)
 
   if (use_restore_libcall)
     frame->mask = mask; /* Undo the above fib.  */
+  else if (cfun->machine->interrupt_flags.sifive_clic_preemptible_p
+	   && (frame->mask | frame->fmask) != 0)
+    {
+      /* Disable interrupts.  */
+      emit_insn (gen_riscv_csr_read_clear_bits (gen_rtx_REG (word_mode,
+							     GP_REG_FIRST),
+						GEN_INT (MSTATUS_REGNUM),
+						GEN_INT (MSTATUS_MIE_BIT)));
+      /* Save s1 back into mepc.  */
+      emit_insn (gen_riscv_csr_write (GEN_INT (MEPC_REGNUM),
+				      gen_rtx_REG (word_mode, S1_REGNUM)));
+      /* Save s0 back into mcause.  */
+      emit_insn (gen_riscv_csr_write (GEN_INT (MCAUSE_REGNUM),
+				      gen_rtx_REG (word_mode, S0_REGNUM)));
+
+      /* Restore S0 and S1.  */
+      riscv_save_restore_reg (word_mode, S1_REGNUM,
+			      step2.to_constant () - (2 * UNITS_PER_WORD),
+			      riscv_restore_reg);
+      riscv_save_restore_reg (word_mode, S0_REGNUM,
+			      step2.to_constant () - (1 * UNITS_PER_WORD),
+			      riscv_restore_reg);
+    }
 
   if (need_barrier_p)
     riscv_emit_stack_tie (hard_frame_pointer_rtx);
@@ -9277,6 +9388,12 @@ riscv_expand_epilogue (int style)
 
       REG_NOTES (insn) = dwarf;
     }
+
+  /* Swap out the stack pointer from the mscratch register.  */
+  if (cfun->machine->interrupt_flags.sifive_clic_stack_swap_p)
+    emit_insn (gen_riscv_csr_read_write (stack_pointer_rtx,
+					 GEN_INT (MSCRATCHCSW_REGNUM),
+					 stack_pointer_rtx));
 
   if (use_multi_pop)
     {
@@ -9326,7 +9443,8 @@ riscv_expand_epilogue (int style)
   /* Return from interrupt.  */
   if (cfun->machine->interrupt_handler_p)
     {
-      enum riscv_privilege_levels mode = cfun->machine->interrupt_mode;
+      enum riscv_privilege_levels mode
+	= cfun->machine->interrupt_flags.interrupt_mode;
 
       gcc_assert (mode != UNKNOWN_MODE);
 
@@ -11189,33 +11307,60 @@ riscv_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 
 /* Get the interrupt type, return UNKNOWN_MODE if it's not
    interrupt function. */
-static enum riscv_privilege_levels
+static struct riscv_interrupt_flags
 riscv_get_interrupt_type (tree decl)
 {
+  struct riscv_interrupt_flags interrupt_flags;
+  bool interrupt_mode_set;
+
   gcc_assert (decl != NULL_TREE);
 
   if ((TREE_CODE(decl) != FUNCTION_DECL)
       || (!riscv_interrupt_type_p (TREE_TYPE (decl))))
-    return UNKNOWN_MODE;
+    {
+      interrupt_flags.interrupt_mode = UNKNOWN_MODE;
+      return interrupt_flags;
+    }
 
   tree attr_args
     = TREE_VALUE (lookup_attribute ("interrupt",
 				    TYPE_ATTRIBUTES (TREE_TYPE (decl))));
 
-  if (attr_args && TREE_CODE (TREE_VALUE (attr_args)) != VOID_TYPE)
+  /* Interrupt attributes are machine mode by default.  */
+  interrupt_flags.interrupt_mode = MACHINE_MODE;
+  interrupt_flags.sifive_clic_preemptible_p = FALSE;
+  interrupt_flags.sifive_clic_stack_swap_p = FALSE;
+  interrupt_mode_set = FALSE;
+
+  while (attr_args)
     {
       const char *string = TREE_STRING_POINTER (TREE_VALUE (attr_args));
 
-      if (!strcmp (string, "user"))
-	return USER_MODE;
-      else if (!strcmp (string, "supervisor"))
-	return SUPERVISOR_MODE;
-      else /* Must be "machine".  */
-	return MACHINE_MODE;
+      if (!strcmp (string, "SiFive-CLIC-preemptible"))
+	interrupt_flags.sifive_clic_preemptible_p = TRUE;
+      else if (!strcmp (string, "SiFive-CLIC-stack-swap"))
+	interrupt_flags.sifive_clic_stack_swap_p = TRUE;
+      else
+	{
+	  if (interrupt_mode_set)
+	    error ("%qs function cannot have two modes", "interrupt");
+	  interrupt_mode_set = TRUE;
+
+	  if (!strcmp (string, "user"))
+	    interrupt_flags.interrupt_mode = USER_MODE;
+	  else if (!strcmp (string, "supervisor"))
+	    interrupt_flags.interrupt_mode = SUPERVISOR_MODE;
+	  else if (!strcmp (string, "machine"))
+	    interrupt_flags.interrupt_mode = MACHINE_MODE;
+	  else
+	    /* Unreachable.  Checked in riscv_handle_type_attribute.  */
+	    abort ();
+	}
+
+      attr_args = TREE_CHAIN (attr_args);
     }
-  else
-    /* Interrupt attributes are machine mode by default.  */
-    return MACHINE_MODE;
+
+  return interrupt_flags;
 }
 
 /* Implement `TARGET_SET_CURRENT_FUNCTION'.  Unpack the codegen decisions
@@ -11255,9 +11400,20 @@ riscv_set_current_function (tree decl)
 	  if (args && TREE_CODE (TREE_VALUE (args)) != VOID_TYPE)
 	    error ("%qs function cannot have arguments", "interrupt");
 
-	  cfun->machine->interrupt_mode = riscv_get_interrupt_type (decl);
+	  cfun->machine->interrupt_flags = riscv_get_interrupt_type (decl);
 
-	  gcc_assert (cfun->machine->interrupt_mode != UNKNOWN_MODE);
+	  if (cfun->machine->interrupt_flags.interrupt_mode != MACHINE_MODE)
+	    {
+	      if (cfun->machine->interrupt_flags.sifive_clic_preemptible_p)
+		error ("SiFive CLIC preemptible %qs function must be machine mode",
+		       "interrupt");
+	      else if (cfun->machine->interrupt_flags.sifive_clic_stack_swap_p)
+		error ("SiFive CLIC stack-swap %qs function must be machine mode",
+		       "interrupt");
+	    }
+
+	  gcc_assert (cfun->machine->interrupt_flags.interrupt_mode
+		      != UNKNOWN_MODE);
 	}
 
       /* Don't print the above diagnostics more than once.  */
@@ -11303,16 +11459,17 @@ riscv_merge_decl_attributes (tree olddecl, tree newdecl)
 {
   tree combined_attrs;
 
-  enum riscv_privilege_levels old_interrupt_type
-    = riscv_get_interrupt_type (olddecl);
-  enum riscv_privilege_levels new_interrupt_type
-    = riscv_get_interrupt_type (newdecl);
+  struct riscv_interrupt_flags old_interrupt_type
+     = riscv_get_interrupt_type (olddecl);
+  struct riscv_interrupt_flags new_interrupt_type
+     = riscv_get_interrupt_type (newdecl);
 
-  /* Check old and new has same interrupt type. */
-  if ((old_interrupt_type != UNKNOWN_MODE)
-      && (new_interrupt_type != UNKNOWN_MODE)
-      && (old_interrupt_type != new_interrupt_type))
-    error ("%qs function cannot have different interrupt type", "interrupt");
+  /* Check old and new has same interrupt type.  */
+  if ((old_interrupt_type.interrupt_mode != UNKNOWN_MODE)
+      && (new_interrupt_type.interrupt_mode != UNKNOWN_MODE)
+      && (old_interrupt_type.interrupt_mode
+	  != new_interrupt_type.interrupt_mode))
+    error ("%qs function cannot have different interrupt type.", "interrupt");
 
   /* Create combined attributes.  */
   combined_attrs = merge_attributes (DECL_ATTRIBUTES (olddecl),

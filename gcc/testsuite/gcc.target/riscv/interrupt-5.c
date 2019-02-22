@@ -19,3 +19,18 @@ void __attribute__ ((interrupt ("hypervisor")))
 sub3 (void)
 { /* { dg-warning "argument to" } */
 }
+
+void __attribute__ ((interrupt ("user", "machine")))
+sub4 (void)
+{ /* { dg-error "cannot have two modes" } */
+}
+
+void __attribute__ ((interrupt ("user", "SiFive-CLIC-preemptible")))
+sub5 (void)
+{ /* { dg-error "must be machine mode" } */
+}
+
+void __attribute__ ((interrupt ("user", "SiFive-CLIC-stack-swap")))
+sub6 (void)
+{ /* { dg-error "must be machine mode" } */
+}
