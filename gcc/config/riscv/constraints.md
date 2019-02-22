@@ -275,3 +275,8 @@
   "Shifting immediate for SIMD shufflei3."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, -64, -1)")))
+
+(define_constraint "Dcs"
+  "A 12-bit unsigned immediate for CSR address."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 0, IMM_REACH-1)")))

@@ -1991,7 +1991,7 @@ Immediate constant that can be inlined in an instruction encoding: integer
 @item B
 Immediate 32-bit signed integer that can be attached to an instruction encoding
 
-@item C
+@item Dcs
 Immediate 32-bit integer in range @minus{}16..4294967295 (i.e. 32-bit unsigned
 integer or @samp{A} constraint)
 
@@ -3705,6 +3705,9 @@ Integer zero.
 
 @item K
 A 5-bit unsigned immediate for CSR access instructions.
+
+@item C
+A 12-bit unsigned immediate for CSR register address.
 
 @item A
 An address that is held in a general-purpose register.
