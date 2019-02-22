@@ -5706,6 +5706,31 @@ void f (void) __attribute__ ((interrupt ("user")));
 Permissible values for this parameter are @code{user}, @code{supervisor},
 and @code{machine}.  If there is no parameter, then it defaults to
 @code{machine}.
+
+You can specify an SiFive CLIC preemptible interrupt handler by adding an
+optional parameter to the interrupt attribute like this:
+
+@smallexample
+void f (void) __attribute__ ((interrupt ("SiFive-CLIC-preemptible")));
+@end smallexample
+
+In this type of interrupt handler, in the prologue, the mepc and
+mcause registers are saved, and interrupts are enabled.  In the epilogue,
+interrupts are disabled, and the mepc and mcause registers are restored.
+This type of interrupt handler must be @code{machine} mode, and must
+not use the frame pointer.
+
+You can specify an SiFive CLIC stack swapping interrupt handler by adding an
+optional parameter to the interrupt attribute like this:
+
+@smallexample
+void f (void) __attribute__ ((interrupt ("SiFive-CLIC-stack-swap")));
+@end smallexample
+
+In this type of interrupt handler, the stack pointer will be swapped with
+the @code{mscratch} register in the prologue before the first use of the stack
+pointer, and in the epilogue after the last use of the stack pointer.  This
+type of interrupt handler must be @code{machine} mode.
 @end table
 
 @node RL78 Function Attributes

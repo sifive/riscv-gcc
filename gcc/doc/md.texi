@@ -3525,6 +3525,9 @@ Integer zero.
 @item K
 A 5-bit unsigned immediate for CSR access instructions.
 
+@item C
+A 12-bit unsigned immediate for CSR register address.
+
 @item A
 An address that is held in a general-purpose register.
 
