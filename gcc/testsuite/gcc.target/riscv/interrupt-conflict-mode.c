@@ -6,5 +6,5 @@ foo(void);
 
 void __attribute__ ((interrupt ("machine")))
 foo (void)
-{ /* { dg-error "function cannot have different interrupt type" } */
+{ /* { dg-error "function cannot have different interrupt type." } */
 }
