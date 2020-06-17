@@ -1,3 +1,77 @@
+2020-05-20  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/90811
+	* Makefile.in (OBJS): Add adjust-alignment.o.
+	* adjust-alignment.c (pass_data_adjust_alignment): New.
+	(pass_adjust_alignment): New.
+	(pass_adjust_alignment::execute): New.
+	(make_pass_adjust_alignment): New.
+	* tree-pass.h (make_pass_adjust_alignment): New.
+	* passes.def: Add pass_adjust_alignment.
+
+2020-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_implied_info_t): New.
+	(riscv_implied_info): New.
+	(riscv_subset_list): Add handle_implied_ext.
+	(riscv_subset_list::to_string): New parameter version_p to
+	control output format.
+	(riscv_subset_list::handle_implied_ext): New.
+	(riscv_subset_list::parse_std_ext): Call handle_implied_ext.
+	(riscv_arch_str): New parameter version_p to control output format.
+	(riscv_expand_arch): New.
+	* config/riscv/riscv-protos.h (riscv_arch_str): New parameter,
+	version_p.
+	* config/riscv/riscv.h (riscv_expand_arch): New,
+	(EXTRA_SPEC_FUNCTIONS): Define.
+	(ASM_SPEC): Transform -march= via riscv_expand_arch.
+
+2020-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* riscv-common.c (parse_sv_or_non_std_ext): Rename to
+	parse_multiletter_ext.
+	(parse_multiletter_ext): Add parsing `h` and `z`, drop `sx`,
+	adjust parsing order for 's' and 'x'.
+
+2020-05-12  Keith Packard  <keith.packard@sifive.com>
+
+	* config/riscv/riscv.c (riscv_unique_section): New.
+	(TARGET_ASM_UNIQUE_SECTION): New.
+
+2020-05-12  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* config.gcc:  Add riscv-shorten-memrefs.o to extra_objs for riscv.
+	* config/riscv/riscv-passes.def: New file.
+	* config/riscv/riscv-protos.h (make_pass_shorten_memrefs): Declare.
+	* config/riscv/riscv-shorten-memrefs.c: New file.
+	* config/riscv/riscv.c (tree-pass.h): New include.
+	(riscv_compressed_reg_p): New Function
+	(riscv_compressed_lw_offset_p): Likewise.
+	(riscv_compressed_lw_address_p): Likewise.
+	(riscv_shorten_lw_offset): Likewise.
+	(riscv_legitimize_address): Attempt to convert base + large_offset
+	to compressible new_base + small_offset.
+	(riscv_address_cost): Make anticipated compressed load/stores
+	cheaper for code size than uncompressed load/stores.
+	(riscv_register_priority): Move compressed register check to
+	riscv_compressed_reg_p.
+	* config/riscv/riscv.h (C_S_BITS): Define.
+	(CSW_MAX_OFFSET): Define.
+	* config/riscv/riscv.opt (mshorten-memefs): New option.
+	* config/riscv/t-riscv (riscv-shorten-memrefs.o): New rule.
+	(PASSES_EXTRA): Add riscv-passes.def.
+	* doc/invoke.texi: Document -mshorten-memrefs.
+
+	* config/riscv/riscv.c (riscv_new_address_profitable_p): New function.
+	(TARGET_NEW_ADDRESS_PROFITABLE_P): Define.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_NEW_ADDRESS_PROFITABLE_P):  New hook.
+	* sched-deps.c (attempt_change): Use old address if it is cheaper than
+	new address.
+	* target.def (new_address_profitable_p): New hook.
+	* targhooks.c (default_new_address_profitable_p): New function.
+	* targhooks.h (default_new_address_profitable_p): Declare.
+
 2020-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/94950

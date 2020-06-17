@@ -40,6 +40,11 @@ along with GCC; see the file COPYING3.  If not see
 #define RISCV_TUNE_STRING_DEFAULT "rocket"
 #endif
 
+extern const char *riscv_expand_arch (int argc, const char **argv);
+
+# define EXTRA_SPEC_FUNCTIONS						\
+  { "riscv_expand_arch", riscv_expand_arch },
+
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-arch is ignored if -march is specified.
    --with-abi is ignored if -mabi is specified.
@@ -59,7 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_SPEC "\
 %(subtarget_asm_debugging_spec) \
 %{" FPIE_OR_FPIC_SPEC ":-fpic} \
-%{march=*} \
+%{march=*:-march=%:riscv_expand_arch(%*)} \
 %{mabi=*} \
 %(subtarget_asm_spec)"
 
@@ -920,6 +925,7 @@ extern unsigned riscv_stack_boundary;
 #define SHIFT_RS1 15
 #define SHIFT_IMM 20
 #define IMM_BITS 12
+#define C_S_BITS 5
 #define C_SxSP_BITS 6
 
 #define IMM_REACH (1LL << IMM_BITS)
@@ -928,6 +934,10 @@ extern unsigned riscv_stack_boundary;
 
 #define SWSP_REACH (4LL << C_SxSP_BITS)
 #define SDSP_REACH (8LL << C_SxSP_BITS)
+
+/* This is the maximum value that can be represented in a compressed load/store
+   offset (an unsigned 5-bit value scaled by 4).  */
+#define CSW_MAX_OFFSET ((4LL << C_S_BITS) - 1) & ~3
 
 /* Called from RISCV_REORG, this is defined in riscv-sr.c.  */
 
