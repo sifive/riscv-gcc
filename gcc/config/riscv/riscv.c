@@ -5396,6 +5396,72 @@ riscv_issue_rate (void)
   return tune_param->issue_rate;
 }
 
+/* Return true if target platform supports macro-fusion.  */
+
+static bool
+riscv_macro_fusion_p (void)
+{
+  return TARGET_64BIT && (riscv_microarchitecture == sifive_8);
+}
+
+/* Return true if the two back-to-back sets PREV_SET, CURR_SET are suitable
+   for LUI / ADDI and AUIPC / ADDI macro fusion.  */
+
+static bool
+riscv_sets_fusible_p (rtx prev_set, rtx curr_set)
+{
+  /* We are trying to fuse
+     lui or auipc symbol_ref / addi symbol_ref
+    instructions as a group that gets scheduled together.  */
+
+  rtx set_dest = SET_DEST (curr_set);
+
+  if (GET_MODE (set_dest) != DImode)
+    return false;
+
+  /* We are trying to match:
+     prev (lui)   == (set (reg) (high (symbol_ref ("SYM"))))
+     prev (auipc) == (set (reg) (unspec [(symbol_ref ("SYM")] UNSPEC_AUIPC)))
+
+     curr (addi) == (set (reg) (lo_sum (reg) (symbol_ref ("SYM"))))  */
+
+    if (GET_CODE (SET_SRC (curr_set)) == LO_SUM
+	&& REG_P (SET_DEST (curr_set))
+	&& REG_P (SET_DEST (prev_set))
+	&& (REGNO (SET_DEST (curr_set)) == REGNO (SET_DEST (prev_set)))
+	&& (GET_CODE (SET_SRC (prev_set)) == HIGH
+	    || (GET_CODE (SET_SRC (prev_set)) == UNSPEC
+		&& XINT (SET_SRC (prev_set), 1) == UNSPEC_AUIPC)))
+      return true;
+
+  return false;
+}
+
+/* Implement TARGET_SCHED_MACRO_FUSION_PAIR_P.  Return true if PREV and CURR
+   should be kept together during scheduling.  */
+
+static bool
+riscv_macro_fusion_pair_p (rtx_insn* prev, rtx_insn* curr)
+{
+  rtx prev_set = single_set (prev);
+  rtx curr_set = single_set (curr);
+
+  if (!prev_set
+      || !curr_set)
+    return false;
+
+  if (any_condjump_p (curr))
+    return false;
+
+  if (!riscv_macro_fusion_p ())
+    return false;
+
+  if (riscv_sets_fusible_p (prev_set, curr_set))
+    return true;
+
+  return false;
+}
+
 /* Auxiliary function to emit RISC-V ELF attribute. */
 static void
 riscv_emit_attribute ()
@@ -6724,6 +6790,12 @@ riscv_init_pic_reg (void)
 
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE riscv_issue_rate
+
+#undef TARGET_SCHED_MACRO_FUSION_P
+#define TARGET_SCHED_MACRO_FUSION_P riscv_macro_fusion_p
+
+#undef TARGET_SCHED_MACRO_FUSION_PAIR_P
+#define TARGET_SCHED_MACRO_FUSION_PAIR_P riscv_macro_fusion_pair_p
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL riscv_function_ok_for_sibcall
