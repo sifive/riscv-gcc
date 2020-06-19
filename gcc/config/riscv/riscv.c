@@ -5282,7 +5282,7 @@ static bool
 riscv_scalar_mode_supported_p (scalar_mode mode)
 {
   if (mode == HFmode)
-    return TARGET_FP16;
+    return true;
   else
     return default_scalar_mode_supported_p (mode);
 }
@@ -5294,7 +5294,7 @@ static bool
 riscv_libgcc_floating_mode_supported_p (scalar_float_mode mode)
 {
   if (mode == HFmode)
-    return TARGET_FP16;
+    return true;
   else
     return default_libgcc_floating_mode_supported_p (mode);
 }
@@ -5339,11 +5339,7 @@ static opt_scalar_float_mode
 riscv_floatn_mode (int n, bool extended)
 {
   if (!extended && n == 16)
-    {
-      if (TARGET_FP16)
-        return HFmode;
-      return opt_scalar_float_mode ();
-    }
+    return HFmode;
 
   return default_floatn_mode (n, extended);
 }
