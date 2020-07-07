@@ -1199,11 +1199,11 @@ decide_unroll_stupid (class loop *loop, int flags)
       return;
     }
 
-  /* Do not unroll loops with branches inside -- it increases number
-     of mispredicts. 
+  /* Do not unroll loops if number of branches large than
+     param_unroll_max_branch. -- it increases number of mispredicts.
      TODO: this heuristic needs tunning; call inside the loop body
      is also relatively good reason to not unroll.  */
-  if (num_loop_branches (loop) > 1)
+  if (num_loop_branches (loop) > param_unroll_max_branch)
     {
       if (dump_file)
 	fprintf (dump_file, ";; Not unrolling, contains branches\n");
