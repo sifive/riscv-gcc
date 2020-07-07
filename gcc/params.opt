@@ -940,6 +940,10 @@ Maximum unroll factor for the unroll-and-jam transformation.
 Common Joined UInteger Var(param_unroll_jam_min_percent) Init(1) IntegerRange(0, 100) Param Optimization
 Minimum percentage of memrefs that must go away for unroll-and-jam to be considered profitable.
 
+-param=unroll-max-branch=
+Common Joined UInteger Var(param_unroll_max_branch) Init(4) Param Optimization
+Maximal number of branch allowed when unrolling a loop.
+
 -param=use-after-scope-direct-emission-threshold=
 Common Joined UInteger Var(param_use_after_scope_direct_emission_threshold) Init(256) Param Optimization
 Use direct poisoning/unpoisoning instructions for variables smaller or equal to this number.
