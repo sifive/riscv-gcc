@@ -5401,7 +5401,7 @@ riscv_issue_rate (void)
 static bool
 riscv_macro_fusion_p (void)
 {
-  return TARGET_64BIT && (riscv_microarchitecture == sifive_8);
+  return TARGET_64BIT && TARGET_FUSION;
 }
 
 /* Return true if the two back-to-back sets PREV_SET, CURR_SET are suitable

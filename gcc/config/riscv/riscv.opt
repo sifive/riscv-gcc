@@ -70,6 +70,10 @@ mdiv
 Target Report Mask(DIV)
 Use hardware instructions for integer division.
 
+mfusion
+Target Report Mask(FUSION)
+enable fusion feature for some core.
+
 march=
 Target Report RejectNegative Joined
 -march=	Generate code for given RISC-V ISA (e.g. RV64IM).  ISA strings must be
