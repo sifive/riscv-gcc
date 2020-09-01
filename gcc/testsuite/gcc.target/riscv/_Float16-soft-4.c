@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64i -mabi=lp64 -O" } */
+/* { dg-options "-march=rv64i -mabi=lp64 -O -mcmodel=medlow" } */
 
 int test_soft_compare (_Float16 a, _Float16 b)
 {

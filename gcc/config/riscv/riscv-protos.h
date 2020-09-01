@@ -34,8 +34,10 @@ enum riscv_symbol_type {
   SYMBOL_TLS,
   SYMBOL_TLS_LE,
   SYMBOL_TLS_IE,
-  SYMBOL_TLS_GD,
   SYMBOL_TLSDESC,
+  SYMBOL_TLS_GD,
+  SYMBOL_GPREL,
+  SYMBOL_GOT_GPREL
 };
 #define NUM_SYMBOL_TYPES (SYMBOL_TLSDESC + 1)
 
@@ -794,4 +796,5 @@ enum
   RISCV_REVISION_VERSION_BASE = 1,
 };
 
+extern bool riscv_use_pseudo_pic_reg (void);
 #endif /* ! GCC_RISCV_PROTOS_H */

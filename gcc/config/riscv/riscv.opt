@@ -141,6 +141,9 @@ Enum(code_model) String(medany) Value(CM_MEDANY)
 EnumValue
 Enum(code_model) String(large) Value(CM_LARGE)
 
+EnumValue
+Enum(code_model) String(compact) Value(CM_COMPACT)
+
 mexplicit-relocs
 Target Mask(EXPLICIT_RELOCS)
 Use %reloc() operators, rather than assembly macros, to load addresses.

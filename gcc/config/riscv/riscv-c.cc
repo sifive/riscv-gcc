@@ -177,6 +177,13 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
     case CM_MEDANY:
       builtin_define ("__riscv_cmodel_medany");
       break;
+
+    case CM_COMPACT:
+      if (flag_pic)
+	builtin_define ("__riscv_cmodel_medany");
+
+      builtin_define ("__riscv_cmodel_compact");
+      break;
     }
 
   if (riscv_user_wants_strict_align)

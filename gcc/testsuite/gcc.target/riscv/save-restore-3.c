@@ -1,4 +1,4 @@
-/* { dg-options "-msave-restore" } */
+/* { dg-options "-msave-restore -mcmodel=medlow" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Og" } } */
 
 /* With -msave-restore in use GCC should be able to remove the calls to the

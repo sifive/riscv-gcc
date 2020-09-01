@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gc_zicboz -mabi=ilp32" } */
+/* { dg-options "-march=rv32gc_zicboz -mabi=ilp32 -mcmodel=medlow" } */
 
 int var;
 

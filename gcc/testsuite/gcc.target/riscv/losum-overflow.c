@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gc -mabi=ilp32 -fno-section-anchors" } */
+/* { dg-options "-march=rv32gc -mabi=ilp32 -fno-section-anchors -mcmodel=medlow" } */
 
 /* Check for %lo overflow.  Adding an offset larger than the alignment can
    overflow if the data is allocated to an address mod 4KB that is between
