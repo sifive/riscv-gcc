@@ -37,6 +37,7 @@ enum riscv_code_model {
   CM_MEDLOW,
   CM_MEDANY,
   CM_LARGE,
+  CM_COMPACT,
   CM_PIC
 };
 extern enum riscv_code_model riscv_cmodel;

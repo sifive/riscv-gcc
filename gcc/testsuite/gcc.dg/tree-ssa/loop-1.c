@@ -19,6 +19,12 @@
    to the load from the GOT this also contains the name of the function so for
    each call the function name would appear twice.  */
 /* { dg-options "-O1 -ftree-loop-ivcanon -funroll-loops -fdump-tree-ivcanon-details -fdump-tree-cunroll-details -fdump-tree-optimized -mno-relax-pic-calls" { target mips*-*-* } } */
+
+/* On RISCV, The compact code model for calls.  In addition
+   to the load from the GOT this also contains the name of the function so for
+   each call the function name would appear three times.  */
+/* { dg-options "-O1 -ftree-loop-ivcanon -funroll-loops -fdump-tree-ivcanon-details -fdump-tree-cunroll-details -fdump-tree-optimized -mcmodel=medlow" {target riscv*-*-*} } */
+
 __attribute__ ((pure))
 int foo (int x);
 int xxx(void)

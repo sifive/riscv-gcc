@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32i -mabi=ilp32" } */
+/* { dg-options "-march=rv32i -mabi=ilp32 -mcmodel=medlow" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Og" } } */
 
 /* One zero-extend shift can be eliminated by modifying the constant in the

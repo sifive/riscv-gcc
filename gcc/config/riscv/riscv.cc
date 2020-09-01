@@ -52,6 +52,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "expr.h"
+#include "cfg.h"
+#include "cfgrtl.h"
 #include "optabs.h"
 #include "bitmap.h"
 #include "df.h"
@@ -317,6 +319,9 @@ struct riscv_tune_param
 
 
 /* Global variables for machine-dependent things.  */
+
+/* Whether generate compact code.  */
+bool compact_code_needed;
 
 /* Whether unaligned accesses execute very slowly.  */
 bool riscv_slow_unaligned_access_p;
@@ -1589,6 +1594,31 @@ riscv_classify_symbol (const_rtx x)
   if (riscv_tls_symbol_p (x))
     return SYMBOL_TLS;
 
+  if (COMPACT_CMODEL_P)
+    {
+      if (GET_CODE (x) == SYMBOL_REF)
+	{
+	  if (SYMBOL_REF_WEAK (x))
+	    {
+	      return SYMBOL_GOT_GPREL;
+	    }
+	  else if (SYMBOL_REF_FUNCTION_P (x))
+	    {
+	      if (riscv_symbol_binds_local_p (x))
+		return SYMBOL_PCREL;
+	      else
+		return SYMBOL_GOT_GPREL;
+	    }
+	  else
+	    return SYMBOL_GOT_GPREL;
+	}
+      else
+	{
+	  gcc_assert (GET_CODE (x) == LABEL_REF);
+	  return SYMBOL_GOT_GPREL;
+	}
+    }
+
   if (GET_CODE (x) == SYMBOL_REF && flag_pic && !riscv_symbol_binds_local_p (x))
     return SYMBOL_GOT_DISP;
 
@@ -1668,6 +1698,8 @@ static int riscv_symbol_insns (enum riscv_symbol_type type)
     case SYMBOL_TLSDESC: return 6; /* 4-instruction call + ADD TP + the reference.  */
     case SYMBOL_GOT_DISP: return 3; /* AUIPC + LD GOT + the reference.  */
     case SYMBOL_FORCE_TO_MEM: return 3; /* AUIPC + LD + the reference.  */
+    case SYMBOL_GOT_GPREL: return 4; /* LUI + ADD + LD GOT + the reference.  */
+    case SYMBOL_GPREL: return 3; /* LUI + ADD + the reference.  */
     default: gcc_unreachable ();
     }
 }
@@ -1965,10 +1997,20 @@ riscv_split_symbol_type (enum riscv_symbol_type symbol_type)
   if (symbol_type == SYMBOL_TLS_LE)
     return true;
 
+  /* If Symbol is from functions, generating a pseudo instruction. */
+  if (COMPACT_CMODEL_P)
+    {
+      if (symbol_type == SYMBOL_PCREL)
+	return false;
+      if (symbol_type == SYMBOL_GOT_GPREL ||
+	  symbol_type == SYMBOL_GPREL)
+	return true;
+    }
+
   if (!TARGET_EXPLICIT_RELOCS)
     return false;
 
-  return symbol_type == SYMBOL_ABSOLUTE || symbol_type == SYMBOL_PCREL;
+  return (symbol_type == SYMBOL_ABSOLUTE || symbol_type == SYMBOL_PCREL);
 }
 
 /* Return true if a LO_SUM can address a value of mode MODE when the
@@ -2813,6 +2855,74 @@ riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
 	}
 	break;
 
+      case SYMBOL_GPREL:
+	{
+	  gcc_assert (COMPACT_CMODEL_P);
+	  /* The symbol of GPREL instructions.
+	     lui   temp, %gprel_hi(symbol)
+	     add   temp, pic_reg, %gprel(symbol)
+	     addi  temp, temp, %gprel_lo(symbol)  */
+
+	  compact_code_needed = true;
+	  crtl->uses_pic_offset_table = 1;
+
+	  rtx insn = NULL_RTX;
+	  rtx high = gen_rtx_HIGH (Pmode, copy_rtx (addr));
+
+	  if (temp == NULL)
+	    temp = gen_reg_rtx (Pmode);
+
+	  if (Pmode == DImode)
+	    insn = emit_insn (gen_compact_gpreldi (temp,
+						   pic_offset_table_rtx,
+						   copy_rtx (addr)));
+	  else
+	    insn = emit_insn (gen_compact_gprelsi (temp,
+						   pic_offset_table_rtx,
+						   copy_rtx (addr)));
+
+	  set_unique_reg_note (insn, REG_EQUAL,
+			       gen_rtx_PLUS (Pmode, high,
+					     pic_offset_table_rtx));
+
+	  *low_out = gen_rtx_LO_SUM (Pmode, temp, addr);
+	}
+	break;
+
+      case SYMBOL_GOT_GPREL:
+	{
+	  gcc_assert (COMPACT_CMODEL_P);
+	  /* The symbol of GOT_GPREL instructions.
+	     lui   temp, %got_gprel_hi(symbol)
+	     add   temp, pic_reg, %got_gprel(symbol)
+	     ld    temp, %got_gprel_lo(symbol)(temp)
+	     ld    temp, 0(temp)  */
+
+	  compact_code_needed = true;
+	  crtl->uses_pic_offset_table = 1;
+
+	  if (temp == NULL)
+	    temp = gen_reg_rtx (Pmode);
+
+	  if (Pmode == DImode)
+	    emit_insn (gen_ladi_got_gprel(temp,
+					  pic_offset_table_rtx,
+					  addr));
+	  else
+	    emit_insn (gen_lasi_got_gprel (temp,
+					   pic_offset_table_rtx,
+					   addr));
+
+	  set_unique_reg_note (get_last_insn (), REG_EQUAL,
+			       gen_rtx_MEM (Pmode,
+					    gen_rtx_PLUS (Pmode,
+							  pic_offset_table_rtx,
+							  addr)));
+
+	  *low_out = temp;
+	}
+	break;
+
       default:
 	gcc_unreachable ();
       }
@@ -2862,7 +2972,21 @@ riscv_call_tls_get_addr (rtx sym, rtx result)
 
   start_sequence ();
 
-  emit_insn (riscv_got_load_tls_gd (a0, sym));
+  if (COMPACT_CMODEL_P)
+    {
+      compact_code_needed = true;
+      crtl->uses_pic_offset_table = 1;
+
+      if (Pmode == DImode)
+	emit_insn (gen_compact_got_load_tls_gddi (a0, sym,
+						  pic_offset_table_rtx));
+      else
+	emit_insn (gen_compact_got_load_tls_gdsi (a0, sym,
+						  pic_offset_table_rtx));
+    }
+  else
+    emit_insn (riscv_got_load_tls_gd (a0, sym));
+
   insn = emit_call_insn (gen_call_value (result, func, const0_rtx,
 					 gen_int_mode (RISCV_CC_BASE, SImode)));
   RTL_CONST_CALL_P (insn) = 1;
@@ -2919,7 +3043,22 @@ riscv_legitimize_tls_address (rtx loc)
       /* la.tls.ie; tp-relative add */
       tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
       tmp = gen_reg_rtx (Pmode);
-      emit_insn (riscv_got_load_tls_ie (tmp, loc));
+
+      if (COMPACT_CMODEL_P)
+	{
+	  compact_code_needed = true;
+	  crtl->uses_pic_offset_table = 1;
+
+	  if (Pmode == DImode)
+	    emit_insn (gen_compact_got_load_tls_iedi (tmp, loc,
+						      pic_offset_table_rtx));
+	  else
+	    emit_insn (gen_compact_got_load_tls_iesi (tmp, loc,
+						      pic_offset_table_rtx));
+	}
+      else
+	emit_insn (riscv_got_load_tls_ie (tmp, loc));
+
       dest = gen_reg_rtx (Pmode);
       emit_insn (gen_add3_insn (dest, tmp, tp));
       break;
@@ -6747,6 +6886,14 @@ riscv_print_operand_reloc (FILE *file, rtx op, bool hi_reloc)
 	reloc = hi_reloc ? "%tprel_hi" : "%tprel_lo";
 	break;
 
+      case SYMBOL_GPREL:
+	reloc = hi_reloc ? "%gprel_hi" : "%gprel_lo";
+	break;
+
+      case SYMBOL_GOT_GPREL:
+	reloc = hi_reloc ? "%got_gprel_hi" : "%got_gprel_lo";
+	break;
+
       default:
 	output_operand_lossage ("invalid use of '%%%c'", hi_reloc ? 'h' : 'R');
 	return;
@@ -10458,8 +10605,12 @@ riscv_file_start (void)
 {
   default_file_start ();
 
-  /* Instruct GAS to generate position-[in]dependent code.  */
-  fprintf (asm_out_file, "\t.option %spic\n", (flag_pic ? "" : "no"));
+  /* Instruct GAS to generate position-[in]dependent code.
+     If the code model is compact, then we use compact way.  */
+  if (COMPACT_CMODEL_P)
+    fprintf (asm_out_file, "\t.option compact\n");
+  else
+    fprintf (asm_out_file, "\t.option %spic\n", (flag_pic ? "" : "no"));
 
   /* If the user specifies "-mno-relax" on the command line then disable linker
      relaxation in the assembler.  */
@@ -10478,6 +10629,18 @@ riscv_file_start (void)
 void
 riscv_file_end ()
 {
+  if (compact_code_needed)
+    {
+      fprintf (asm_out_file, "\t.section .text.__global_pointer__, \"aMG\","
+			     "@progbits, 8, __global_pointer__, comdat\n"
+			     "\t.align 3\n"
+			     "\t.hidden __global_pointer__\n"
+			     "\t.global __global_pointer__\n"
+			     "\t.type   __global_pointer__, object\n"
+			     "__global_pointer__:\n"
+			     "\t.quad   __global_pointer$ -.\n");
+    }
+
   file_end_indicate_exec_stack ();
   unsigned long feature_1_and = 0;
 
@@ -10798,6 +10961,8 @@ riscv_option_override (void)
 
   flag_pcc_struct_return = 0;
 
+  compact_code_needed = false;
+
   if (flag_pic)
     g_switch_value = 0;
 
@@ -10813,7 +10978,7 @@ riscv_option_override (void)
     sorry ("code model %qs with %qs", "large",
 	   global_options.x_flag_pic > 1 ? "-fPIC" : "-fpic");
 
-  if (flag_pic)
+  if (flag_pic && !COMPACT_CMODEL_P)
     riscv_cmodel = CM_PIC;
 
   /* We need to save the fp with ra for non-leaf functions with no fp and ra
@@ -10836,6 +11001,12 @@ riscv_option_override (void)
   if ((target_flags_explicit & MASK_EXPLICIT_RELOCS) == 0)
     if (riscv_cmodel == CM_MEDLOW)
       target_flags |= MASK_EXPLICIT_RELOCS;
+
+  if (COMPACT_CMODEL_P)
+    target_flags |= MASK_EXPLICIT_RELOCS;
+
+  if (!TARGET_64BIT && COMPACT_CMODEL_P)
+   error ("only support compact code model on RV64 toolchain.");
 
   /* Require that the ISA supports the requested floating-point ABI.  */
   if (UNITS_PER_FP_ARG > (TARGET_HARD_FLOAT ? UNITS_PER_FP_REG : 0))
@@ -14202,6 +14373,54 @@ bool need_shadow_stack_push_pop_p ()
   return is_zicfiss_p () && riscv_save_return_addr_reg_p ();
 }
 
+/* Implement TARGET_USE_PSEUDO_PIC_REG.  */
+
+bool
+riscv_use_pseudo_pic_reg (void)
+{
+  return COMPACT_CMODEL_P && (flag_pic || flag_exceptions);
+}
+
+/* Implement TARGET_INIT_PIC_REG.  */
+
+static void
+riscv_init_pic_reg (void)
+{
+  edge entry_edge;
+  rtx_insn *seq;
+
+  if (!riscv_use_pseudo_pic_reg () || !crtl->uses_pic_offset_table)
+    return;
+
+  /* Init compact code model instructions.
+     .label:
+     auipc pic_reg, %pcrel_hi(__global_pointer__)
+     addi  pic_reg, pic_reg, %pcrel_lo(.label)
+     ld    temp_reg, 0(pic_reg)
+     add   pic_reg, pic_reg, temp_reg  */
+
+  rtx gp_symbol = gen_rtx_SYMBOL_REF (Pmode, "__global_pointer__");
+  rtx temp_reg = gen_reg_rtx (Pmode);
+
+  start_sequence ();
+
+  if (Pmode == DImode)
+    emit_insn (gen_init_compact_gpdi (pic_offset_table_rtx, gp_symbol));
+  else
+    emit_insn (gen_init_compact_gpsi (pic_offset_table_rtx, gp_symbol));
+
+  emit_move_insn (temp_reg,
+		  gen_frame_mem (Pmode, pic_offset_table_rtx));
+  emit_insn (gen_add3_insn (pic_offset_table_rtx,
+			    pic_offset_table_rtx, temp_reg));
+  seq = get_insns ();
+  end_sequence ();
+
+  entry_edge = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  insert_insn_on_edge (seq, entry_edge);
+  commit_one_edge_insertion (entry_edge);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -14358,6 +14577,12 @@ bool need_shadow_stack_push_pop_p ()
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE riscv_conditional_register_usage
+
+#undef TARGET_INIT_PIC_REG
+#define TARGET_INIT_PIC_REG riscv_init_pic_reg
+
+#undef TARGET_USE_PSEUDO_PIC_REG
+#define TARGET_USE_PSEUDO_PIC_REG riscv_use_pseudo_pic_reg
 
 #undef TARGET_CLASS_MAX_NREGS
 #define TARGET_CLASS_MAX_NREGS riscv_class_max_nregs

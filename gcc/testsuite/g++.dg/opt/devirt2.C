@@ -5,6 +5,9 @@
 // { dg-additional-options "-mshort-calls" {target epiphany-*-*} }
 // Using -mno-abicalls avoids a R_MIPS_JALR .reloc.
 // { dg-additional-options "-mno-abicalls" { target mips*-*-* } }
+/* Using -mcmodel=medlow avoids loading the function addresses in
+   got table and thus getting the counts wrong.  */
+// { dg-additional-options "-mcmodel=medlow" { target riscv*-*-* } }
 // { dg-final { scan-assembler-times "xyzzy" 2 { target { ! { alpha*-*-* hppa*-*-* ia64*-*-hpux* sparc*-*-* *-*-mingw* } } } } }
 // For *-*-mingw* there is additionally one .def match
 // { dg-final { scan-assembler-times "xyzzy" 3 { target *-*-mingw* } } }

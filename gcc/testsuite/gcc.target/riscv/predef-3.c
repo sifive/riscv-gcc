@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32imafdc -mabi=ilp32d -fpic" } */
+/* { dg-options "-march=rv32imafdc -mabi=ilp32d -fpic -mcmodel=medlow" } */
 
 int main () {
 #if !defined(__riscv)

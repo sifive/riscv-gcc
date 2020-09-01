@@ -122,6 +122,8 @@ ASM_MISA_SPEC
 #define LOCAL_LABEL_PREFIX	"."
 #define USER_LABEL_PREFIX	""
 
+#define COMPACT_CMODEL_P (riscv_cmodel == CM_COMPACT)
+
 /* Offsets recorded in opcodes are a multiple of this alignment factor.
    The default for this in 64-bit mode is 8, which causes problems with
    SFmode register saves.  */
@@ -400,6 +402,8 @@ ASM_MISA_SPEC
 #define HARD_FRAME_POINTER_REGNUM 8
 #define STACK_POINTER_REGNUM 2
 #define THREAD_POINTER_REGNUM 4
+#define PIC_OFFSET_TABLE_REGNUM \
+  (!(COMPACT_CMODEL_P && flag_pic) ? 3 : INVALID_REGNUM)
 
 /* These two registers don't really exist: they get eliminated to either
    the stack or hard frame pointer.  */
@@ -889,7 +893,7 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
   (PTR) = riscv_asm_output_opcode(STREAM, PTR)
 
 #define JUMP_TABLES_IN_TEXT_SECTION (riscv_cmodel == CM_LARGE)
-#define CASE_VECTOR_MODE SImode
+#define CASE_VECTOR_MODE (COMPACT_CMODEL_P ? DImode : SImode)
 #define CASE_VECTOR_PC_RELATIVE (riscv_cmodel != CM_MEDLOW)
 
 #define LOCAL_SYM_P(sym)						\
@@ -1079,12 +1083,15 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)				\
-  fprintf (STREAM, "\t.word\t%sL%d\n", LOCAL_LABEL_PREFIX, VALUE)
+  fprintf (STREAM, "\t%s\t%sL%d\n",					\
+	   COMPACT_CMODEL_P ? ".dword" : ".word",			\
+	   LOCAL_LABEL_PREFIX, VALUE)
 
 /* This is how to output an element of a PIC case-vector. */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)		\
-  fprintf (STREAM, "\t.word\t%sL%d-%sL%d\n",				\
+  fprintf (STREAM, "\t%s\t%sL%d-%sL%d\n",				\
+	   COMPACT_CMODEL_P ? ".dword" : ".word",			\
 	   LOCAL_LABEL_PREFIX, VALUE, LOCAL_LABEL_PREFIX, REL)
 
 /* This is how to output an assembler line
@@ -1205,7 +1212,8 @@ extern bool need_shadow_stack_push_pop_p ();
 #endif
 
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL) \
-  (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4)
+  (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel \
+    | (COMPACT_CMODEL_P ? DW_EH_PE_sdata8 : DW_EH_PE_sdata4))
 
 #define XLEN_SPEC \
   "%{march=rv32*:32}" \

@@ -1,5 +1,5 @@
 /* { dg-do compile { target rv64-*-* } } */
-/* { dg-options "-march=rv32gc_zicbop -mabi=ilp32" } */
+/* { dg-options "-march=rv32gc_zicbop -mabi=ilp32 -mcmodel=medlow" } */
 
 void foo (char *p)
 {
