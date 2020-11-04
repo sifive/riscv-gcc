@@ -847,24 +847,13 @@ handle_overloaded_gen (overloaded_name *oname)
     }
 }
 
-int
-main (int argc, const char **argv)
+/* Print include header.  */
+
+static void
+printf_include (void)
 {
-  progname = "genemit";
-
-  if (!init_rtx_reader_args (argc, argv))
-    return (FATAL_EXIT_CODE);
-
-#define DEF_INTERNAL_OPTAB_FN(NAME, FLAGS, OPTAB, TYPE) \
-  nofail_optabs[OPTAB##_optab] = true;
-#include "internal-fn.def"
-
-  /* Assign sequential codes to all entries in the machine description
-     in parallel with the tables in insn-output.c.  */
-
-  printf ("/* Generated automatically by the program `genemit'\n\
-from the machine description file `md'.  */\n\n");
-
+  printf ("/* Generated automatically by the program `genemit'\n"
+	  "from the machine description file `md'.  */\n\n");
   printf ("#define IN_TARGET_CODE 1\n");
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
@@ -900,35 +889,70 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"tm-constrs.h\"\n");
   printf ("#include \"ggc.h\"\n");
   printf ("#include \"target.h\"\n\n");
+}
+
+/* Generate the `gen_...' function from GET_CODE().  */
+
+static void
+gen_md_rtx (md_rtx_info *info)
+{
+  switch (GET_CODE (info->def))
+    {
+    case DEFINE_INSN:
+      gen_insn (info);
+      break;
+
+    case DEFINE_EXPAND:
+      printf ("/* %s:%d */\n", info->loc.filename, info->loc.lineno);
+      gen_expand (info);
+      break;
+
+    case DEFINE_SPLIT:
+      printf ("/* %s:%d */\n", info->loc.filename, info->loc.lineno);
+      gen_split (info);
+      break;
+
+    case DEFINE_PEEPHOLE2:
+      printf ("/* %s:%d */\n", info->loc.filename, info->loc.lineno);
+      gen_split (info);
+      break;
+
+    default:
+      break;
+    }
+}
+
+int
+main (int argc, const char **argv)
+{
+  progname = "genemit";
+
+  if (!init_rtx_reader_args (argc, argv))
+    return (FATAL_EXIT_CODE);
+
+#define DEF_INTERNAL_OPTAB_FN(NAME, FLAGS, OPTAB, TYPE) \
+  nofail_optabs[OPTAB##_optab] = true;
+#include "internal-fn.def"
+
+  /* Assign sequential codes to all entries in the machine description
+     in parallel with the tables in insn-output.c.  */
+
+  int read_count = 0;
 
   /* Read the machine description.  */
 
   md_rtx_info info;
   while (read_md_rtx (&info))
-    switch (GET_CODE (info.def))
-      {
-      case DEFINE_INSN:
-	gen_insn (&info);
-	break;
+    {
+      if ((read_count++ % 10000) == 0)
+	{
+	  printf ("/* Split file into separate compilation units "
+		  "for parallel compilation %d */\n\n", read_count);
+	  printf_include();
+	}
 
-      case DEFINE_EXPAND:
-	printf ("/* %s:%d */\n", info.loc.filename, info.loc.lineno);
-	gen_expand (&info);
-	break;
-
-      case DEFINE_SPLIT:
-	printf ("/* %s:%d */\n", info.loc.filename, info.loc.lineno);
-	gen_split (&info);
-	break;
-
-      case DEFINE_PEEPHOLE2:
-	printf ("/* %s:%d */\n", info.loc.filename, info.loc.lineno);
-	gen_split (&info);
-	break;
-
-      default:
-	break;
-      }
+      gen_md_rtx (&info);
+    }
 
   /* Write out the routines to add CLOBBERs to a pattern and say whether they
      clobber a hard reg.  */
