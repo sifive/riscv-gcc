@@ -1336,6 +1336,24 @@ static rtx riscv_tls_add_tp_le (rtx dest, rtx base, rtx sym)
     return gen_tls_add_tp_lesi (dest, base, tp, sym);
 }
 
+/* Functions in executable objects expect that the gp register
+   was initialized to the global pointer. Functions in shared
+   objects that refer to the global pointer must setup the an
+   arbitrary register.  */
+
+static rtx get_pic_offset_table ()
+{
+  if (pic_offset_table_rtx != NULL)
+    {
+      compact_code_needed = true;
+      crtl->uses_pic_offset_table = 1;
+    }
+  else
+    pic_offset_table_rtx = gen_rtx_REG (Pmode, GP_REGNUM);
+
+  return pic_offset_table_rtx;
+}
+
 /* If MODE is MAX_MACHINE_MODE, ADDR appears as a move operand, otherwise
    it appears in a MEM of that mode.  Return true if ADDR is a legitimate
    constant in that context and can be split into high and low parts.
@@ -1411,27 +1429,25 @@ riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out,
 	     add   temp, pic_reg, %gprel(symbol)
 	     addi  temp, temp, %gprel_lo(symbol)  */
 
-	  compact_code_needed = true;
-	  crtl->uses_pic_offset_table = 1;
-
 	  rtx insn = NULL_RTX;
 	  rtx high = gen_rtx_HIGH (Pmode, copy_rtx (addr));
+	  rtx offset_table_rtx = get_pic_offset_table ();
 
 	  if (temp == NULL)
 	    temp = gen_reg_rtx (Pmode);
 
 	  if (Pmode == DImode)
 	    insn = emit_insn (gen_compact_gpreldi (temp,
-						   pic_offset_table_rtx,
+						   offset_table_rtx,
 						   copy_rtx (addr)));
 	  else
 	    insn = emit_insn (gen_compact_gprelsi (temp,
-						   pic_offset_table_rtx,
+						   offset_table_rtx,
 						   copy_rtx (addr)));
 
 	  set_unique_reg_note (insn, REG_EQUAL,
 			       gen_rtx_PLUS (Pmode, high,
-					     pic_offset_table_rtx));
+					     offset_table_rtx));
 
 	  *low_out = gen_rtx_LO_SUM (Pmode, temp, addr);
 	}
@@ -1446,26 +1462,24 @@ riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out,
 	     ld    temp, %got_gprel_lo(symbol)(temp)
 	     ld    temp, 0(temp)  */
 
-	  compact_code_needed = true;
-	  crtl->uses_pic_offset_table = 1;
-
 	  rtx insn = NULL_RTX;
 	  rtx high = gen_rtx_HIGH (Pmode, copy_rtx (addr));
 	  high = riscv_force_temporary (temp, high, in_splitter);
 	  rtx mem = gen_frame_mem (Pmode, gen_rtx_LO_SUM (Pmode, high, addr));
+	  rtx offset_table_rtx = get_pic_offset_table ();
 
 	  if (Pmode == DImode)
 	    insn = emit_insn (gen_got_gprel_adddi (high, high,
-						   pic_offset_table_rtx,
+						   offset_table_rtx,
 						   addr));
 	  else
 	    insn = emit_insn (gen_got_gprel_addsi (high, high,
-						   pic_offset_table_rtx,
+						   offset_table_rtx,
 						   addr));
 
 	  set_unique_reg_note (insn, REG_EQUAL,
 			       gen_rtx_PLUS (Pmode, high,
-					     pic_offset_table_rtx));
+					     offset_table_rtx));
 	  emit_move_insn (high, mem);
 	  *low_out = high;
 	}
@@ -1533,15 +1547,14 @@ riscv_call_tls_get_addr (rtx sym, rtx result)
 
   if (COMPACT_CMODEL_P)
     {
-      compact_code_needed = true;
-      crtl->uses_pic_offset_table = 1;
+      rtx offset_table_rtx = get_pic_offset_table ();
 
       if (Pmode == DImode)
 	emit_insn (gen_compact_got_load_tls_gddi (a0, sym,
-						  pic_offset_table_rtx));
+						  offset_table_rtx));
       else
 	emit_insn (gen_compact_got_load_tls_gdsi (a0, sym,
-						  pic_offset_table_rtx));
+						  offset_table_rtx));
     }
   else
     emit_insn (riscv_got_load_tls_gd (a0, sym));
@@ -1591,15 +1604,14 @@ riscv_legitimize_tls_address (rtx loc)
 
       if (COMPACT_CMODEL_P)
 	{
-	  compact_code_needed = true;
-	  crtl->uses_pic_offset_table = 1;
+	  rtx offset_table_rtx = get_pic_offset_table ();
 
 	  if (Pmode == DImode)
 	    emit_insn (gen_compact_got_load_tls_iedi (tmp, loc,
-						      pic_offset_table_rtx));
+						      offset_table_rtx));
 	  else
 	    emit_insn (gen_compact_got_load_tls_iesi (tmp, loc,
-						      pic_offset_table_rtx));
+						      offset_table_rtx));
 	}
       else
 	emit_insn (riscv_got_load_tls_ie (tmp, loc));
@@ -6651,7 +6663,7 @@ riscv_verify_type_context (location_t loc, type_context_kind context,
 static bool
 riscv_use_pseudo_pic_reg (void)
 {
-  return COMPACT_CMODEL_P;
+  return COMPACT_CMODEL_P && flag_pic;
 }
 
 /* Implement TARGET_INIT_PIC_REG.  */
@@ -6662,7 +6674,8 @@ riscv_init_pic_reg (void)
   edge entry_edge;
   rtx_insn *seq;
 
-  if (!COMPACT_CMODEL_P || !crtl->uses_pic_offset_table)
+  if (!riscv_use_pseudo_pic_reg ()
+      || !crtl->uses_pic_offset_table)
     return;
 
   /* Init compact code model instructions.
