@@ -32,4 +32,13 @@ extern vec<const char *> default_get_valid_option_values (int, const char *);
 
 extern const struct default_options empty_optimization_table[];
 
+extern const char *default_compute_multilib(const struct switchstr *,
+					    int,
+					    const char *,
+					    const char *,
+					    const char *,
+					    const char *,
+					    const char *,
+					    const char *);
+
 #endif
