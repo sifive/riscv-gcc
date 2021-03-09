@@ -30,6 +30,16 @@
 
 #define MD_FALLBACK_FRAME_STATE_FOR riscv_fallback_frame_state
 
+/* RISC-V Glibc has removed its own sigcontext.h and use the linux kernel's
+   one, however the struct layout is little different between those two
+   version, fortunately they have identical layout, so we just need a
+   magical way to detect which one we are used.  */
+#ifdef _ASM_RISCV_SIGCONTEXT_H
+#define SIGCONTEST_PC(SC) (SC)->sc_regs.pc
+#else
+#define SIGCONTEST_PC(SC) (SC)->gregs[0]
+#endif
+
 static _Unwind_Reason_Code
 riscv_fallback_frame_state (struct _Unwind_Context *context,
 			    _Unwind_FrameState * fs)
@@ -74,16 +84,18 @@ riscv_fallback_frame_state (struct _Unwind_Context *context,
   for (i = 0; i < 32; i++)
     {
       fs->regs.reg[i].how = REG_SAVED_OFFSET;
-      fs->regs.reg[i].loc.offset = (_Unwind_Ptr) &sc->gregs[i] - new_cfa;
+      fs->regs.reg[i].loc.offset = (_Unwind_Ptr) &SIGCONTEST_PC (sc) - new_cfa;
     }
 
   fs->signal_frame = 1;
   fs->retaddr_column = __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__;
   fs->regs.reg[fs->retaddr_column].how = REG_SAVED_VAL_OFFSET;
   fs->regs.reg[fs->retaddr_column].loc.offset =
-    (_Unwind_Ptr) sc->gregs[0] - new_cfa;
+    (_Unwind_Ptr) SIGCONTEST_PC (sc) - new_cfa;
 
   return _URC_NO_REASON;
 }
+
+#undef SIGCONTEST_PC
 
 #endif
