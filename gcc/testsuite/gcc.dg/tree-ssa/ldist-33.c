@@ -1,5 +1,5 @@
 /* { dg-do compile { target size32plus } } */
-/* { dg-options "-O2 -ftree-loop-distribution -ftree-loop-distribute-patterns -fdump-tree-ldist-details" } */
+/* { dg-options "-O2 -ftree-loop-distribution -ftree-loop-distribute-patterns -fno-tree-dse -fdump-tree-ldist-details" } */
 
 #define N (1024)
 double a[N][N], b[N][N], c[N][N];
