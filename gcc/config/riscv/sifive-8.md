@@ -74,13 +74,13 @@
        (eq_attr "type" "nop,const,auipc"))
   "sifive_8_C|sifive_8_B|sifive_8_M")
 
-(define_insn_reservation "sifive_8_sfma" 3
+(define_insn_reservation "sifive_8_sfma" 4
   (and (eq_attr "tune" "sifive_8")
        (and (eq_attr "type" "fadd,fmul,fmadd")
 	    (eq_attr "mode" "SF")))
   "sifive_8_F|sifive_8_FM")
 
-(define_insn_reservation "sifive_8_dfma" 5
+(define_insn_reservation "sifive_8_dfma" 4
   (and (eq_attr "tune" "sifive_8")
        (and (eq_attr "type" "fadd,fmul,fmadd")
 	    (eq_attr "mode" "DF")))
@@ -91,13 +91,13 @@
        (eq_attr "type" "fcvt,fcmp,fmove"))
   "sifive_8_F|sifive_8_FM")
 
-(define_insn_reservation "sifive_8_fdiv_s" 27
+(define_insn_reservation "sifive_8_fdiv_s" 19
   (and (eq_attr "tune" "sifive_8")
        (eq_attr "type" "fdiv,fsqrt")
        (eq_attr "mode" "SF"))
   "sifive_8_FM")
 
-(define_insn_reservation "sifive_8_fdiv_d" 56
+(define_insn_reservation "sifive_8_fdiv_d" 33
   (and (eq_attr "tune" "sifive_8")
        (eq_attr "type" "fdiv,fsqrt")
        (eq_attr "mode" "DF"))
