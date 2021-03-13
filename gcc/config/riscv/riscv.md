@@ -1457,7 +1457,7 @@
 	     (match_operand:P 2 "register_operand" "r")]
 	    UNSPEC_COMPACT_TLS_GD))]
   "COMPACT_CMODEL_P"
-  "la.tls.gd\t%0,%1,%2"
+  "la.tls.gd.gprel\t%0,%1,%2"
   [(set_attr "got" "load")
    (set_attr "mode" "<MODE>")])
 
@@ -1478,7 +1478,7 @@
 	     (match_operand:P 2 "register_operand" "r")]
 	    UNSPEC_COMPACT_TLS_IE))]
   "COMPACT_CMODEL_P"
-  "la.tls.ie\t%0,%1,%2"
+  "la.tls.ie.gprel\t%0,%1,%2"
   [(set_attr "got" "load")
    (set_attr "mode" "<MODE>")])
 
@@ -1528,7 +1528,7 @@
 	   (match_operand:P 3 "symbolic_operand" "")]
 	  UNSPEC_GOT_GPREL))]
   "COMPACT_CMODEL_P"
-  "add\t%0,%1,%2,%%got_gprel(%3)"
+  "add\t%0,%2,%1,%%got_gprel(%3)"
   [(set_attr "type" "arith")
    (set_attr "mode" "<MODE>")])
 
@@ -1561,7 +1561,7 @@
 	   (match_operand:P 3 "symbolic_operand" "")]
 	  UNSPEC_GPREL_ADD))]
   "COMPACT_CMODEL_P"
-  "add\t%0,%1,%2,%%gprel(%3)"
+  "add\t%0,%2,%1,%%gprel(%3)"
   [(set_attr "type" "arith")
    (set_attr "mode" "<MODE>")])
 

@@ -5483,12 +5483,8 @@ riscv_file_start (void)
 {
   default_file_start ();
 
-  /* Instruct GAS to generate position-[in]dependent code.
-     If the code model is compact, then we use compact way.  */
-  if (COMPACT_CMODEL_P)
-    fprintf (asm_out_file, "\t.option compact\n");
-  else
-    fprintf (asm_out_file, "\t.option %spic\n", (flag_pic ? "" : "no"));
+  /* Instruct GAS to generate position-[in]dependent code.  */
+  fprintf (asm_out_file, "\t.option %spic\n", (flag_pic ? "" : "no"));
 
   /* If the user specifies "-mno-relax" on the command line then disable linker
      relaxation in the assembler.  */
