@@ -6776,6 +6776,24 @@ riscv_init_pic_reg (void)
   commit_one_edge_insertion (entry_edge);
 }
 
+/* Implement TARGET_PROMOTED_TYPE to promote 16-bit floating point types
+   to float if -mfp-eval=float.
+
+   __fp16 always promotes through this hook.
+   _Float16 may promote if TARGET_FLT_EVAL_METHOD is 16, but we do that
+   through the generic excess precision logic rather than here.  */
+
+static tree
+riscv_promoted_type (const_tree t)
+{
+  if (riscv_fp16_eval_format == FP16_EVAL_FLOAT
+      && SCALAR_FLOAT_TYPE_P (t)
+      && TYPE_MAIN_VARIANT (t) == riscv_fp16_type_node)
+    return float_type_node;
+
+  return NULL_TREE;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -6986,6 +7004,9 @@ riscv_init_pic_reg (void)
 
 #undef TARGET_FLOATN_MODE
 #define TARGET_FLOATN_MODE riscv_floatn_mode
+
+#undef TARGET_PROMOTED_TYPE
+#define TARGET_PROMOTED_TYPE riscv_promoted_type
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P riscv_vector_mode_supported_p

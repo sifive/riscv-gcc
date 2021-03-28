@@ -221,3 +221,16 @@ Set the version of RISC-V ISA spec.
 menable-experimental-extensions
 Target Report RejectNegative
 Enable use of experimental RISC-V extensions.
+
+Enum
+Name(fp16_eval_format) Type(enum riscv_fp16_eval_format_t)
+Evaluation format for __fp16 (for use with the -mfp16-eval= option):
+
+EnumValue
+Enum(fp16_eval_format) String(native) Value(FP16_EVAL_NATIVE)
+
+EnumValue
+Enum(fp16_eval_format) String(float) Value(FP16_EVAL_FLOAT)
+
+mfp16-eval=
+Target Report RejectNegative Joined Enum(fp16_eval_format) Var(riscv_fp16_eval_format) Init(FP16_EVAL_NATIVE)

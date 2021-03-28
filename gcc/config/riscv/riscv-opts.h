@@ -50,6 +50,11 @@ enum riscv_isa_spec_class {
 
 extern enum riscv_isa_spec_class riscv_isa_spec;
 
+enum riscv_fp16_eval_format_t {
+  FP16_EVAL_NATIVE,
+  FP16_EVAL_FLOAT
+};
+
 /* Keep this list in sync with define_attr "tune" in riscv.md.  */
 enum riscv_microarchitecture_type {
   generic,

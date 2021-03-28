@@ -241,7 +241,7 @@ AVAIL (vector, TARGET_VECTOR)
 #define RISCV_ATYPE_C_USI_PTR const_unsigned_intSI_ptr_type_node
 #define RISCV_ATYPE_C_UDI_PTR const_unsigned_intDI_ptr_type_node
 
-#define RISCV_ATYPE_HF fp16_type_node
+#define RISCV_ATYPE_HF riscv_fp16_type_node
 #define RISCV_ATYPE_SF float_type_node
 #define RISCV_ATYPE_DF double_type_node
 
@@ -503,7 +503,7 @@ tree rvvbool16_t_node;
 tree rvvbool32_t_node;
 tree rvvbool64_t_node;
 
-#define F16_TYPE_NODE fp16_type_node
+#define F16_TYPE_NODE riscv_fp16_type_node
 #define F32_TYPE_NODE float_type_node
 #define F64_TYPE_NODE double_type_node
 
@@ -2576,7 +2576,7 @@ static GTY(()) int riscv_builtin_decl_index[NUM_INSN_CODES];
   riscv_builtin_decls[riscv_builtin_decl_index[(CODE)]]
 
 /* Type node for fp16.  */
-tree fp16_type_node;
+tree riscv_fp16_type_node;
 
 /* Return the function type associated with function prototype TYPE.  */
 
@@ -2707,10 +2707,10 @@ riscv_init_builtins (void)
 
   /* _Float16 is C specific.  So we need a language independent type for
      half floats.  Use __fp16 same as the arm/aarch64 ports.  */
-  fp16_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (fp16_type_node) = 16;
-  layout_type (fp16_type_node);
-  (*lang_hooks.types.register_builtin_type) (fp16_type_node, "__fp16");
+  riscv_fp16_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (riscv_fp16_type_node) = 16;
+  layout_type (riscv_fp16_type_node);
+  (*lang_hooks.types.register_builtin_type) (riscv_fp16_type_node, "__fp16");
 
   if (TARGET_VECTOR)
     {
@@ -2719,8 +2719,8 @@ riscv_init_builtins (void)
 	= build_pointer_type (build_type_variant (float_type_node, 1, 0));
       const_double_ptr_type_node
 	= build_pointer_type (build_type_variant (double_type_node, 1, 0));
-      float16_ptr_type_node = build_pointer_type (fp16_type_node);
-      const_float16_type_node = build_type_variant (fp16_type_node, 1, 0);
+      float16_ptr_type_node = build_pointer_type (riscv_fp16_type_node);
+      const_float16_type_node = build_type_variant (riscv_fp16_type_node, 1, 0);
       const_float16_ptr_type_node
 	= build_pointer_type (const_float16_type_node);
 
@@ -2827,13 +2827,13 @@ riscv_init_builtins (void)
 			     VNx16DImode);
 
       rvvfloat16m1_t_node
-	= riscv_vector_type ("vfloat16m1_t", fp16_type_node, VNx8HFmode);
+	= riscv_vector_type ("vfloat16m1_t", riscv_fp16_type_node, VNx8HFmode);
       rvvfloat16m2_t_node
-	= riscv_vector_type ("vfloat16m2_t", fp16_type_node, VNx16HFmode);
+	= riscv_vector_type ("vfloat16m2_t", riscv_fp16_type_node, VNx16HFmode);
       rvvfloat16m4_t_node
-	= riscv_vector_type ("vfloat16m4_t", fp16_type_node, VNx32HFmode);
+	= riscv_vector_type ("vfloat16m4_t", riscv_fp16_type_node, VNx32HFmode);
       rvvfloat16m8_t_node
-	= riscv_vector_type ("vfloat16m8_t", fp16_type_node, VNx64HFmode);
+	= riscv_vector_type ("vfloat16m8_t", riscv_fp16_type_node, VNx64HFmode);
 
       rvvfloat32m1_t_node
 	= riscv_vector_type ("vfloat32m1_t", float_type_node, VNx4SFmode);

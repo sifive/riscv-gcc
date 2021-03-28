@@ -118,4 +118,5 @@ extern const riscv_cpu_info *riscv_find_cpu (const char *);
 /* Routines for vector tuple types.  */
 extern int riscv_get_nf (machine_mode);
 
+extern tree riscv_fp16_type_node;
 #endif /* ! GCC_RISCV_PROTOS_H */
