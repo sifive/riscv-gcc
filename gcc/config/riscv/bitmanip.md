@@ -37,6 +37,10 @@
 				 (ctz "ctz")
 				 (popcount "cpop")])
 
+(define_code_attr bitmanip_type [(clz "bitmanip")
+				 (ctz "bitmanip")
+				 (popcount "cpop")])
+
 (define_mode_attr shiftm1 [(SI "const31_operand") (DI "const63_operand")])
 
 (define_insn "<bitmanip_optab>si2"
@@ -44,7 +48,7 @@
 	(clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r")))]
   "TARGET_ZBB"
   { return TARGET_64BIT ? "<bitmanip_insn>w\t%0,%1" : "<bitmanip_insn>\t%0,%1"; }
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "<bitmanip_type>")])
 
 ;; TODO: In theory zero_extend should be OK to combine too, since the output
 ;;       range is 0 ~ 32, zero_extend or sign_extend will get same result.
@@ -54,7 +58,7 @@
 	  (clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r"))))]
   "TARGET_64BIT && TARGET_ZBB"
   "<bitmanip_insn>w\t%0,%1"
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "<bitmanip_type>")])
 
 (define_insn "<bitmanip_optab>di2"
   [(set (match_operand:DI 0 "register_operand" "=r")
