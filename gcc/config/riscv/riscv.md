@@ -286,7 +286,7 @@
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
    fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,atomic,vector,
-   bitmanip,cpop"
+   bitmanip,cpop,fcvt_i2f,fcvt_f2i"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,
@@ -1368,7 +1368,7 @@
 	    (match_operand:ANYF 1 "register_operand" " f")))]
   "TARGET_HARD_FLOAT"
   "fcvt.<GPR:ifmt>.<ANYF:fmt> %0,%1,rtz"
-  [(set_attr "type" "fcvt")
+  [(set_attr "type" "fcvt_f2i")
    (set_attr "mode" "<ANYF:MODE>")])
 
 (define_insn "fixuns_trunc<ANYF:mode><GPR:mode>2"
@@ -1377,7 +1377,7 @@
 	    (match_operand:ANYF 1 "register_operand" " f")))]
   "TARGET_HARD_FLOAT"
   "fcvt.<GPR:ifmt>u.<ANYF:fmt> %0,%1,rtz"
-  [(set_attr "type" "fcvt")
+  [(set_attr "type" "fcvt_f2i")
    (set_attr "mode" "<ANYF:MODE>")])
 
 (define_insn "float<GPR:mode><ANYF:mode>2"
@@ -1386,7 +1386,7 @@
 	    (match_operand:GPR 1 "reg_or_0_operand" " rJ")))]
   "TARGET_HARD_FLOAT"
   "fcvt.<ANYF:fmt>.<GPR:ifmt>\t%0,%z1"
-  [(set_attr "type" "fcvt")
+  [(set_attr "type" "fcvt_i2f")
    (set_attr "mode" "<ANYF:MODE>")])
 
 (define_insn "floatuns<GPR:mode><ANYF:mode>2"
@@ -1395,7 +1395,7 @@
 	    (match_operand:GPR 1 "reg_or_0_operand" " rJ")))]
   "TARGET_HARD_FLOAT"
   "fcvt.<ANYF:fmt>.<GPR:ifmt>u\t%0,%z1"
-  [(set_attr "type" "fcvt")
+  [(set_attr "type" "fcvt_i2f")
    (set_attr "mode" "<ANYF:MODE>")])
 
 (define_insn "l<rint_pattern><ANYF:mode><GPR:mode>2"
@@ -1405,7 +1405,7 @@
 	    RINT))]
   "TARGET_HARD_FLOAT"
   "fcvt.<GPR:ifmt>.<ANYF:fmt> %0,%1,<rint_rm>"
-  [(set_attr "type" "fcvt")
+  [(set_attr "type" "fcvt_f2i")
    (set_attr "mode" "<ANYF:MODE>")])
 
 ;;

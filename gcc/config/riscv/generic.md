@@ -42,7 +42,7 @@
 
 (define_insn_reservation "generic_xfer" 3
   (and (eq_attr "tune" "generic")
-       (eq_attr "type" "mfc,mtc,fcvt,fmove,fcmp"))
+       (eq_attr "type" "mfc,mtc,fcvt,fcvt_f2i,fcvt_i2f,fmove,fcmp"))
   "alu")
 
 (define_insn_reservation "generic_branch" 1
