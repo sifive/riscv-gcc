@@ -680,7 +680,9 @@ riscv_classify_symbol (const_rtx x)
 	      return SYMBOL_PCREL;
 	    else
 	      return SYMBOL_GOT_GPREL;
-	  else if (!riscv_symbol_binds_local_p (x))
+	  /* Use GOT_GPREL if the symbol is a weak reference,
+ 	     and the symbol is not locally-binding.  */
+	  else if (SYMBOL_REF_WEAK (x) && !riscv_symbol_binds_local_p (x))
 	    return SYMBOL_GOT_GPREL;
 	  else
 	    return SYMBOL_GPREL;
@@ -1466,7 +1468,7 @@ riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out,
 	  rtx insn = NULL_RTX;
 	  rtx high = gen_rtx_HIGH (Pmode, copy_rtx (addr));
 	  high = riscv_force_temporary (temp, high, in_splitter);
-	  rtx mem = gen_frame_mem (Pmode, gen_rtx_LO_SUM (Pmode, high, addr));
+	  rtx mem = gen_rtx_MEM (Pmode, gen_rtx_LO_SUM (Pmode, high, addr));
 
 	  if (Pmode == DImode)
 	    insn = emit_insn (gen_got_gprel_adddi (high, high,
