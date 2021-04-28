@@ -128,6 +128,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zbt", ISA_SPEC_CLASS_NONE, 0, 93},
   {"zbp", ISA_SPEC_CLASS_NONE, 0, 93},
 
+  {"xsfvqmaccdod", ISA_SPEC_CLASS_NONE, 0, 1},
+  {"xsfvqmaccqoq", ISA_SPEC_CLASS_NONE, 0, 1},
+
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
