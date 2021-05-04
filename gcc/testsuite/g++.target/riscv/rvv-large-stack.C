@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O0 -march=rv64gcv -mabi=lp64d" } */
+/* { dg-skip-if "" { *-*-* } } */
 
 #include <riscv_vector.h>
 #include <random>
