@@ -1258,7 +1258,7 @@
   [(set (match_operand:GPR    0 "register_operand"     "=r,r")
 	(zero_extend:GPR
 	    (match_operand:HI 1 "nonimmediate_operand" " r,m")))]
-  "!(TARGET_ZBA || TARGET_ZBB)"
+  "!(TARGET_ZBB || TARGET_ZBP)"
   "@
    #
    lhu\t%0,%1"
