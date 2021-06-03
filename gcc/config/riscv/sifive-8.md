@@ -129,7 +129,7 @@
 
 (define_insn_reservation "sifive_8_alu" 1
   (and (eq_attr "tune" "sifive_8")
-       (eq_attr "type" "unknown,arith,logical,shift,slt,move,multi,bitmanip"))
+       (eq_attr "type" "unknown,arith,logical,shift,slt,multi,bitmanip"))
   "int_pipe+sifive_8_ialu")
 
 (define_insn_reservation "sifive_8_cpop" 3
@@ -139,8 +139,8 @@
 
 (define_insn_reservation "sifive_8_load_immediate" 1
   (and (eq_attr "tune" "sifive_8")
-       (eq_attr "type" "nop,const,auipc"))
-  "int_pipe+sifive_8_ialu")
+       (eq_attr "type" "nop,const,auipc,move"))
+  "int_pipe")
 
 (define_insn_reservation "sifive_8_fma" 4
   (and (eq_attr "tune" "sifive_8")
