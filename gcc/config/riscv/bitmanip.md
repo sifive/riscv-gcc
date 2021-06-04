@@ -36,7 +36,7 @@
 		(match_operand:X 3 "register_operand" "r")))]
   "TARGET_ZBA"
   "sh%2add\t%0,%1,%3"
-  [(set_attr "type" "bitmanip")
+  [(set_attr "type" "shnadd")
    (set_attr "mode" "<X:MODE>")])
 
 ; When using strength-reduction, we will reduce a multiplication to a
@@ -116,7 +116,7 @@
   "TARGET_64BIT && TARGET_ZBA
    && (INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff"
   "sh%2add.uw\t%0,%1,%4"
-  [(set_attr "type" "bitmanip")
+  [(set_attr "type" "shnadd")
    (set_attr "mode" "DI")])
 
 ;; During combine, we may encounter an attempt to combine
@@ -352,7 +352,7 @@
 		     (match_operand:QI 2 "arith_operand" "rI")))]
   "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
   "ror%i2\t%0,%1,%2"
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "rotate")])
 
 (define_insn "rotrsi3_sext"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -360,7 +360,7 @@
                                  (match_operand:QI 2 "arith_operand" "rI"))))]
   "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
   "ror%i2%~\t%0,%1,%2"
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "rotate")])
 
 (define_insn "*rotlsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -368,7 +368,7 @@
 		   (match_operand:QI 2 "register_operand" "r")))]
   "TARGET_ZBB || TARGET_ZBKB"
   "rol%~\t%0,%1,%2"
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "rotate")])
 
 (define_expand "rotlsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -394,7 +394,7 @@
 		   (match_operand:QI 2 "register_operand" "r")))]
   "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
   "rol\t%0,%1,%2"
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "rotate")])
 
 (define_insn "rotlsi3_sext"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -402,7 +402,7 @@
 				   (match_operand:QI 2 "register_operand" "r"))))]
   "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
   "rolw\t%0,%1,%2"
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "rotate")])
 
 (define_insn_and_split "*<bitmanip_optab><GPR:mode>3_mask"
   [(set (match_operand:GPR     0 "register_operand" "= r")
@@ -419,7 +419,7 @@
         (bitmanip_rotate:GPR (match_dup 1)
                              (match_dup 2)))]
   "operands[2] = gen_lowpart (QImode, operands[2]);"
-  [(set_attr "type" "bitmanip")
+  [(set_attr "type" "rotate")
    (set_attr "mode" "<GPR:MODE>")])
 
 (define_insn_and_split "*<bitmanip_optab>si3_sext_mask"
@@ -437,7 +437,7 @@
   (sign_extend:DI (bitmanip_rotate:SI (match_dup 1)
                            (match_dup 2))))]
   "operands[2] = gen_lowpart (QImode, operands[2]);"
-  [(set_attr "type" "bitmanip")
+  [(set_attr "type" "rotate")
    (set_attr "mode" "DI")])
 
 ;; orc.b (or-combine) is added as an unspec for the benefit of the support

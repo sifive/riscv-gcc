@@ -49,7 +49,7 @@
 
 (define_insn_reservation "sifive_7_mul" 3
   (and (eq_attr "tune" "sifive_7")
-       (eq_attr "type" "imul"))
+       (eq_attr "type" "imul,cpop"))
   "sifive_7_B")
 
 (define_insn_reservation "sifive_7_div" 16
@@ -62,6 +62,11 @@
        (eq_attr "type" "unknown,arith,shift,slt,multi,logical,move,bitmanip,\
 			rotate,min,max,minu,maxu,clz,ctz,atomic,condmove,mvpair,zicond"))
   "sifive_7_A|sifive_7_B")
+
+(define_insn_reservation "sifive_7_alu_b" 2
+  (and (eq_attr "tune" "sifive_7")
+       (eq_attr "type" "shnadd,clz,ctz,rotate"))
+  "sifive_7_B")
 
 (define_insn_reservation "sifive_7_load_immediate" 1
   (and (eq_attr "tune" "sifive_7")
@@ -91,6 +96,12 @@
        (eq_attr "type" "fcvt,fcvt_i2f,fcvt_f2i,fcmp,fmove"))
   "sifive_7_B")
 
+(define_insn_reservation "sifive_7_fdiv_h" 14
+  (and (eq_attr "tune" "sifive_7")
+       (eq_attr "type" "fdiv,fsqrt")
+       (eq_attr "mode" "HF"))
+  "sifive_7_B,sifive_7_fpu*13")
+
 (define_insn_reservation "sifive_7_fdiv_s" 27
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "fdiv,fsqrt")
@@ -119,13 +130,13 @@
        (eq_attr "type" "cpop,clmul"))
   "sifive_7_A")
 
-(define_bypass 1 "sifive_7_load,sifive_7_alu,sifive_7_mul,sifive_7_f2i,sifive_7_sfb_alu"
-  "sifive_7_alu,sifive_7_branch")
+(define_bypass 1 "sifive_7_load,sifive_7_alu,sifive_7_alu_b,sifive_7_mul,sifive_7_f2i,sifive_7_sfb_alu"
+  "sifive_7_alu,sifive_7_alu_b,sifive_7_branch")
 
-(define_bypass 1 "sifive_7_alu,sifive_7_sfb_alu"
+(define_bypass 1 "sifive_7_alu,sifive_7_alu_b,sifive_7_sfb_alu"
   "sifive_7_sfb_alu")
 
-(define_bypass 1 "sifive_7_load,sifive_7_alu,sifive_7_mul,sifive_7_f2i,sifive_7_sfb_alu"
+(define_bypass 1 "sifive_7_load,sifive_7_alu,sifive_7_alu_b,sifive_7_mul,sifive_7_f2i,sifive_7_sfb_alu"
   "sifive_7_store" "riscv_store_data_bypass_p")
 
 (define_bypass 2 "sifive_7_i2f"
@@ -135,7 +146,7 @@
   "sifive_7_sfma,sifive_7_dfma,sifive_7_fp_other,sifive_7_fdiv_s,sifive_7_fdiv_d")
 
 (define_bypass 2 "sifive_7_fp_other"
-  "sifive_7_alu,sifive_7_branch")
+  "sifive_7_alu,sifive_7_alu_b,sifive_7_branch")
 
 (define_bypass 2 "sifive_7_fp_other"
   "sifive_7_store" "riscv_store_data_bypass_p")
