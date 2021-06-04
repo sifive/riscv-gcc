@@ -286,7 +286,7 @@
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
    fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,atomic,vector,
-   bitmanip,cpop,fcvt_i2f,fcvt_f2i"
+   bitmanip,cpop,clz,ctz,rotate,shnadd,fcvt_i2f,fcvt_f2i"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,

@@ -129,7 +129,7 @@
 
 (define_insn_reservation "sifive_8_alu" 1
   (and (eq_attr "tune" "sifive_8")
-       (eq_attr "type" "unknown,arith,logical,shift,slt,multi,bitmanip"))
+       (eq_attr "type" "unknown,arith,logical,shift,slt,multi,bitmanip,clz,ctz,rotate,shnadd"))
   "int_pipe+sifive_8_ialu")
 
 (define_insn_reservation "sifive_8_cpop" 3

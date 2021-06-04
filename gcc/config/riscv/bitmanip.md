@@ -37,8 +37,8 @@
 				 (ctz "ctz")
 				 (popcount "cpop")])
 
-(define_code_attr bitmanip_type [(clz "bitmanip")
-				 (ctz "bitmanip")
+(define_code_attr bitmanip_type [(clz "clz")
+				 (ctz "ctz")
 				 (popcount "cpop")])
 
 (define_mode_attr shiftm1 [(SI "const31_operand") (DI "const63_operand")])
@@ -305,7 +305,7 @@
 		     (match_operand:QI 2 "arith_operand" "rI")))]
   "TARGET_ZBB || TARGET_ZBP"
   { return TARGET_64BIT ? "ror%i2w\t%0,%1,%2" : "ror%i2\t%0,%1,%2"; }
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "rotate")])
 
 (define_insn "rotrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -313,7 +313,7 @@
 		     (match_operand:QI 2 "arith_operand" "rI")))]
   "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBP)"
   "ror%i2\t%0,%1,%2"
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "rotate")])
 
 (define_expand "riscv_rolw"
   [(match_operand:SI 0 "register_operand" "=r")
@@ -331,7 +331,7 @@
 		   (match_operand:QI 2 "register_operand" "r")))]
   "TARGET_ZBB || TARGET_ZBP"
   { return TARGET_64BIT ? "rolw\t%0,%1,%2" : "rol\t%0,%1,%2"; }
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "rotate")])
 
 (define_insn "rotldi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -339,7 +339,7 @@
 		   (match_operand:QI 2 "register_operand" "r")))]
   "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBP)"
   "rol\t%0,%1,%2"
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "rotate")])
 
 (define_insn "rotlsi3_sext"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -347,7 +347,7 @@
 				   (match_operand:QI 2 "register_operand" "r"))))]
   "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBP)"
   "rolw\t%0,%1,%2"
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "rotate")])
 
 ;;; ??? grev
 
@@ -397,7 +397,7 @@
   "TARGET_ZBA
    && (INTVAL (operands[2]) >= 1) && (INTVAL (operands[2]) <= 3)"
   "sh%2add\t%0,%1,%3"
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "shnadd")])
 
 (define_insn "*shNadduw"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -410,7 +410,7 @@
    && (INTVAL (operands[2]) >= 1) && (INTVAL (operands[2]) <= 3)
    && (INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff"
   "sh%2add.uw\t%0,%1,%4"
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "shnadd")])
 
 (define_insn "*add.uw"
   [(set (match_operand:DI 0 "register_operand" "=r")
