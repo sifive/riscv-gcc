@@ -675,22 +675,24 @@ riscv_classify_symbol (const_rtx x)
     {
       if (GET_CODE (x) == SYMBOL_REF)
 	{
-	  if (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_FUNCTION)
-	    if (riscv_symbol_binds_local_p (x))
-	      return SYMBOL_PCREL;
-	    else
+	  if (SYMBOL_REF_WEAK (x))
+	    {
 	      return SYMBOL_GOT_GPREL;
-	  /* Use GOT_GPREL if the symbol is a weak reference,
- 	     and the symbol is not locally-binding.  */
-	  else if (SYMBOL_REF_WEAK (x) && !riscv_symbol_binds_local_p (x))
-	    return SYMBOL_GOT_GPREL;
+	    }
+	  else if (SYMBOL_REF_FUNCTION_P (x))
+	    {
+	      if (riscv_symbol_binds_local_p (x))
+		return SYMBOL_PCREL;
+	      else
+		return SYMBOL_GOT_GPREL;
+	    }
 	  else
-	    return SYMBOL_GPREL;
+	    return SYMBOL_GOT_GPREL;
 	}
       else
 	{
 	  gcc_assert (GET_CODE (x) == LABEL_REF);
-	  return SYMBOL_GPREL;
+	  return SYMBOL_GOT_GPREL;
 	}
     }
 
