@@ -352,10 +352,15 @@
 ;;; ??? grev
 
 (define_insn "bswapsi2"
-  [(set (match_operand:SI 0 "register_operand")
-	(bswap:SI (match_operand:SI 1 "register_operand")))]
-  "TARGET_ZBP || (TARGET_ZBB && !TARGET_64BIT)"
-  { return TARGET_64BIT ? "greviw\t%0,%1,0x18" : "rev8\t%0,%1"; }
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (bswap:SI (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_ZBB || TARGET_ZBP"
+{
+  if (TARGET_64BIT)
+    return TARGET_ZBB ? "rev8\t%0,%1\n\tsrai\t%0,%0,32" : "rev8.w\t%0,%1";
+  else
+    return "rev8\t%0,%1";
+}
   [(set_attr "type" "bitmanip")])
 
 (define_insn "bswapdi2"
