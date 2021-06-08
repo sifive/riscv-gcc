@@ -1467,25 +1467,25 @@ riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out,
 	  compact_code_needed = true;
 	  crtl->uses_pic_offset_table = 1;
 
-	  rtx insn = NULL_RTX;
-	  rtx high = gen_rtx_HIGH (Pmode, copy_rtx (addr));
-	  high = riscv_force_temporary (temp, high, in_splitter);
-	  rtx mem = gen_rtx_MEM (Pmode, gen_rtx_LO_SUM (Pmode, high, addr));
+	  if (temp == NULL)
+	    temp = gen_reg_rtx (Pmode);
 
 	  if (Pmode == DImode)
-	    insn = emit_insn (gen_got_gprel_adddi (high, high,
-						   pic_offset_table_rtx,
-						   addr));
+	    emit_insn (gen_ladi_got_gprel(temp,
+					  pic_offset_table_rtx,
+					  addr));
 	  else
-	    insn = emit_insn (gen_got_gprel_addsi (high, high,
-						   pic_offset_table_rtx,
-						   addr));
+	    emit_insn (gen_lasi_got_gprel (temp,
+					   pic_offset_table_rtx,
+					   addr));
 
-	  set_unique_reg_note (insn, REG_EQUAL,
-			       gen_rtx_PLUS (Pmode, high,
-					     pic_offset_table_rtx));
-	  emit_move_insn (high, mem);
-	  *low_out = high;
+	  set_unique_reg_note (get_last_insn (), REG_EQUAL,
+			       gen_rtx_MEM (Pmode,
+					    gen_rtx_PLUS (Pmode,
+							  pic_offset_table_rtx,
+							  addr)));
+
+	  *low_out = temp;
 	}
 	break;
 

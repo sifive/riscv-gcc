@@ -1521,16 +1521,15 @@
   [(set_attr "type" "multi")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "got_gprel_add<mode>"
-  [(set (match_operand:P    0 "register_operand" "=r")
+(define_insn "la<mode>_got_gprel"
+  [(set (match_operand:P    0 "register_operand" "=&r")
 	(unspec:P
 	  [(match_operand:P 1 "register_operand" "r")
-	   (match_operand:P 2 "register_operand" "r")
-	   (match_operand:P 3 "symbolic_operand" "")]
+	   (match_operand:P 2 "symbolic_operand" "")]
 	  UNSPEC_GOT_GPREL))]
   "COMPACT_CMODEL_P"
-  "add\t%0,%2,%1,%%got_gprel(%3)"
-  [(set_attr "type" "arith")
+  "la.got.gprel\t%0,%2,%1"
+  [(set_attr "type" "multi")
    (set_attr "mode" "<MODE>")])
 
 ;; Split lui and addi instructions,
