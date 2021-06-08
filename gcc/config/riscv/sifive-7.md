@@ -133,10 +133,10 @@
   "sifive_7_store" "riscv_store_data_bypass_p")
 
 (define_bypass 2 "sifive_7_i2f"
-  "sifive_7_sfma,sifive_7_dfma,sifive_7_fp_other,sifive_7_fdiv_s,sifive_7_fdiv_d")
+  "sifive_7_sfma,sifive_7_dfma,sifive_7_fp_other,sifive_7_fdiv_h,sifive_7_fdiv_s,sifive_7_fdiv_d")
 
 (define_bypass 2 "sifive_7_fp_other"
-  "sifive_7_sfma,sifive_7_dfma,sifive_7_fp_other,sifive_7_fdiv_s,sifive_7_fdiv_d")
+  "sifive_7_sfma,sifive_7_dfma,sifive_7_fp_other,sifive_7_fdiv_h,sifive_7_fdiv_s,sifive_7_fdiv_d")
 
 (define_bypass 2 "sifive_7_fp_other"
   "sifive_7_alu,sifive_7_alu_b,sifive_7_branch")
