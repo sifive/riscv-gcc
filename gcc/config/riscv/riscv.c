@@ -5187,6 +5187,47 @@ riscv_store_data_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
   return store_data_bypass_p (out_insn, in_insn);
 }
 
+/* Return TRUE if OUT_INSN produces a register value that is used as an
+   address in IN_INSN, and the address has a zero imnmediate offset.  */
+
+bool
+riscv_zero_offset_address_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
+{
+  rtx out_set, in_set;
+  rtx out_reg;
+  rtx in_mem, in_addr;
+
+  /* Check for a register destination for out_insn.  */
+  out_set = single_set (out_insn);
+  if (! out_set)
+    return false;
+  out_reg = SET_DEST (out_set);
+  if (GET_CODE (out_reg) == SUBREG)
+    out_reg = SUBREG_REG (out_reg);
+  if (GET_CODE (out_reg) != REG)
+    return false;
+
+  /* Check for a zero-offset load or store address for in_insn.  */
+  in_set = single_set (in_insn);
+  if (! in_set)
+    return false;
+  in_mem = SET_SRC (in_set);
+  if (GET_CODE (in_mem) != MEM)
+    {
+      in_mem = SET_DEST (in_set);
+      if (GET_CODE (in_mem) != MEM)
+	return false;
+    }
+
+  in_addr = XEXP (in_mem, 0);
+  if (GET_CODE (in_addr) == SUBREG)
+    in_addr = SUBREG_REG (in_addr);
+  if (GET_CODE (in_addr) != REG)
+    return false;
+
+  return REGNO (out_reg) == REGNO (in_addr);
+}
+
 /* Implement TARGET_SECONDARY_MEMORY_NEEDED.
 
    When floating-point registers are wider than integer ones, moves between
