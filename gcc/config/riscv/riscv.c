@@ -227,6 +227,9 @@ struct riscv_integer_op {
    The worst case is LUI, ADDI, SLLI, ADDI, SLLI, ADDI, SLLI, ADDI.  */
 #define RISCV_MAX_INTEGER_OPS 8
 
+/* Extra pipeline tuning info.  */
+#define TUNE_BYPASS_LOAD_TO_STORE (1 << 0)
+
 /* Costs of various operations on the different architectures.  */
 
 struct riscv_tune_param
@@ -240,6 +243,10 @@ struct riscv_tune_param
   unsigned short branch_cost;
   unsigned short memory_cost;
   bool slow_unaligned_access;
+
+  /* Extra pipeline tuning info, refer to TURN_* marcos for the meaning of each
+     bit.  */
+  unsigned HOST_WIDE_INT extra_tune_features;
 };
 
 /* Information about one micro-arch we know about.  */
@@ -323,6 +330,7 @@ static const struct riscv_tune_param rocket_tune_info = {
   3,						/* branch_cost */
   5,						/* memory_cost */
   true,						/* slow_unaligned_access */
+  0,						/* extra_tune_features */
 };
 
 /* Costs to use when optimizing for Sifive 7 Series.  */
@@ -336,7 +344,23 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   4,						/* branch_cost */
   3,						/* memory_cost */
   true,						/* slow_unaligned_access */
+  0,						/* extra_tune_features */
 };
+
+/* Costs to use when optimizing for Sifive 7m Series.  */
+static const struct riscv_tune_param sifive_7m_tune_info = {
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_add */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_mul */
+  {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* int_mul */
+  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
+  2,						/* issue_rate */
+  4,						/* branch_cost */
+  3,						/* memory_cost */
+  true,						/* slow_unaligned_access */
+  TUNE_BYPASS_LOAD_TO_STORE,			/* extra_tune_features */
+};
+
 
 /* Costs to use when optimizing for Sifive 8 Series.  */
 static const struct riscv_tune_param sifive_8_tune_info = {
@@ -349,6 +373,7 @@ static const struct riscv_tune_param sifive_8_tune_info = {
   4,						/* branch_cost */
   3,						/* memory_cost */
   true,						/* slow_unaligned_access */
+  0,						/* extra_tune_features */
 };
 
 /* Costs to use when optimizing for size.  */
@@ -362,6 +387,7 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   1,						/* branch_cost */
   2,						/* memory_cost */
   false,					/* slow_unaligned_access */
+  0,						/* extra_tune_features */
 };
 
 /* The number of 64-bit elements in an RVV vector.  */
@@ -402,6 +428,7 @@ static const struct riscv_tune_info riscv_tune_info_table[] = {
   { "sifive-3-series", generic, &rocket_tune_info },
   { "sifive-5-series", generic, &rocket_tune_info },
   { "sifive-7-series", sifive_7, &sifive_7_tune_info },
+  { "sifive-7m-series", sifive_7, &sifive_7m_tune_info },
   { "sifive-8-series", sifive_8, &sifive_8_tune_info },
   { "size", generic, &optimize_size_tune_info },
 };
@@ -5196,6 +5223,9 @@ riscv_zero_offset_address_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
   rtx out_set, in_set;
   rtx out_reg;
   rtx in_mem, in_addr;
+
+  if (!(tune_param->extra_tune_features & TUNE_BYPASS_LOAD_TO_STORE))
+    return false;
 
   /* Check for a register destination for out_insn.  */
   out_set = single_set (out_insn);
