@@ -1257,7 +1257,9 @@ ANALYZER_OBJS = \
 # the last objects to finish building.
 
 # target overrides
--include $(tmake_file)
+ifneq ($(tmake_file),)
+include $(tmake_file)
+endif
 
 INSN-GENERATED-SPLIT-NUM ?= 0
 
@@ -1781,11 +1783,6 @@ endif
 
 # target and host overrides must follow the per-language makefile fragments
 # so they can override or augment language-specific variables
-
-# target overrides
-ifneq ($(tmake_file),)
-include $(tmake_file)
-endif
 
 # host overrides
 ifneq ($(xmake_file),)
