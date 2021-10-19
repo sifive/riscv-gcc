@@ -13,120 +13,125 @@
 (define_cpu_unit "sifive_7_fpu" "sifive_7")
 
 (define_insn_reservation "sifive_7_load" 3
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "load"))
   "sifive_7_A")
 
 (define_insn_reservation "sifive_7_fpload" 2
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "fpload"))
   "sifive_7_A")
 
 (define_insn_reservation "sifive_7_store" 1
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "store"))
   "sifive_7_A")
 
 (define_insn_reservation "sifive_7_fpstore" 1
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "fpstore"))
   "sifive_7_A")
 
 (define_insn_reservation "sifive_7_branch" 1
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "branch,ret,trap"))
   "sifive_7_B")
 
 (define_insn_reservation "sifive_7_sfb_alu" 2
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "sfb_alu"))
   "sifive_7_A+sifive_7_B")
 
 (define_insn_reservation "sifive_7_jump" 1
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "jump,call,jalr"))
   "sifive_7_B")
 
 (define_insn_reservation "sifive_7_mul" 3
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "imul,cpop"))
   "sifive_7_B")
 
 (define_insn_reservation "sifive_7_div" 16
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "idiv"))
   "sifive_7_B,sifive_7_idiv*15")
 
 (define_insn_reservation "sifive_7_alu" 2
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "unknown,arith,shift,slt,multi,logical,move,bitmanip,\
 			rotate,min,max,minu,maxu,clz,ctz,atomic,condmove,mvpair,zicond"))
   "sifive_7_A|sifive_7_B")
 
 (define_insn_reservation "sifive_7_alu_b" 2
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "shnadd,clz,ctz,rotate"))
   "sifive_7_B")
 
 (define_insn_reservation "sifive_7_load_immediate" 1
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "nop,const,auipc"))
   "sifive_7_A|sifive_7_B")
 
 (define_insn_reservation "sifive_7_hfma" 5
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (and (eq_attr "type" "fadd,fmul,fmadd")
 	    (eq_attr "mode" "HF")))
   "sifive_7_B")
 
 (define_insn_reservation "sifive_7_sfma" 5
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (and (eq_attr "type" "fadd,fmul,fmadd")
 	    (eq_attr "mode" "SF")))
   "sifive_7_B")
 
 (define_insn_reservation "sifive_7_dfma" 7
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (and (eq_attr "type" "fadd,fmul,fmadd")
 	    (eq_attr "mode" "DF")))
   "sifive_7_B")
 
+(define_insn_reservation "sifive_7n_fma" 4
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
+       (eq_attr "type" "fadd,fmul,fmadd"))
+  "sifive_7_B")
+
 (define_insn_reservation "sifive_7_fp_other" 3
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "fcvt,fcvt_i2f,fcvt_f2i,fcmp,fmove"))
   "sifive_7_B")
 
 (define_insn_reservation "sifive_7_fdiv_h" 14
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "fdiv,fsqrt")
        (eq_attr "mode" "HF"))
   "sifive_7_B,sifive_7_fpu*13")
 
 (define_insn_reservation "sifive_7_fdiv_s" 27
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "fdiv,fsqrt")
        (eq_attr "mode" "SF"))
   "sifive_7_B,sifive_7_fpu*26")
 
 (define_insn_reservation "sifive_7_fdiv_d" 56
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "fdiv,fsqrt")
        (eq_attr "mode" "DF"))
   "sifive_7_B,sifive_7_fpu*55")
 
 (define_insn_reservation "sifive_7_i2f" 3
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "mtc"))
   "sifive_7_A")
 
 (define_insn_reservation "sifive_7_f2i" 3
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "mfc"))
   "sifive_7_A")
 
 ;; Popcount and clmul.
 (define_insn_reservation "sifive_7_popcount" 2
-  (and (eq_attr "tune" "sifive_7")
+  (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "cpop,clmul"))
   "sifive_7_A")
 
@@ -143,10 +148,10 @@
   "sifive_7_load,sifive_7_store" "riscv_zero_offset_address_bypass_p")
 
 (define_bypass 2 "sifive_7_i2f"
-  "sifive_7_sfma,sifive_7_dfma,sifive_7_fp_other,sifive_7_fdiv_h,sifive_7_fdiv_s,sifive_7_fdiv_d")
+  "sifive_7_sfma,sifive_7_dfma,sifive_7_fp_other,sifive_7_fdiv_h,sifive_7_fdiv_s,sifive_7_fdiv_d,sifive_7n_fma")
 
 (define_bypass 2 "sifive_7_fp_other"
-  "sifive_7_sfma,sifive_7_dfma,sifive_7_fp_other,sifive_7_fdiv_h,sifive_7_fdiv_s,sifive_7_fdiv_d")
+  "sifive_7_sfma,sifive_7_dfma,sifive_7_fp_other,sifive_7_fdiv_h,sifive_7_fdiv_s,sifive_7_fdiv_d,sifive_7n_fma")
 
 (define_bypass 2 "sifive_7_fp_other"
   "sifive_7_alu,sifive_7_alu_b,sifive_7_branch")
