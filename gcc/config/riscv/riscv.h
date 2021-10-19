@@ -963,6 +963,7 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
 
 #define TARGET_SFB_ALU \
  ((riscv_microarchitecture == sifive_7) \
+  || (riscv_microarchitecture == sifive_7n) \
   || (riscv_microarchitecture == sifive_p400) \
   || (riscv_microarchitecture == sifive_p600))
 

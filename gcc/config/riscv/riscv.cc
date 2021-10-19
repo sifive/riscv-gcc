@@ -293,6 +293,9 @@ enum riscv_fusion_pairs
   RISCV_FUSE_ALIGNED_STD = (1 << 9),
 };
 
+/* Extra pipeline tuning info.  */
+#define TUNE_BYPASS_LOAD_TO_STORE (1 << 0)
+
 /* Costs of various operations on the different architectures.  */
 
 struct riscv_tune_param
@@ -315,6 +318,9 @@ struct riscv_tune_param
   const char *function_align;
   const char *jump_align;
   const char *loop_align;
+  /* Extra pipeline tuning info, refer to TURN_* marcos for the meaning of each
+     bit.  */
+  unsigned HOST_WIDE_INT extra_tune_features;
 };
 
 
@@ -480,6 +486,7 @@ static const struct riscv_tune_param rocket_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  0,						/* extra_tune_features */
 };
 
 /* Costs to use when optimizing for Sifive 7 Series.  */
@@ -502,6 +509,30 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  0,						/* extra_tune_features */
+};
+
+/* Costs to use when optimizing for Sifive 7n Series.  */
+static const struct riscv_tune_param sifive_7n_tune_info = {
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* fp_add */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* fp_mul */
+  {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* int_mul */
+  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
+  2,						/* issue_rate */
+  4,						/* branch_cost */
+  3,						/* memory_cost */
+  4,						/* fmv_cost */
+  true,						/* slow_unaligned_access */
+  false,					/* vector_unaligned_access */
+  false,					/* use_divmod_expansion */
+  false,					/* overlap_op_by_pieces */
+  RISCV_FUSE_NOTHING,                           /* fusible_ops */
+  NULL,						/* vector cost */
+  NULL,						/* function_align */
+  NULL,						/* jump_align */
+  NULL,						/* loop_align */
+  TUNE_BYPASS_LOAD_TO_STORE,			/* extra_tune_features */
 };
 
 /* Costs to use when optimizing for Sifive p400 Series.  */
@@ -524,6 +555,7 @@ static const struct riscv_tune_param sifive_p400_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  0,						/* extra_tune_features */
 };
 
 /* Costs to use when optimizing for Sifive p600 Series.  */
@@ -546,6 +578,7 @@ static const struct riscv_tune_param sifive_p600_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  0,						/* extra_tune_features */
 };
 
 /* Costs to use when optimizing for T-HEAD c906.  */
@@ -568,6 +601,7 @@ static const struct riscv_tune_param thead_c906_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  0,						/* extra_tune_features */
 };
 
 /* Costs to use when optimizing for xiangshan nanhu.  */
@@ -590,6 +624,7 @@ static const struct riscv_tune_param xiangshan_nanhu_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  0,						/* extra_tune_features */
 };
 
 /* Costs to use when optimizing for a generic ooo profile.  */
@@ -612,6 +647,7 @@ static const struct riscv_tune_param generic_ooo_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  0,						/* extra_tune_features */
 };
 
 /* Costs to use when optimizing for Tenstorrent Ascalon 8 wide.  */
@@ -634,6 +670,7 @@ static const struct riscv_tune_param tt_ascalon_d8_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  0,						/* extra_tune_features */
 };
 
 /* Costs to use when optimizing for size.  */
@@ -656,6 +693,7 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  0,						/* extra_tune_features */
 };
 
 static bool riscv_avoid_shrink_wrapping_separate ();
@@ -9910,6 +9948,9 @@ riscv_zero_offset_address_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
   rtx out_set, in_set;
   rtx out_reg;
   rtx in_mem, in_addr;
+
+  if (!(tune_param->extra_tune_features & TUNE_BYPASS_LOAD_TO_STORE))
+    return false;
 
   /* Check for a register destination for out_insn.  */
   out_set = single_set (out_insn);

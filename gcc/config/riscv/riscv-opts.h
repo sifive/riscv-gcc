@@ -58,6 +58,7 @@ extern enum riscv_isa_spec_class riscv_isa_spec;
 enum riscv_microarchitecture_type {
   generic,
   sifive_7,
+  sifive_7n,
   sifive_p400,
   sifive_p600,
   xiangshan,
