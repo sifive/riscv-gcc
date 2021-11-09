@@ -43,6 +43,10 @@ int main () {
 #error "__riscv_v"
 #endif
 
+#if !defined(__riscv_vector)
+#error "__riscv_vector"
+#endif
+
 #if !defined(__riscv_zvl32b)
 #error "__riscv_zvl32b"
 #endif
