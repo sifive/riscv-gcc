@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "flags.h"
 #include "diagnostic-core.h"
+#include "diagnostic.h"
 #include "config/riscv/riscv-protos.h"
 #include "config/riscv/riscv-subset.h"
 
@@ -246,6 +247,7 @@ struct riscv_ext_version
 static const struct riscv_ext_version riscv_ext_version_table[] =
 {
   /* name, ISA spec, major version, minor_version.  */
+  {"g", ISA_SPEC_CLASS_NONE, 0, 0},
   {"e", ISA_SPEC_CLASS_20191213, 2, 0},
   {"e", ISA_SPEC_CLASS_20190608, 2, 0},
   {"e", ISA_SPEC_CLASS_2P2,      2, 0},
@@ -517,11 +519,20 @@ riscv_subset_t::riscv_subset_t ()
 {
 }
 
-riscv_subset_list::riscv_subset_list (const char *arch, location_t loc)
+riscv_subset_list::riscv_subset_list (const char *arch, location_t loc,
+				      bool diag_ready)
   : m_arch (arch), m_loc (loc), m_head (NULL), m_tail (NULL), m_xlen (0),
-    m_subset_num (0)
+    m_subset_num (0),
+    m_diag_ready (diag_ready),
+    m_warn_implicit_version_for_unratifed_ext (false),
+    m_allow_unratifed_ext (false)
 {
-}
+  if (m_diag_ready)
+    {
+      m_warn_implicit_version_for_unratifed_ext = warn_drv_require_ext_version;
+      m_allow_unratifed_ext = riscv_enable_exp_ext;
+    }
+ }
 
 riscv_subset_list::~riscv_subset_list ()
 {
@@ -826,10 +837,23 @@ riscv_subset_list::add (const char *subset, int major_version,
   m_tail = s;
 }
 
+static enum riscv_isa_spec_class
+get_isa_spec_class (const char *ext, int major_version,
+		    int minor_version)
+{
+  const riscv_ext_version *ext_ver;
+  for (ext_ver = &riscv_ext_version_table[0]; ext_ver->name != NULL; ++ext_ver)
+    if ((strcmp (ext, ext_ver->name) == 0)
+	&& ext_ver->major_version == major_version
+	&& ext_ver->minor_version == minor_version)
+      return ext_ver->isa_spec_class;
+  return ISA_SPEC_CLASS_UNKNOWN;
+}
+
 static void
-get_default_version (const char *ext,
-		     unsigned int *major_version,
-		     unsigned int *minor_version)
+get_default_version (const char *ext, unsigned int *major_version,
+		     unsigned int *minor_version,
+		     enum riscv_isa_spec_class *isa_spec_class)
 {
   const riscv_ext_version *ext_ver;
   for (ext_ver = &riscv_ext_version_table[0];
@@ -837,11 +861,14 @@ get_default_version (const char *ext,
        ++ext_ver)
     if (strcmp (ext, ext_ver->name) == 0)
       {
-	if ((ext_ver->isa_spec_class == riscv_isa_spec) ||
-	    (ext_ver->isa_spec_class == ISA_SPEC_CLASS_NONE))
+	if ((ext_ver->isa_spec_class == riscv_isa_spec)
+	    || (ext_ver->isa_spec_class == ISA_SPEC_CLASS_NONE)
+	    || (ext_ver->isa_spec_class == ISA_SPEC_CLASS_UNRATIFIED))
 	  {
 	    *major_version = ext_ver->major_version;
 	    *minor_version = ext_ver->minor_version;
+	    if (isa_spec_class)
+	      *isa_spec_class = ext_ver->isa_spec_class;
 	    return;
 	  }
       }
@@ -858,7 +885,7 @@ riscv_subset_list::add (const char *subset, bool implied_p)
 {
   unsigned int major_version = 0, minor_version = 0;
 
-  get_default_version (subset, &major_version, &minor_version);
+  get_default_version (subset, &major_version, &minor_version, NULL);
 
   add (subset, major_version, minor_version, false, implied_p);
 }
@@ -1060,14 +1087,55 @@ riscv_subset_list::parsing_subset_version (const char *ext,
   else
     minor = version;
 
+  enum riscv_isa_spec_class isa_spec_class = ISA_SPEC_CLASS_UNKNOWN;
+  bool implicit_version = false;
   if (major == 0 && minor == 0)
-    get_default_version (ext, major_version, minor_version);
+    {
+    get_default_version (ext, major_version, minor_version, &isa_spec_class);
+    if (isa_spec_class == ISA_SPEC_CLASS_UNRATIFIED)
+      implicit_version = true;
+    }
   else
     {
-      *explicit_version_p = true;
-      *major_version = major;
-      *minor_version = minor;
+    isa_spec_class = get_isa_spec_class (ext, major, minor);
+    bool found = false;
+
+    const riscv_ext_version *ext_ver;
+    for (ext_ver = &riscv_ext_version_table[0]; ext_ver->name != NULL;
+	 ++ext_ver)
+      if (strcmp (ext, ext_ver->name) == 0)
+	{
+	  if (ext_ver->major_version == major
+	      && ext_ver->minor_version == minor)
+	    found = true;
+	}
+
+    *explicit_version_p = true;
+    *major_version = major;
+    *minor_version = minor;
+    if (!found)
+      {
+	error_at ("%<-march=%s%>: unsupported version number %<%d.%d%> for "
+		  "extension %<%s%>",
+		  m_arch, major, minor, ext);
+	return p;
+      }
     }
+  if (isa_spec_class == ISA_SPEC_CLASS_UNKNOWN)
+    {
+    error_at ("%<-march=%s%>: unsupported extension %<%s%>", m_arch, ext);
+    return p;
+    }
+
+  if (implicit_version && warn_drv_require_ext_version)
+    {
+    warning_at (m_loc, 0,
+		"%<-march=%s%>: extension %<%s%> is experimental and requires "
+		"explicit version; assuming "
+		"version %<%d.%d%>",
+		m_arch, ext, *major_version, *minor_version);
+    }
+
   return p;
 }
 
@@ -1483,12 +1551,13 @@ riscv_subset_list::parse_single_ext (const char *p, bool exact_single_p)
 /* Parsing arch string to subset list, return NULL if parsing failed.  */
 
 riscv_subset_list *
-riscv_subset_list::parse (const char *arch, location_t loc)
+riscv_subset_list::parse (const char *arch, location_t loc, bool diag_ready)
 {
   if (riscv_subset_list::parse_failed)
     return NULL;
 
-  riscv_subset_list *subset_list = new riscv_subset_list (arch, loc);
+  riscv_subset_list *subset_list
+    = new riscv_subset_list (arch, loc, diag_ready);
   const char *p = arch;
   p = subset_list->parse_base_ext (p);
   if (p == NULL)
@@ -1944,12 +2013,11 @@ riscv_minimal_hwprobe_feature_bits (const char *isa,
    dependent mask bits, in case more than one -march string is passed.  */
 
 void
-riscv_parse_arch_string (const char *isa,
-			 struct gcc_options *opts,
-			 location_t loc)
+riscv_parse_arch_string (const char *isa, struct gcc_options *opts,
+			 location_t loc, bool diag_ready)
 {
   riscv_subset_list *subset_list;
-  subset_list = riscv_subset_list::parse (isa, loc);
+  subset_list = riscv_subset_list::parse (isa, loc, diag_ready);
   if (!subset_list)
     return;
 
@@ -1987,7 +2055,7 @@ riscv_handle_option (struct gcc_options *opts,
   switch (decoded->opt_index)
     {
     case OPT_march_:
-      riscv_parse_arch_string (decoded->arg, opts, loc);
+      riscv_parse_arch_string (decoded->arg, opts, loc, /* diag_ready */ true);
       return true;
 
     case OPT_mcpu_:
@@ -2007,14 +2075,27 @@ const char *
 riscv_expand_arch (int argc ATTRIBUTE_UNUSED,
 		   const char **argv)
 {
-  gcc_assert (argc == 1);
+  // gcc_assert (argc == 1);
+  const char *arch_str = nullptr;
+  bool x = false;
+  for (int i = 0; i < argc; ++i)
+    {
+      if (argv[i][0] == 'r')
+	arch_str = argv[i];
+      if (strcmp (argv[i], "-menable-experimental-extensions") == 0)
+	riscv_enable_exp_ext = 1;
+      if (strcmp (argv[i], "-Wriscv-implicit-extension-version") == 0)
+	warn_drv_require_ext_version = 1;
+      if (strcmp (argv[i], "-Wno-riscv-implicit-extension-version") == 0)
+	warn_drv_require_ext_version = 0;
+    }
   location_t loc = UNKNOWN_LOCATION;
-  riscv_parse_arch_string (argv[0], NULL, loc);
+  riscv_parse_arch_string (arch_str, NULL, loc, /* diag_ready */ false);
   const std::string arch = riscv_arch_str (false);
   if (arch.length())
     return xasprintf ("-march=%s", arch.c_str());
   else
-    return "";
+    return xasprintf ("-march=%s", arch_str);
 }
 
 /* Expand default -mtune option from -mcpu option, use default --with-tune value
@@ -2058,7 +2139,7 @@ riscv_expand_arch_from_cpu (int argc ATTRIBUTE_UNUSED,
 
   location_t loc = UNKNOWN_LOCATION;
 
-  riscv_parse_arch_string (arch_str, NULL, loc);
+  riscv_parse_arch_string (arch_str, NULL, loc, /* diag_ready */ false);
   const std::string arch = riscv_arch_str (false);
   return xasprintf ("-march=%s", arch.c_str());
 }
@@ -2146,8 +2227,9 @@ riscv_multi_lib_info_t::parse (
 	return false;
     }
 
-  multi_lib_info->subset_list =
-    riscv_subset_list::parse (multi_lib_info->arch_str.c_str (), input_location);
+  multi_lib_info->subset_list
+    = riscv_subset_list::parse (multi_lib_info->arch_str.c_str (),
+				input_location, /*diag_ready*/ false);
 
   return true;
 }
@@ -2336,7 +2418,7 @@ riscv_compute_multilib (
     return multilib_dir;
 
   subset_list = riscv_subset_list::parse (riscv_current_arch_str.c_str (),
-					  input_location);
+					  input_location, /*diag_ready*/ false);
 
   /* Failed to parse -march, fallback to using what gcc use.  */
   if (subset_list == NULL)

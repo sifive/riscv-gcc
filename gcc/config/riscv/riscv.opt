@@ -559,8 +559,12 @@ Common Driver RejectNegative Joined Enum(isa_spec_class) Var(riscv_isa_spec) Ini
 Set the version of RISC-V ISA spec.
 
 menable-experimental-extensions
-Target RejectNegative
+Target RejectNegative Var(riscv_enable_exp_ext) Init(0)
 Enable use of experimental RISC-V extensions.
+
+Wriscv-implicit-extension-version
+Target Var(warn_drv_require_ext_version) Warning Init(0)
+Warn when an experimental extension is not give an explicit version.
 
 mmovcc
 Target Var(TARGET_MOVCC)
