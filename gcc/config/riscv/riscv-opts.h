@@ -47,7 +47,9 @@ enum riscv_isa_spec_class {
 
   ISA_SPEC_CLASS_2P2,
   ISA_SPEC_CLASS_20190608,
-  ISA_SPEC_CLASS_20191213
+  ISA_SPEC_CLASS_20191213,
+  ISA_SPEC_CLASS_UNKNOWN,
+  ISA_SPEC_CLASS_UNRATIFIED
 };
 
 extern enum riscv_isa_spec_class riscv_isa_spec;
