@@ -68,7 +68,12 @@ private:
   /* Number of subsets. */
   unsigned m_subset_num;
 
-  riscv_subset_list (const char *, location_t);
+  bool m_diag_ready;
+
+  bool m_warn_implicit_version_for_unratifed_ext;
+  bool m_allow_unratifed_ext;
+
+  riscv_subset_list (const char *, location_t, bool);
 
   const char *parsing_subset_version (const char *, const char *, unsigned *,
 				      unsigned *, bool, bool *);
@@ -102,7 +107,7 @@ public:
 
   riscv_subset_list *clone () const;
 
-  static riscv_subset_list *parse (const char *, location_t);
+  static riscv_subset_list *parse (const char *, location_t, bool);
   const char *parse_single_ext (const char *, bool exact_single_p = true);
 
   const riscv_subset_t *begin () const {return m_head;};
