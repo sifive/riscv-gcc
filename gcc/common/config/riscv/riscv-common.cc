@@ -1048,11 +1048,15 @@ riscv_subset_list::parsing_subset_version (const char *ext,
 
   if (implicit_version && warn_drv_require_ext_version)
     {
-    warning_at (m_loc, 0,
-		"%<-march=%s%>: extension %<%s%> is experimental and requires "
-		"explicit version; assuming "
-		"version %<%d.%d%>",
-		m_arch, ext, *major_version, *minor_version);
+      if (error_drv_require_ext_version)
+	error_at (m_loc, "%<-march=%s%>: extension %<%s%> is experimental and "
+		  "requires explicit version; assuming version %<%d.%d%>",
+		  m_arch, ext, *major_version, *minor_version);
+      else
+	warning_at (m_loc, 0,
+		    "%<-march=%s%>: extension %<%s%> is experimental and "
+		    "requires explicit version; assuming version %<%d.%d%>",
+		    m_arch, ext, *major_version, *minor_version);
     }
 
   return p;
@@ -1852,6 +1856,8 @@ riscv_expand_arch (int argc ATTRIBUTE_UNUSED,
 	warn_drv_require_ext_version = 1;
       if (strcmp (argv[i], "-Wno-riscv-implicit-extension-version") == 0)
 	warn_drv_require_ext_version = 0;
+      if (strcmp (argv[i], "-Werror=riscv-implicit-extension-version") == 0)
+	error_drv_require_ext_version = 1;
     }
   location_t loc = UNKNOWN_LOCATION;
   riscv_parse_arch_string (arch_str, NULL, loc, /* diag_ready */ false);
