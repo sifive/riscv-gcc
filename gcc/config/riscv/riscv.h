@@ -118,7 +118,8 @@ ASM_MISA_SPEC
 "%{-print-supported-extensions:%:riscv_arch_help()} "			       \
   "%{menable-experimental-extensions:-menable-experimental-extensions} "       \
   "%{!Wno-riscv-implicit-extension-version:-Wriscv-implicit-extension-"        \
-  "version})} "                                                                \
+  "version} "								       \
+"%{Werror=riscv-implicit-extension-version:-Werror=riscv-implicit-extension-version})}"  \
 "%{march=*:%:riscv_expand_arch(%*)} "					       \
 "%{!march=*:%{mcpu=*:%:riscv_expand_arch_from_cpu(%*)}} "
 
