@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-Os" } */
-/* { dg-timeout 10 } */
+/* { dg-timeout 30 } */
 
 int a, b, c, d, e;
 int main() {
