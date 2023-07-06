@@ -6329,6 +6329,7 @@ riscv_asm_output_opcode (FILE *asm_out_file, const char *p)
    'S'	Print shift-index of single-bit mask OP.
    'T'	Print shift-index of inverted single-bit mask OP.
    '~'	Print w if TARGET_64BIT is true; otherwise not print anything.
+   'P'	Print a non-temporal locality hints instruction.
 
    Note please keep this list and the list in riscv.md in sync.  */
 
@@ -6553,6 +6554,26 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	rtx newop = GEN_INT (imm);
 	output_addr_const (file, newop);
 	break;
+      }
+    case 'P':
+      {
+	const char *ntl_hint = NULL;
+	switch (INTVAL (op))
+	  {
+	  case 0:
+	    ntl_hint = "ntl.all";
+	    break;
+	  case 1:
+	    ntl_hint = "ntl.pall";
+	    break;
+	  case 2:
+	    ntl_hint = "ntl.p1";
+	    break;
+	  }
+
+      if (ntl_hint)
+	asm_fprintf (file, "%s\n\t", ntl_hint);
+      break;
       }
     default:
       switch (code)
