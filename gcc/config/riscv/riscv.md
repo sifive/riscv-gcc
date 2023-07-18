@@ -104,6 +104,12 @@
   ;; XTheadFmv unspec
   UNSPEC_XTHEADFMV
   UNSPEC_XTHEADFMV_HW
+
+  ;; CFI
+  UNSPECV_SSPUSH
+  UNSPECV_SSPOPCHK
+  UNSPECV_SSPRR
+  UNSPECV_SSPINC
 ])
 
 (define_constants
@@ -340,6 +346,7 @@
 ;; vgather      vector register gather instructions
 ;; vcompress    vector compress instruction
 ;; vmov         whole vector register move
+;; zicfiss    shadow-stack control flow integrity
 (define_attr "type"
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
@@ -356,7 +363,7 @@
    vired,viwred,vfredu,vfredo,vfwredu,vfwredo,
    vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,
    vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,
-   vgather,vcompress,vmov"
+   vgather,vcompress,vmov,zicfiss"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,
@@ -2954,6 +2961,30 @@
   [(set_attr "length" "0")]
 )
 
+(define_expand "save_stack_nonlocal"
+  [(set (match_operand 0 "memory_operand")
+	(match_operand 1 "register_operand"))]
+  ""
+{
+  rtx stack_slot;
+
+  if (TARGET_ZICFISS)
+    {
+      /* Copy shadow stack pointer to the first slot
+	 and stack pointer to the second slot.  */
+      rtx ssp_slot = adjust_address (operands[0], word_mode, 0);
+      stack_slot = adjust_address (operands[0], Pmode, UNITS_PER_WORD);
+
+      rtx reg_ssp = force_reg (word_mode, const0_rtx);
+      emit_insn (gen_ssprr (word_mode, reg_ssp, reg_ssp));
+      emit_move_insn (ssp_slot, reg_ssp);
+    }
+  else
+    stack_slot = adjust_address (operands[0], Pmode, 0);
+  emit_move_insn (stack_slot, operands[1]);
+  DONE;
+})
+
 ;; This fixes a failure with gcc.c-torture/execute/pr64242.c at -O2 for a
 ;; 32-bit target when using -mtune=sifive-7-series.  The first sched pass
 ;; runs before register elimination, and we have a non-obvious dependency
@@ -2964,7 +2995,112 @@
    (match_operand 1 "memory_operand")]
   ""
 {
-  emit_move_insn (operands[0], operands[1]);
+  rtx stack_slot;
+
+  if (TARGET_ZICFISS)
+    {
+      /* Restore shadow stack pointer from the first slot
+	 and stack pointer from the second slot.  */
+      rtx ssp_slot = adjust_address (operands[1], word_mode, 0);
+      stack_slot = adjust_address (operands[1], Pmode, UNITS_PER_WORD);
+
+      /* Get the current shadow stack pointer.  */
+      rtx reg_ssp = force_reg (word_mode, const0_rtx);
+      emit_insn (gen_ssprr (word_mode, reg_ssp, reg_ssp));
+
+      /* Compare through subtraction the saved and the current ssp
+	 to decide if ssp has to be adjusted.  */
+      reg_ssp = expand_simple_binop (word_mode, MINUS,
+				     reg_ssp, ssp_slot,
+				     reg_ssp, 1, OPTAB_DIRECT);
+
+      /* Compare and jump over adjustment code.  */
+      rtx noadj_label = gen_label_rtx ();
+      emit_cmp_and_jump_insns (reg_ssp, const0_rtx, EQ, NULL_RTX,
+			       word_mode, 1, noadj_label);
+
+      /* Compute the number of frames to adjust.  */
+      rtx reg_adj = gen_lowpart (ptr_mode, reg_ssp);
+      rtx reg_adj_neg = expand_simple_unop (ptr_mode, NEG, reg_adj,
+					    NULL_RTX, 1);
+
+      reg_adj = expand_simple_binop (ptr_mode, LSHIFTRT, reg_adj_neg,
+				     GEN_INT (exact_log2 (UNITS_PER_WORD)),
+				     reg_adj, 1, OPTAB_DIRECT);
+
+      rtx loop_label = gen_label_rtx ();
+      rtx inc31_label = gen_label_rtx ();
+      rtx inc16_label = gen_label_rtx ();
+      rtx inc8_label = gen_label_rtx ();
+      rtx inc4_label = gen_label_rtx ();
+
+      /* Adjust the ssp in a loop.  */
+      emit_label (loop_label);
+      LABEL_NUSES (loop_label) = 1;
+
+      /* Check if number of frames <= 0 so no loop is needed.  */
+      emit_cmp_and_jump_insns (reg_adj, GEN_INT (0), LEU, NULL_RTX,
+			       ptr_mode, 1, noadj_label);
+
+      /* Compute the number of frames to adjust.  */
+      emit_cmp_and_jump_insns (reg_adj, GEN_INT (31), GEU, NULL_RTX,
+			       ptr_mode, 1, inc31_label);
+      emit_cmp_and_jump_insns (reg_adj, GEN_INT (16), GEU, NULL_RTX,
+			       ptr_mode, 1, inc16_label);
+      emit_cmp_and_jump_insns (reg_adj, GEN_INT (8), GEU, NULL_RTX,
+			       ptr_mode, 1, inc8_label);
+      emit_cmp_and_jump_insns (reg_adj, GEN_INT (4), GEU, NULL_RTX,
+			       ptr_mode, 1, inc4_label);
+      /* Increase ssp to 1 * XLEN.  */
+      emit_insn (gen_sspinc (word_mode, GEN_INT (1)));
+      reg_adj = expand_simple_binop (ptr_mode, MINUS,
+				     reg_adj, GEN_INT (1),
+				     reg_adj, 1, OPTAB_DIRECT);
+      emit_jump (loop_label);
+
+      /* Increase ssp to 31 * XLEN.  */
+      emit_label (inc31_label);
+      LABEL_NUSES (inc31_label) = 1;
+      emit_insn (gen_sspinc (word_mode, GEN_INT (31)));
+      reg_adj = expand_simple_binop (ptr_mode, MINUS,
+				     reg_adj, GEN_INT (31),
+				     reg_adj, 1, OPTAB_DIRECT);
+      emit_jump (loop_label);
+
+      /* Increase ssp to 16 * XLEN.  */
+      emit_label (inc16_label);
+      LABEL_NUSES (inc16_label) = 1;
+      emit_insn (gen_sspinc (word_mode, GEN_INT (16)));
+      reg_adj = expand_simple_binop (ptr_mode, MINUS,
+				     reg_adj, GEN_INT (16),
+				     reg_adj, 1, OPTAB_DIRECT);
+      emit_jump (loop_label);
+
+      /* Increase ssp to 8 * XLEN.  */
+      emit_label (inc8_label);
+      LABEL_NUSES (inc8_label) = 1;
+      emit_insn (gen_sspinc (word_mode, GEN_INT (8)));
+      reg_adj = expand_simple_binop (ptr_mode, MINUS,
+				     reg_adj, GEN_INT (8),
+				     reg_adj, 1, OPTAB_DIRECT);
+      emit_jump (loop_label);
+
+      /* Increase ssp to 4 * XLEN.  */
+      emit_label (inc4_label);
+      LABEL_NUSES (inc4_label) = 1;
+      emit_insn (gen_sspinc (word_mode, GEN_INT (4)));
+      reg_adj = expand_simple_binop (ptr_mode, MINUS,
+				     reg_adj, GEN_INT (4),
+				     reg_adj, 1, OPTAB_DIRECT);
+      emit_jump (loop_label);
+
+      emit_label (noadj_label);
+      LABEL_NUSES (noadj_label) = 1;
+    }
+  else
+    stack_slot = adjust_address (operands[1], Pmode, 0);
+
+  emit_move_insn (operands[0], stack_slot);
   /* Prevent the following hard fp restore from being moved before the move
      insn above which uses a copy of the soft fp reg.  */
   emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
@@ -3137,6 +3273,38 @@
 		   (sign_extend:SI (match_operand:HI 2 "register_operand")))))]
   "TARGET_XTHEADMAC"
 )
+
+;; Shadow stack
+
+(define_insn "@sspush<mode>"
+  [(unspec_volatile [(match_operand:P 0 "x1x5_operand" "r")] UNSPECV_SSPUSH)]
+  "TARGET_ZICFISS"
+  "sspush\t%0"
+  [(set_attr "type" "zicfiss")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@sspopchk<mode>"
+  [(unspec_volatile [(match_operand:P 0 "x1x5_operand" "r")] UNSPECV_SSPOPCHK)]
+  "TARGET_ZICFISS"
+  "sspopchk\t%0"
+  [(set_attr "type" "zicfiss")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@ssprr<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec_volatile [(match_operand:P 1 "register_operand" "0")]
+			 UNSPECV_SSPRR))]
+  "TARGET_ZICFISS"
+  "ssprr\t%0"
+  [(set_attr "type" "zicfiss")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@sspinc<mode>"
+  [(unspec_volatile [(match_operand:P 0 "const_int_operand" "K")] UNSPECV_SSPINC)]
+  "TARGET_ZICFISS"
+  "sspinc\t%0"
+  [(set_attr "type" "zicfiss")
+   (set_attr "mode" "<MODE>")])
 
 (include "bitmanip.md")
 (include "crypto.md")

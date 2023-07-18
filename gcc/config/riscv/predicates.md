@@ -412,3 +412,8 @@
   (and (match_code "const_int")
        (ior (match_operand 0 "not_uimm_extra_bit_operand")
 	    (match_operand 0 "const_nottwobits_operand"))))
+
+(define_predicate "x1x5_operand"
+  (and (match_operand 0 "register_operand")
+       (match_test "REGNO (op) == RETURN_ADDR_REGNUM
+		    || REGNO (op) == T0_REGNUM")))
