@@ -5334,6 +5334,9 @@ riscv_expand_prologue (void)
   if (cfun->machine->naked_p)
     return;
 
+  if (TARGET_ZICFISS)
+    emit_insn (gen_sspush (Pmode, gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM)));
+
   /* When optimizing for size, call a subroutine to save the registers.  */
   if (riscv_use_save_libcall (frame))
     {
@@ -5646,6 +5649,9 @@ riscv_expand_epilogue (int style)
     emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
 			      EH_RETURN_STACKADJ_RTX));
 
+  if (TARGET_ZICFISS)
+    emit_insn (gen_sspopchk (Pmode, ra));
+
   /* Return from interrupt.  */
   if (cfun->machine->interrupt_handler_p)
     {
@@ -5849,7 +5855,8 @@ bool
 riscv_can_use_return_insn (void)
 {
   return (reload_completed && known_eq (cfun->machine->frame.total_size, 0)
-	  && ! cfun->machine->interrupt_handler_p);
+	  && ! cfun->machine->interrupt_handler_p
+	  && !TARGET_ZICFISS);
 }
 
 /* Given that there exists at least one variable that is set (produced)
