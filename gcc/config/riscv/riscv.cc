@@ -4091,9 +4091,17 @@ riscv_legitimize_call_address (rtx addr)
   if (!call_insn_operand (addr, VOIDmode))
     {
       rtx reg = RISCV_CALL_ADDRESS_TEMP (Pmode);
+
+      if (TARGET_ZICFILP)
+        reg = RISCV_CALL_ADDRESS_LPAD (Pmode);
+
       riscv_emit_move (reg, addr);
       return reg;
     }
+
+  if (TARGET_ZICFILP && REG_P (addr))
+    emit_insn (gen_set_lpl (const1_rtx));
+
   return addr;
 }
 

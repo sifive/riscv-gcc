@@ -1200,6 +1200,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zicsr",    &gcc_options::x_riscv_zi_subext, MASK_ZICSR},
   {"zifencei", &gcc_options::x_riscv_zi_subext, MASK_ZIFENCEI},
   {"zicfiss", &gcc_options::x_riscv_zi_subext, MASK_ZICFISS},
+  {"zicfilp", &gcc_options::x_riscv_zi_subext, MASK_ZICFILP},
 
   {"zawrs", &gcc_options::x_riscv_za_subext, MASK_ZAWRS},
 

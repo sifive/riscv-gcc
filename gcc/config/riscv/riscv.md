@@ -110,6 +110,8 @@
   UNSPECV_SSPOPCHK
   UNSPECV_SSPRR
   UNSPECV_SSPINC
+  UNSPECV_LPAD
+  UNSPECV_SETLPL
 ])
 
 (define_constants
@@ -118,6 +120,7 @@
    (TP_REGNUM			4)
    (T0_REGNUM			5)
    (T1_REGNUM			6)
+   (T2_REGNUM			7)
    (S0_REGNUM			8)
    (S1_REGNUM			9)
    (S2_REGNUM			18)
@@ -363,7 +366,7 @@
    vired,viwred,vfredu,vfredo,vfwredu,vfwredo,
    vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,
    vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,
-   vgather,vcompress,vmov,zicfiss"
+   vgather,vcompress,vmov,zicfiss,zicfilp"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,
@@ -2596,6 +2599,9 @@
   [(set (pc) (match_operand 0 "register_operand"))]
   ""
 {
+  if (TARGET_ZICFILP)
+    emit_insn (gen_set_lpl (const1_rtx));
+
   operands[0] = force_reg (Pmode, operands[0]);
   if (Pmode == SImode)
     emit_jump_insn (gen_indirect_jumpsi (operands[0]));
@@ -2616,6 +2622,13 @@
 	      (use (label_ref (match_operand 1 "" "")))]
   ""
 {
+  if (TARGET_ZICFILP)
+    {
+      rtx t2 = RISCV_CALL_ADDRESS_LPAD (GET_MODE (operands[0]));
+      emit_move_insn (operands[0], t2);
+      operands[0] = t2;
+    }
+
   if (CASE_VECTOR_PC_RELATIVE)
       operands[0] = expand_simple_binop (Pmode, PLUS, operands[0],
 					 gen_rtx_LABEL_REF (Pmode, operands[1]),
@@ -3305,6 +3318,20 @@
   "sspinc\t%0"
   [(set_attr "type" "zicfiss")
    (set_attr "mode" "<MODE>")])
+
+;; Lading pad.
+
+(define_insn "lpad"
+  [(unspec_volatile [(match_operand 0 "immediate_operand" "i")] UNSPECV_LPAD)]
+  "TARGET_ZICFILP"
+  "lpad\t%0"
+  [(set_attr "type" "zicfilp")])
+
+(define_insn "set_lpl"
+  [(unspec_volatile [(match_operand 0 "immediate_operand" "i")] UNSPECV_SETLPL)]
+  "TARGET_ZICFILP"
+  "lui\tt2,%0"
+  [(set_attr "type" "const")])
 
 (include "bitmanip.md")
 (include "crypto.md")
