@@ -183,7 +183,8 @@ ASM_MISA_SPEC
 #define PARM_BOUNDARY BITS_PER_WORD
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY (TARGET_RVC ? 16 : 32)
+#define FUNCTION_BOUNDARY \
+  ((TARGET_RVC && !TARGET_ZICFILP) ? 16 : 32)
 
 /* The smallest supported stack boundary the calling convention supports.  */
 #define STACK_BOUNDARY \
@@ -412,6 +413,10 @@ ASM_MISA_SPEC
 #define RISCV_CALL_ADDRESS_TEMP_REGNUM (GP_TEMP_FIRST + 1)
 #define RISCV_CALL_ADDRESS_TEMP(MODE) \
   gen_rtx_REG (MODE, RISCV_CALL_ADDRESS_TEMP_REGNUM)
+
+#define RISCV_CALL_ADDRESS_LPAD_REGNUM (GP_TEMP_FIRST + 2)
+#define RISCV_CALL_ADDRESS_LPAD(MODE) \
+  gen_rtx_REG (MODE, RISCV_CALL_ADDRESS_LPAD_REGNUM)
 
 #define MCOUNT_NAME "_mcount"
 
