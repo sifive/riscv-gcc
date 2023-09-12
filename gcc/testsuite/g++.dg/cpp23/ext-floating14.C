@@ -18,6 +18,7 @@ template <typename T, typename F>
 int
 main ()
 {
+#if !defined(__riscv_zfhmin)
   // __FLT32_MAX_EXP__ is 128, so make sure all unsigned long long and unsigned __int128
   // values fit into it.  __FLT16_MAX__ is 65504.0f16, so we need to be
   // careful for that.
@@ -578,6 +579,7 @@ main ()
   if (cvt <unsigned __int128, std::float128_t> (42.0f128) != (unsigned __int128) (std::float128_t) 42.0f128
       || cvt <unsigned __int128, std::float128_t> ((unsigned __int128) 1 << (__CHAR_BIT__ * sizeof (unsigned __int128) - 1)) != (unsigned __int128) (std::float128_t) ((unsigned __int128) 1 << (__CHAR_BIT__ * sizeof (unsigned __int128) - 1)))
     __builtin_abort ();
+#endif
 #endif
 #endif
 #endif
