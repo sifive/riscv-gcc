@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-ftree-slp-vectorize -funroll-loops" } */
+/* { dg-require-effective-target hard_float } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 #include <stdio.h>
