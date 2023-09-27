@@ -2625,7 +2625,7 @@
   if (TARGET_ZICFILP)
     {
       rtx t2 = RISCV_CALL_ADDRESS_LPAD (GET_MODE (operands[0]));
-      emit_move_insn (operands[0], t2);
+      emit_move_insn (t2, operands[0]);
       operands[0] = t2;
     }
 
