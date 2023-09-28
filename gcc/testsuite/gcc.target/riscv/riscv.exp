@@ -37,7 +37,7 @@ dg-init
 
 # Main loop.
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
-	"" $DEFAULT_CFLAGS
+	"-mcmodel=medlow" $DEFAULT_CFLAGS
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/sched1-spills/*.{\[cS\],cpp}]] \
 	"" $DEFAULT_CFLAGS
 

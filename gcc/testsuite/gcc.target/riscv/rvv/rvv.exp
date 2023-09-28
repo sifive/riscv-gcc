@@ -36,21 +36,21 @@ dg-init
 # Main loop.
 set CFLAGS "$DEFAULT_CFLAGS -O3"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
-	"" $CFLAGS
+	"-mcmodel=medlow" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.\[cS\]]] \
-	"" $CFLAGS
+	"-mcmodel=medlow" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/xsfvector/*.\[cS\]]] \
-	"" $CFLAGS
+	"-mcmodel=medlow" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/xtheadvector/*.\[cS\]]] \
-	"" $CFLAGS
+	"-mcmodel=medlow" $CFLAGS
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vsetvl/*.\[cS\]]] \
-	"" $CFLAGS
+	"-mcmodel=medlow" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[cS\]]] \
-	"-O3 -ftree-vectorize" $CFLAGS
+	"-mcmodel=medlow -O3 -ftree-vectorize" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/vls/*.\[cS\]]] \
-	"-O3 -ftree-vectorize -mrvv-vector-bits=scalable" $CFLAGS
+	"-mcmodel=medlow -O3 -ftree-vectorize -mrvv-vector-bits=scalable" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/struct/*.\[cS\]]] \
-	"" "-O3 -ftree-vectorize"
+	"-mcmodel=medlow" "-O3 -ftree-vectorize"
 
 set AUTOVEC_TEST_OPTS [list \
   {-ftree-vectorize -O3 -mrvv-max-lmul=m1} \
@@ -65,23 +65,23 @@ set AUTOVEC_TEST_OPTS [list \
   {-ftree-vectorize -O2 -mrvv-max-lmul=dynamic} ]
 foreach op $AUTOVEC_TEST_OPTS {
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/partial/*.\[cS\]]] \
-    "$op" ""
+    "-mcmodel=medlow" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/binop/*.\[cS\]]] \
-    "$op" ""
+    "-mcmodel=medlow" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/cmp/*.\[cS\]]] \
-    "$op" ""
+    "-mcmodel=medlow" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/conversions/*.\[cS\]]] \
-    "$op" ""
+    "-mcmodel=medlow" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/unop/*.\[cS\]]] \
-    "$op" ""
+    "-mcmodel=medlow" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/ternop/*.\[cS\]]] \
-    "$op" ""
+    "-mcmodel=medlow" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/reduc/*.\[cS\]]] \
-    "$op" ""
+    "-mcmodel=medlow" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/cond/*.\[cS\]]] \
-    "$op" ""
+    "-mcmodel=medlow" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/builtin/*.\[cS\]]] \
-    "$op" ""
+    "-mcmodel=medlow" "$op"
 }
 
 # widening operation only test on LMUL < 8
@@ -94,12 +94,12 @@ set AUTOVEC_TEST_OPTS [list \
   {-ftree-vectorize -O2 -mrvv-max-lmul=m4} ]
 foreach op $AUTOVEC_TEST_OPTS {
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/widen/*.\[cS\]]] \
-    "$op" ""
+    "-mcmodel=medlow" "$op"
 }
 
 # VLS-VLMAX tests
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/vls-vlmax/*.\[cS\]]] \
-	"-std=c99 -O3 -ftree-vectorize -mrvv-vector-bits=zvl" $CFLAGS
+	"-mcmodel=medlow -std=c99 -O3 -ftree-vectorize -mrvv-vector-bits=zvl" $CFLAGS
 
 # gather-scatter tests
 set AUTOVEC_TEST_OPTS [list \
@@ -125,11 +125,11 @@ set AUTOVEC_TEST_OPTS [list \
   {-ftree-vectorize -O2 -mrvv-vector-bits=scalable -mrvv-max-lmul=dynamic -ffast-math} ]
 foreach op $AUTOVEC_TEST_OPTS {
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/gather-scatter/*.\[cS\]]] \
-    "$op" ""
+    "-mcmodel=medlow" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/strided/*.\[cS\]]] \
-    "$op" ""
+    "-mcmodel=medlow" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/sat/*.\[cS\]]] \
-    "$op" ""
+    "-mcmodel=medlow" "$op"
 }
 
 # All done.
