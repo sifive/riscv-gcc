@@ -28,7 +28,7 @@ load_lib g++-dg.exp
 dg-init
 
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] "" ""
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] "-mcmodel=medlow" ""
 
 # All done.
 dg-finish

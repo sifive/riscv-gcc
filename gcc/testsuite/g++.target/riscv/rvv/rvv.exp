@@ -40,10 +40,10 @@ dg-init
 # Main loop.
 set CFLAGS "-march=$gcc_march -mabi=$gcc_mabi -O3"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.C]] \
-	"" $CFLAGS
+	"-mcmodel=medlow" $CFLAGS
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[C\]]] \
-        "" $CFLAGS
+        "-mcmodel=medlow" $CFLAGS
 
 # All done.
 dg-finish
