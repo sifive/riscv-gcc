@@ -7206,6 +7206,19 @@ riscv_lshift_subword (machine_mode mode, rtx value, rtx shift,
 						  gen_lowpart (QImode, shift)));
 }
 
+void
+riscv_file_end_indicate_exec_stack ()
+{
+  file_end_indicate_exec_stack ();
+
+ if (TARGET_ZICFILP && TARGET_ZICFISS)
+  {
+    /* Generate .note.gnu.property section.  */
+    switch_to_section (get_section (".note.gnu.property",
+				    SECTION_NOTYPE, NULL));
+  }
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
