@@ -108,6 +108,7 @@ rest_of_insert_landing_pad (void)
 	       && (LABEL_PRESERVE_P (insn)
 		   || bb->flags & BB_NON_LOCAL_GOTO_TARGET))
 	    {
+	      emit_insn_before (gen_lpad_align (), insn);
 	      emit_insn_after (gen_lpad (const1_rtx), insn);
 	      continue;
 	    }

@@ -112,6 +112,7 @@
   UNSPECV_SSPINC
   UNSPECV_LPAD
   UNSPECV_SETLPL
+  UNSPECV_LPAD_ALIGN
 ])
 
 (define_constants
@@ -3332,6 +3333,12 @@
   "TARGET_ZICFILP"
   "lui\tt2,%0"
   [(set_attr "type" "const")])
+
+(define_insn "lpad_align"
+  [(unspec_volatile [(const_int 0)] UNSPECV_LPAD_ALIGN)]
+  "TARGET_ZICFILP"
+  ".align 2"
+  [(set_attr "type" "zicfilp")])
 
 (include "bitmanip.md")
 (include "crypto.md")
