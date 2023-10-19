@@ -8884,6 +8884,17 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     return !(regno & 1);
   }
 
+  /* Only use even registers for pairs in ZACAS. */
+  if (TARGET_ZACAS) {
+    if (!TARGET_64BIT && GET_MODE_CLASS (mode) == MODE_INT
+	&& GET_MODE_UNIT_SIZE (mode) == GET_MODE_SIZE (DImode))
+      return !(regno & 1);
+
+    if (TARGET_64BIT && GET_MODE_CLASS (mode) == MODE_INT
+	&& GET_MODE_UNIT_SIZE (mode) == GET_MODE_SIZE (TImode))
+      return !(regno & 1);
+  }
+
   return true;
 }
 

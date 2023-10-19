@@ -20,6 +20,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_c_enum "unspec" [
+  UNSPEC_AMOCAS
   UNSPEC_COMPARE_AND_SWAP
   UNSPEC_COMPARE_AND_SWAP_SUBWORD
   UNSPEC_SYNC_OLD_OP
@@ -346,7 +347,7 @@
   [(match_operand:SI 0 "register_operand" "")   ;; bool output
    (match_operand:GPR 1 "register_operand" "")  ;; val output
    (match_operand:GPR 2 "memory_operand" "")    ;; memory
-   (match_operand:GPR 3 "reg_or_0_operand" "")  ;; expected value
+   (match_operand:GPR 3 "register_operand" "")  ;; expected value
    (match_operand:GPR 4 "reg_or_0_operand" "")  ;; desired value
    (match_operand:SI 5 "const_int_operand" "")  ;; is_weak
    (match_operand:SI 6 "const_int_operand" "")  ;; mod_s
@@ -362,9 +363,14 @@
       operands[3] = simplify_gen_subreg (<MODE>mode, tmp0, word_mode, 0);
     }
 
-  emit_insn (gen_atomic_cas_value_strong<mode> (operands[1], operands[2],
-						operands[3], operands[4],
-						operands[6], operands[7]));
+  if (TARGET_ZACAS)
+    emit_insn (gen_atomic_cas_value_zacas<mode> (operands[1], operands[2],
+						 operands[3], operands[4],
+						 operands[6], operands[7]));
+  else
+    emit_insn (gen_atomic_cas_value_strong<mode> (operands[1], operands[2],
+						  operands[3], operands[4],
+						  operands[6], operands[7]));
 
   rtx compare = operands[1];
   if (operands[3] != const0_rtx)
@@ -546,3 +552,24 @@
 
   DONE;
 })
+
+(define_insn "atomic_cas_value_zacas<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&r")
+	(match_operand:GPR 1 "memory_operand" "+A"))
+   (set (match_dup 1)
+	(unspec_volatile:GPR [(match_operand:GPR 2 "register_operand" "0")
+			      (match_operand:GPR 3 "reg_or_0_operand" "rJ")
+			      (match_operand:SI 4 "const_int_operand")  ;; mod_s
+			      (match_operand:SI 5 "const_int_operand")] ;; mod_f
+	 UNSPEC_AMOCAS))]
+  "TARGET_ZACAS"
+{
+  enum memmodel model_success = (enum memmodel) INTVAL (operands[4]);
+  enum memmodel model_failure = (enum memmodel) INTVAL (operands[5]);
+  /* Find the union of the two memory models so we can satisfy both success
+     and failure memory models.  */
+  operands[5] = GEN_INT (riscv_union_memmodels (model_success, model_failure));
+  return "amocas.<amo>%A5\t%0,%z3,%1\;";
+ }
+ [(set_attr "type" "atomic")
+  (set (attr "length") (const_int 4))])

@@ -205,6 +205,8 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"xsfvfexpa", "zve32f"},
   {"xsfvfexpa64e", "xsfvfexpa"},
   {"xsfvfexpa64e", "zve64d"},
+  {"zacas", "a"},
+
   /* Mammoth */
   {"xsfmm32ea", "v"},
   {"xsfmmbase", "v"},
@@ -448,6 +450,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zvlsseg", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvlsseg", ISA_SPEC_CLASS_UNRATIFIED, 0, 10},
 
+  {"zacas",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zaamo",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zalrsc", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zama16b",  ISA_SPEC_CLASS_NONE, 1, 0},
@@ -1876,6 +1879,9 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"xtheadvector",  &gcc_options::x_target_flags, MASK_VECTOR},
 
   {"xventanacondops", &gcc_options::x_riscv_xventana_subext, MASK_XVENTANACONDOPS},
+
+  /* SiFive */
+  {"zacas", &gcc_options::x_riscv_za_subext, MASK_ZACAS},
 
   {NULL, NULL, 0}
 };
