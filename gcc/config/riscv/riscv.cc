@@ -7211,7 +7211,7 @@ riscv_file_end_indicate_exec_stack ()
 {
   file_end_indicate_exec_stack ();
 
-  if (TARGET_ZICFILP && TARGET_ZICFISS)
+  if (TARGET_ZICFILP || TARGET_ZICFISS)
     {
       /* Generate .note.gnu.property section.  */
       switch_to_section (get_section (".note.gnu.property",
