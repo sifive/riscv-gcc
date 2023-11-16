@@ -108,8 +108,8 @@
   ;; CFI
   UNSPECV_SSPUSH
   UNSPECV_SSPOPCHK
-  UNSPECV_SSPRR
-  UNSPECV_SSPINC
+  UNSPECV_SSRDP
+  UNSPECV_SSP
   UNSPECV_LPAD
   UNSPECV_SETLPL
   UNSPECV_LPAD_ALIGN
@@ -2991,7 +2991,7 @@
       stack_slot = adjust_address (operands[0], Pmode, UNITS_PER_WORD);
 
       rtx reg_ssp = force_reg (word_mode, const0_rtx);
-      emit_insn (gen_ssprr (word_mode, reg_ssp, reg_ssp));
+      emit_insn (gen_ssrdp (word_mode, reg_ssp, reg_ssp));
       emit_move_insn (ssp_slot, reg_ssp);
     }
   else
@@ -3021,7 +3021,7 @@
 
       /* Get the current shadow stack pointer.  */
       rtx reg_ssp = force_reg (word_mode, const0_rtx);
-      emit_insn (gen_ssprr (word_mode, reg_ssp, reg_ssp));
+      emit_insn (gen_ssrdp (word_mode, reg_ssp, reg_ssp));
 
       /* Compare through subtraction the saved and the current ssp
 	 to decide if ssp has to be adjusted.  */
@@ -3043,71 +3043,30 @@
 				     GEN_INT (exact_log2 (UNITS_PER_WORD)),
 				     reg_adj, 1, OPTAB_DIRECT);
 
-      rtx loop_label = gen_label_rtx ();
-      rtx inc31_label = gen_label_rtx ();
-      rtx inc16_label = gen_label_rtx ();
-      rtx inc8_label = gen_label_rtx ();
-      rtx inc4_label = gen_label_rtx ();
+      /* Check if number of frames <= 4096 so no loop is needed.  */
+      rtx inc_label = gen_label_rtx ();
+      rtx reg_4096 = force_reg (word_mode, GEN_INT (4096));
+      emit_cmp_and_jump_insns (reg_adj, reg_4096, LEU, NULL_RTX,
+			       ptr_mode, 1, inc_label);
 
       /* Adjust the ssp in a loop.  */
+      rtx loop_label = gen_label_rtx ();
       emit_label (loop_label);
       LABEL_NUSES (loop_label) = 1;
 
-      /* Check if number of frames <= 0 so no loop is needed.  */
-      emit_cmp_and_jump_insns (reg_adj, GEN_INT (0), LEU, NULL_RTX,
-			       ptr_mode, 1, noadj_label);
-
-      /* Compute the number of frames to adjust.  */
-      emit_cmp_and_jump_insns (reg_adj, GEN_INT (31), GEU, NULL_RTX,
-			       ptr_mode, 1, inc31_label);
-      emit_cmp_and_jump_insns (reg_adj, GEN_INT (16), GEU, NULL_RTX,
-			       ptr_mode, 1, inc16_label);
-      emit_cmp_and_jump_insns (reg_adj, GEN_INT (8), GEU, NULL_RTX,
-			       ptr_mode, 1, inc8_label);
-      emit_cmp_and_jump_insns (reg_adj, GEN_INT (4), GEU, NULL_RTX,
-			       ptr_mode, 1, inc4_label);
-      /* Increase ssp to 1 * XLEN.  */
-      emit_insn (gen_sspinc (word_mode, GEN_INT (1)));
       reg_adj = expand_simple_binop (ptr_mode, MINUS,
-				     reg_adj, GEN_INT (1),
+				     reg_adj, reg_4096,
 				     reg_adj, 1, OPTAB_DIRECT);
-      emit_jump (loop_label);
+      emit_insn (gen_write_ssp (word_mode, reg_adj));
 
-      /* Increase ssp to 31 * XLEN.  */
-      emit_label (inc31_label);
-      LABEL_NUSES (inc31_label) = 1;
-      emit_insn (gen_sspinc (word_mode, GEN_INT (31)));
-      reg_adj = expand_simple_binop (ptr_mode, MINUS,
-				     reg_adj, GEN_INT (31),
-				     reg_adj, 1, OPTAB_DIRECT);
-      emit_jump (loop_label);
+      /* Compare and jump to the loop label.  */
+      emit_cmp_and_jump_insns (reg_adj, reg_4096, GTU, NULL_RTX,
+			       ptr_mode, 1, loop_label);
 
-      /* Increase ssp to 16 * XLEN.  */
-      emit_label (inc16_label);
-      LABEL_NUSES (inc16_label) = 1;
-      emit_insn (gen_sspinc (word_mode, GEN_INT (16)));
-      reg_adj = expand_simple_binop (ptr_mode, MINUS,
-				     reg_adj, GEN_INT (16),
-				     reg_adj, 1, OPTAB_DIRECT);
-      emit_jump (loop_label);
+      emit_label (inc_label);
+      LABEL_NUSES (inc_label) = 1;
 
-      /* Increase ssp to 8 * XLEN.  */
-      emit_label (inc8_label);
-      LABEL_NUSES (inc8_label) = 1;
-      emit_insn (gen_sspinc (word_mode, GEN_INT (8)));
-      reg_adj = expand_simple_binop (ptr_mode, MINUS,
-				     reg_adj, GEN_INT (8),
-				     reg_adj, 1, OPTAB_DIRECT);
-      emit_jump (loop_label);
-
-      /* Increase ssp to 4 * XLEN.  */
-      emit_label (inc4_label);
-      LABEL_NUSES (inc4_label) = 1;
-      emit_insn (gen_sspinc (word_mode, GEN_INT (4)));
-      reg_adj = expand_simple_binop (ptr_mode, MINUS,
-				     reg_adj, GEN_INT (4),
-				     reg_adj, 1, OPTAB_DIRECT);
-      emit_jump (loop_label);
+      emit_insn (gen_write_ssp (word_mode, reg_ssp));
 
       emit_label (noadj_label);
       LABEL_NUSES (noadj_label) = 1;
@@ -3305,19 +3264,19 @@
   [(set_attr "type" "zicfiss")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "@ssprr<mode>"
+(define_insn "@ssrdp<mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(unspec_volatile [(match_operand:P 1 "register_operand" "0")]
-			 UNSPECV_SSPRR))]
+			 UNSPECV_SSRDP))]
   "TARGET_ZICFISS"
-  "ssprr\t%0"
+  "ssrdp\t%0"
   [(set_attr "type" "zicfiss")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "@sspinc<mode>"
-  [(unspec_volatile [(match_operand:P 0 "const_int_operand" "K")] UNSPECV_SSPINC)]
+(define_insn "@write_ssp<mode>"
+  [(unspec_volatile [(match_operand:P 0 "register_operand" "r")] UNSPECV_SSP)]
   "TARGET_ZICFISS"
-  "sspinc\t%0"
+  "csrw\tssp, %0"
   [(set_attr "type" "zicfiss")
    (set_attr "mode" "<MODE>")])
 
