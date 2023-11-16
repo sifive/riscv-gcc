@@ -24,44 +24,26 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Unwind the shadow stack for EH.  */
 #undef _Unwind_Frames_Extra
-#define _Unwind_Frames_Extra(x)			\
-  do						\
-    {						\
-      _Unwind_Word ssp;				\
-      asm volatile ("ssprr %0" : "=r"(ssp));	\
-      if (ssp != 0)				\
-	{					\
-	  _Unwind_Word tmp = (x);		\
-	  while (tmp > 0)			\
-	    {					\
-	      if (tmp >= 31)			\
-		{				\
-		  asm volatile ("sspinc 31");	\
-		  tmp -= 31;			\
-		}				\
-	      else if (tmp >= 16)		\
-		{				\
-		  asm volatile ("sspinc 16");	\
-		  tmp -= 16;			\
-		}				\
-	      else if (tmp >= 8)		\
-		{				\
-		  asm volatile ("sspinc 8");	\
-		  tmp -= 8;			\
-		}				\
-	      else if (tmp >= 4)		\
-		{				\
-		  asm volatile ("sspinc 4");	\
-		  tmp -= 4;			\
-		}				\
-	      else				\
-		{				\
-		  asm volatile ("sspinc 1");	\
-		  tmp -= 1;			\
-		}				\
-	    }					\
-	}					\
-    }						\
+#define _Unwind_Frames_Extra(x)					\
+  do								\
+    {								\
+      _Unwind_Word ssp;						\
+      asm volatile ("ssrdp %0" : "=r"(ssp));			\
+      if (ssp != 0)						\
+	{							\
+	  _Unwind_Word tmp = (x);				\
+	  while (tmp > ssp)					\
+	    {							\
+	      if ((tmp - ssp) >= 4096)				\
+		ssp += 4096;					\
+	      else						\
+		ssp = tmp;					\
+	      asm volatile ("csrw ssp, %0" :: "r"(ssp));	\
+	      asm volatile ("sspush x5");			\
+	      asm volatile ("sspopchk");			\
+	    }							\
+	}							\
+    }								\
     while (0)
 
 #undef _Unwind_Frames_Increment
@@ -73,7 +55,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	  && !_Unwind_IsSignalFrame (context))		\
 	{						\
 	  _Unwind_Word ssp;				\
-	  asm volatile ("ssprr %0" : "=r"(ssp));	\
+	  asm volatile ("ssrdp %0" : "=r"(ssp));	\
 	  if (ssp != 0)					\
 	    {						\
 	      ssp += 8 * frames;			\
