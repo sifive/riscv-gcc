@@ -113,7 +113,6 @@
   UNSPECV_LPAD
   UNSPECV_SETLPL
   UNSPECV_LPAD_ALIGN
-  UNSPECV_SET_GUARDED
 ])
 
 (define_constants
@@ -2624,17 +2623,17 @@
 	      (use (label_ref (match_operand 1 "" "")))]
   ""
 {
+  if (TARGET_ZICFILP)
+    {
+      rtx t2 = RISCV_CALL_ADDRESS_LPAD (GET_MODE (operands[0]));
+      emit_move_insn (t2, operands[0]);
+      operands[0] = t2;
+    }
+
   if (CASE_VECTOR_PC_RELATIVE)
       operands[0] = expand_simple_binop (Pmode, PLUS, operands[0],
 					 gen_rtx_LABEL_REF (Pmode, operands[1]),
 					 NULL_RTX, 0, OPTAB_DIRECT);
-
-  if (TARGET_ZICFILP)
-    {
-      rtx t2 = RISCV_CALL_ADDRESS_LPAD (GET_MODE (operands[0]));
-      emit_insn (gen_set_guarded (GET_MODE (operands[0]), operands[0]));
-      operands[0] = t2;
-    }
 
   if (CASE_VECTOR_PC_RELATIVE && Pmode == DImode)
     emit_jump_insn (gen_tablejumpdi (operands[0], operands[1]));
@@ -3299,14 +3298,6 @@
   "TARGET_ZICFILP"
   ".align 2"
   [(set_attr "type" "zicfilp")])
-
-(define_insn "@set_guarded<mode>"
-  [(set (reg:P T2_REGNUM)
-	(unspec_volatile [(match_operand:P 0 "register_operand" "r")] UNSPECV_SET_GUARDED))]
-  "TARGET_ZICFILP"
-  "mv\tt2,%0"
-  [(set_attr "type" "move")
-   (set_attr "mode" "<MODE>")])
 
 (include "bitmanip.md")
 (include "crypto.md")
