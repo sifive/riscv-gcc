@@ -2601,7 +2601,7 @@
   ""
 {
   if (TARGET_ZICFILP)
-    emit_insn (gen_set_lpl (const1_rtx));
+    emit_insn (gen_set_lpl (Pmode, const1_rtx));
 
   operands[0] = force_reg (Pmode, operands[0]);
   if (Pmode == SImode)
@@ -3287,11 +3287,13 @@
   "lpad\t%0"
   [(set_attr "type" "zicfilp")])
 
-(define_insn "set_lpl"
-  [(unspec_volatile [(match_operand 0 "immediate_operand" "i")] UNSPECV_SETLPL)]
-  "TARGET_ZICFILP"
-  "lui\tt2,%0"
-  [(set_attr "type" "const")])
+(define_insn "@set_lpl<mode>"
+  [(set (reg:GPR T2_REGNUM)
+	(unspec_volatile [(match_operand:GPR 0 "immediate_operand" "i")] UNSPECV_SETLPL))]
+   "TARGET_ZICFILP"
+   "lui\tt2,%0"
+  [(set_attr "type" "const")
+   (set_attr "mode" "<MODE>")])
 
 (define_insn "lpad_align"
   [(unspec_volatile [(const_int 0)] UNSPECV_LPAD_ALIGN)]

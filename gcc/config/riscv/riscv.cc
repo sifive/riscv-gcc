@@ -4100,7 +4100,7 @@ riscv_legitimize_call_address (rtx addr)
     }
 
   if (TARGET_ZICFILP && REG_P (addr))
-    emit_insn (gen_set_lpl (const1_rtx));
+    emit_insn (gen_set_lpl (Pmode, const1_rtx));
 
   return addr;
 }
