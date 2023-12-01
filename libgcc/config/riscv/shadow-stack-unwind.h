@@ -40,7 +40,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 		ssp = tmp;					\
 	      asm volatile ("csrw ssp, %0" :: "r"(ssp));	\
 	      asm volatile ("sspush x5");			\
-	      asm volatile ("sspopchk");			\
+	      asm volatile ("sspopchk x5");			\
 	    }							\
 	}							\
     }								\
