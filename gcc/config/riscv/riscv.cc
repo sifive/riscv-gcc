@@ -5440,7 +5440,8 @@ riscv_expand_epilogue (int style)
       return;
     }
 
-  if ((style == NORMAL_RETURN) && riscv_can_use_return_insn ())
+  if ((style == NORMAL_RETURN) && riscv_can_use_return_insn ()
+       && !TARGET_ZICFISS)
     {
       emit_jump_insn (gen_return ());
       return;
@@ -5598,9 +5599,6 @@ riscv_expand_epilogue (int style)
     emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
 			      EH_RETURN_STACKADJ_RTX));
 
-  if (TARGET_ZICFISS)
-    emit_insn (gen_sspopchk (Pmode, ra));
-
   /* Return from interrupt.  */
   if (cfun->machine->interrupt_handler_p)
     {
@@ -5614,8 +5612,13 @@ riscv_expand_epilogue (int style)
 	emit_jump_insn (gen_riscv_sret ());
       else
 	emit_jump_insn (gen_riscv_uret ());
+      return;
     }
-  else if (style != SIBCALL_RETURN)
+
+  if (TARGET_ZICFISS)
+    emit_insn (gen_sspopchk (Pmode, ra));
+
+  if (style != SIBCALL_RETURN)
     emit_jump_insn (gen_simple_return_internal (ra));
 }
 
@@ -6593,6 +6596,10 @@ riscv_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 
   /* Don't use sibcall for interrupt functions.  */
   if (cfun->machine->interrupt_handler_p)
+    return false;
+
+  /* Don't use sibcall for shadow stack.  */
+  if (TARGET_ZICFISS)
     return false;
 
   return true;
