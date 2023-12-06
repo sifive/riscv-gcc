@@ -31,6 +31,7 @@
 extern "C"
 {
 #ifndef _GLIBCXX_HAVE_FABSL
+  __attribute__((weak))
   long double
   fabsl(long double x)
   {
@@ -39,6 +40,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_ACOSL
+  __attribute__((weak))
   long double
   acosl(long double x)
   {
@@ -47,6 +49,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_ASINL
+  __attribute__((weak))
   long double
   asinl(long double x)
   {
@@ -55,6 +58,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_ATANL
+  __attribute__((weak))
   long double
   atanl(long double x)
   {
@@ -63,6 +67,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_ATAN2L
+  __attribute__((weak))
   long double
   atan2l(long double x, long double y)
   {
@@ -71,6 +76,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_CEILL
+  __attribute__((weak))
   long double
   ceill(long double x)
   {
@@ -79,6 +85,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_COSL
+  __attribute__((weak))
   long double
   cosl(long double x)
   {
@@ -87,6 +94,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_COSHL
+  __attribute__((weak))
   long double
   coshl(long double x)
   {
@@ -95,6 +103,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_EXPL
+  __attribute__((weak))
   long double
   expl(long double x)
   {
@@ -103,6 +112,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_FLOORL
+  __attribute__((weak))
   long double
   floorl(long double x)
   {
@@ -111,6 +121,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_FMODL
+  __attribute__((weak))
   long double
   fmodl(long double x, long double y)
   {
@@ -119,6 +130,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_FREXPL
+  __attribute__((weak))
   long double
   frexpl(long double x, int *exp)
   {
@@ -127,6 +139,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_SQRTL
+  __attribute__((weak))
   long double
   sqrtl(long double x)
   {
@@ -135,6 +148,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_HYPOTL
+  __attribute__((weak))
   long double
   hypotl(long double x, long double y)
   {
@@ -147,6 +161,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_LDEXPL
+  __attribute__((weak))
   long double
   ldexpl(long double x, int exp)
   {
@@ -155,6 +170,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_LOGL
+  __attribute__((weak))
   long double
   logl(long double x)
   {
@@ -163,6 +179,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_LOG10L
+  __attribute__((weak))
   long double
   log10l(long double x)
   {
@@ -183,6 +200,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_POWL
+  __attribute__((weak))
   long double
   powl(long double x, long double y)
   {
@@ -191,6 +209,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_SINL
+  __attribute__((weak))
   long double
   sinl(long double x)
   {
@@ -199,6 +218,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_SINHL
+  __attribute__((weak))
   long double
   sinhl(long double x)
   {
@@ -207,6 +227,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_TANL
+  __attribute__((weak))
   long double
   tanl(long double x)
   {
@@ -215,6 +236,7 @@ extern "C"
 #endif
 
 #ifndef _GLIBCXX_HAVE_TANHL
+  __attribute__((weak))
   long double
   tanhl(long double x)
   {
