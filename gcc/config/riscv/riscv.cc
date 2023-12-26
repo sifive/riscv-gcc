@@ -7211,7 +7211,39 @@ riscv_file_end_indicate_exec_stack ()
 {
   file_end_indicate_exec_stack ();
 
-  if (TARGET_ZICFILP || TARGET_ZICFISS)
+  if (TARGET_ZICFILP)
+    {
+      /* Generate .note.gnu.property section.  */
+      switch_to_section (get_section (".note.gnu.property",
+				      SECTION_NOTYPE, NULL));
+
+      fprintf (asm_out_file, "\t.p2align\t3\n");
+      /* name length.  */
+      fprintf (asm_out_file, "\t.long\t1f - 0f\n");
+      /* data length.  */
+      fprintf (asm_out_file, "\t.long\t5f - 2f\n");
+      /* note type.  */
+      fprintf (asm_out_file, "\t.long\t5\n");
+      fprintf (asm_out_file, "0:\n");
+      /* vendor name: "GNU".  */
+      fprintf (asm_out_file, "\t.asciz\t\"GNU\"\n");
+
+      fprintf (asm_out_file, "1:\n");
+      fprintf (asm_out_file, "\t.p2align\t3\n");
+      fprintf (asm_out_file, "2:\n");
+      /* pr_type.  */
+      fprintf (asm_out_file, "\t.long\t0xc0000000\n");
+      /* pr_datasz.  */
+      fprintf (asm_out_file, "\t.long\t4f - 3f\n");
+      fprintf (asm_out_file, "3:\n");
+      /* zicfiss, zicfilp.  */
+      fprintf (asm_out_file, "\t.long\t0x1\n");
+      fprintf (asm_out_file, "4:\n");
+      fprintf (asm_out_file, "\t.p2align\t3\n");
+      fprintf (asm_out_file, "5:\n");
+    }
+
+  if (TARGET_ZICFISS)
     {
       /* Generate .note.gnu.property section.  */
       switch_to_section (get_section (".note.gnu.property",
