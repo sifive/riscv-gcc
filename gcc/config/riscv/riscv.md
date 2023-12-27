@@ -113,6 +113,7 @@
   UNSPECV_LPAD
   UNSPECV_SETLPL
   UNSPECV_LPAD_ALIGN
+  UNSPECV_SET_GUARDED
 ])
 
 (define_constants
@@ -2626,7 +2627,7 @@
   if (TARGET_ZICFILP)
     {
       rtx t2 = RISCV_CALL_ADDRESS_LPAD (GET_MODE (operands[0]));
-      emit_move_insn (t2, operands[0]);
+      emit_insn (gen_set_guarded (GET_MODE (operands[0]), t2, operands[0]));
       operands[0] = t2;
     }
 
@@ -3300,6 +3301,14 @@
   "TARGET_ZICFILP"
   ".align 2"
   [(set_attr "type" "zicfilp")])
+
+(define_insn "@set_guarded<mode>"
+  [(set (match_operand:SI 0 "register_operand" "r")
+	(unspec_volatile [(match_operand:GPR 1 "register_operand" "r")] UNSPECV_SET_GUARDED))]
+  "TARGET_ZICFILP"
+  "mv\t%0,%1"
+  [(set_attr "type" "move")
+   (set_attr "mode" "<MODE>")])
 
 (include "bitmanip.md")
 (include "crypto.md")
