@@ -3303,7 +3303,7 @@
   [(set_attr "type" "zicfilp")])
 
 (define_insn "@set_guarded<mode>"
-  [(set (match_operand:SI 0 "register_operand" "r")
+  [(set (match_operand:GPR 0 "register_operand" "=r")
 	(unspec_volatile [(match_operand:GPR 1 "register_operand" "r")] UNSPECV_SET_GUARDED))]
   "TARGET_ZICFILP"
   "mv\t%0,%1"
