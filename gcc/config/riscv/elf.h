@@ -23,7 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 -X \
 %{mbig-endian:-EB} \
 %{mlittle-endian:-EL} \
-%{shared}"
+%{shared} \
+%{Oz|Os:--relax-zcmt} \
+"
 
 /* Link against Newlib libraries, because the ELF backend assumes Newlib.
    Handle the circular dependence between libc and libgloss. */
