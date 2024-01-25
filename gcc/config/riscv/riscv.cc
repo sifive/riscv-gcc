@@ -5109,7 +5109,7 @@ riscv_is_eh_return_data_register (unsigned int regno)
 
 static void
 riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
-			  bool epilogue, bool maybe_eh_return)
+			  bool epilogue, bool maybe_eh_return, bool sibcall_p)
 {
   HOST_WIDE_INT offset;
   unsigned int regno;
@@ -5165,7 +5165,12 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 	    }
 	}
 
-      riscv_save_restore_reg (word_mode, regno, offset, fn);
+      if (TARGET_ZICFISS && epilogue && !sibcall_p
+	  && (regno == RETURN_ADDR_REGNUM))
+	riscv_save_restore_reg (word_mode, RISCV_PROLOGUE_TEMP_REGNUM,
+				offset, fn);
+      else
+	riscv_save_restore_reg (word_mode, regno, offset, fn);
     }
 
   /* This loop must iterate over the same space as its companion in
@@ -5327,7 +5332,7 @@ riscv_expand_prologue (void)
 			    GEN_INT (-step1));
       RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
       size -= step1;
-      riscv_for_each_saved_reg (size, riscv_save_reg, false, false);
+      riscv_for_each_saved_reg (size, riscv_save_reg, false, false, false);
     }
 
   frame->mask = mask; /* Undo the above fib.  */
@@ -5425,6 +5430,7 @@ riscv_expand_epilogue (int style)
   bool use_restore_libcall = ((style == NORMAL_RETURN)
 			      && riscv_use_save_libcall (frame));
   rtx ra = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+  rtx t0 = gen_rtx_REG (Pmode, RISCV_PROLOGUE_TEMP_REGNUM);
   rtx insn;
 
   /* We need to add memory barrier to prevent read from deallocated stack.  */
@@ -5555,7 +5561,8 @@ riscv_expand_epilogue (int style)
 
   /* Restore the registers.  */
   riscv_for_each_saved_reg (frame->total_size - step2, riscv_restore_reg,
-			    true, style == EXCEPTION_RETURN);
+			    true, style == EXCEPTION_RETURN,
+			    style == SIBCALL_RETURN);
 
   if (use_restore_libcall)
     {
@@ -5599,7 +5606,12 @@ riscv_expand_epilogue (int style)
 			      EH_RETURN_STACKADJ_RTX));
 
   if (TARGET_ZICFISS)
-    emit_insn (gen_sspopchk (Pmode, ra));
+    {
+      if (BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM))
+        emit_insn (gen_sspopchk (Pmode, t0));
+      else
+        emit_insn (gen_sspopchk (Pmode, ra));
+    }
 
   /* Return from interrupt.  */
   if (cfun->machine->interrupt_handler_p)
@@ -5616,7 +5628,13 @@ riscv_expand_epilogue (int style)
 	emit_jump_insn (gen_riscv_uret ());
     }
   else if (style != SIBCALL_RETURN)
-    emit_jump_insn (gen_simple_return_internal (ra));
+    {
+      if (TARGET_ZICFISS
+	  && BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM))
+	emit_jump_insn (gen_simple_return_internal (t0));
+      else
+	emit_jump_insn (gen_simple_return_internal (ra));
+    }
 }
 
 /* Implement EPILOGUE_USES.  */
