@@ -5666,7 +5666,8 @@ riscv_expand_epilogue (int style)
 
   if (TARGET_ZICFISS)
     {
-      if (BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM))
+      if (BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM)
+	  && style != SIBCALL_RETURN)
         emit_insn (gen_sspopchk (Pmode, t0));
       else
         emit_insn (gen_sspopchk (Pmode, ra));
