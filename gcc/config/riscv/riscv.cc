@@ -4091,11 +4091,15 @@ riscv_legitimize_call_address (rtx addr)
   if (!call_insn_operand (addr, VOIDmode))
     {
       rtx reg = RISCV_CALL_ADDRESS_TEMP (Pmode);
+      riscv_emit_move (reg, addr);
 
       if (TARGET_ZICFILP)
-        reg = RISCV_CALL_ADDRESS_LPAD (Pmode);
+	{
+	  rtx sw_guarded = RISCV_CALL_ADDRESS_LPAD (Pmode);
+	  emit_insn (gen_set_guarded (Pmode, sw_guarded, reg));
+	  return sw_guarded;
+	}
 
-      riscv_emit_move (reg, addr);
       return reg;
     }
 
