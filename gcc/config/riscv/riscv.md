@@ -2654,15 +2654,8 @@
 (define_expand "tablejump"
   [(set (pc) (match_operand 0 "register_operand" ""))
 	      (use (label_ref (match_operand 1 "" "")))]
-  ""
+  "!TARGET_ZICFILP"
 {
-  if (TARGET_ZICFILP)
-    {
-      rtx t2 = RISCV_CALL_ADDRESS_LPAD (GET_MODE (operands[0]));
-      emit_insn (gen_set_guarded (GET_MODE (operands[0]), t2, operands[0]));
-      operands[0] = t2;
-    }
-
   if (CASE_VECTOR_PC_RELATIVE)
       operands[0] = expand_simple_binop (Pmode, PLUS, operands[0],
 					 gen_rtx_LABEL_REF (Pmode, operands[1]),
@@ -2678,8 +2671,31 @@
 (define_insn "tablejump<mode>"
   [(set (pc) (match_operand:GPR 0 "register_operand" "l"))
    (use (label_ref (match_operand 1 "" "")))]
-  ""
+  "!TARGET_ZICFILP"
   "jr\t%0"
+  [(set_attr "type" "jump")
+   (set_attr "mode" "none")])
+
+(define_expand "tablejump_cfi"
+  [(set (pc) (match_operand 0 "register_operand" ""))
+	      (use (label_ref (match_operand 1 "" "")))]
+  "TARGET_ZICFILP"
+{
+   rtx t2 = RISCV_CALL_ADDRESS_LPAD (GET_MODE (operands[0]));
+   emit_insn (gen_set_guarded (GET_MODE (operands[0]), t2, operands[0]));
+   operands[0] = t2;
+
+  if (CASE_VECTOR_PC_RELATIVE)
+      operands[0] = expand_simple_binop (Pmode, PLUS, operands[0],
+					 gen_rtx_LABEL_REF (Pmode, operands[1]),
+					 NULL_RTX, 0, OPTAB_DIRECT);
+})
+
+(define_insn "tablejump_cfi<mode>"
+  [(set (pc) (reg:GPR T2_REGNUM))
+   (use (label_ref (match_operand 0 "")))]
+  "TARGET_ZICFILP"
+  "jr\tt2"
   [(set_attr "type" "jump")
    (set_attr "mode" "none")])
 
