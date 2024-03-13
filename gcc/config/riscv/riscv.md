@@ -2637,16 +2637,34 @@
     emit_insn (gen_set_lpl (Pmode, const1_rtx));
 
   operands[0] = force_reg (Pmode, operands[0]);
-  if (Pmode == SImode)
-    emit_jump_insn (gen_indirect_jumpsi (operands[0]));
+  if (TARGET_ZICFILP)
+    {
+      if (Pmode == SImode)
+	emit_jump_insn (gen_indirect_jump_cfisi (operands[0]));
+      else
+	emit_jump_insn (gen_indirect_jump_cfidi (operands[0]));
+    }
   else
-    emit_jump_insn (gen_indirect_jumpdi (operands[0]));
+    {
+      if (Pmode == SImode)
+	emit_jump_insn (gen_indirect_jumpsi (operands[0]));
+      else
+	emit_jump_insn (gen_indirect_jumpdi (operands[0]));
+    }
   DONE;
 })
 
 (define_insn "indirect_jump<mode>"
   [(set (pc) (match_operand:P 0 "register_operand" "l"))]
-  ""
+  "!TARGET_ZICFILP"
+  "jr\t%0"
+  [(set_attr "type" "jump")
+   (set_attr "mode" "none")])
+
+(define_insn "indirect_jump_cfi<mode>"
+  [(set (pc) (match_operand:P 0 "register_operand" "l"))
+   (use (reg:P T2_REGNUM))]
+  "TARGET_ZICFILP"
   "jr\t%0"
   [(set_attr "type" "jump")
    (set_attr "mode" "none")])
