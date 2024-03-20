@@ -701,7 +701,8 @@ typedef struct {
 
 /* Trampolines are a block of code followed by two pointers.  */
 
-#define TRAMPOLINE_CODE_SIZE 16
+#define TRAMPOLINE_CODE_SIZE ((TARGET_ZICFILP) ? 24 : 16)
+
 #define TRAMPOLINE_SIZE		\
   ((Pmode == SImode)		\
    ? TRAMPOLINE_CODE_SIZE	\
