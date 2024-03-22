@@ -465,6 +465,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zicsr", ISA_SPEC_CLASS_NONE, 2, 0},
   {"zifencei", ISA_SPEC_CLASS_NONE, 2, 0},
 
+  {"zicfiss", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zimop", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zcmop", ISA_SPEC_CLASS_NONE, 1, 0},
 
@@ -1882,6 +1883,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 
   /* SiFive */
   {"zacas", &gcc_options::x_riscv_za_subext, MASK_ZACAS},
+  {"zicfiss", &gcc_options::x_riscv_zi_subext, MASK_ZICFISS},
 
   {NULL, NULL, 0}
 };
