@@ -5596,6 +5596,7 @@ riscv_expand_epilogue (int style)
   if (use_restore_libcall)
     {
       rtx dwarf = riscv_adjust_libcall_cfi_epilogue ();
+
       insn = emit_insn (gen_gpr_restore (GEN_INT (riscv_save_libcall_count (mask))));
       RTX_FRAME_RELATED_P (insn) = 1;
       REG_NOTES (insn) = dwarf;
