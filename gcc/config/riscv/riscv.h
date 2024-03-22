@@ -396,7 +396,8 @@ ASM_MISA_SPEC
 #define RISCV_DWARF_VLENB (4096 + 0xc22)
 
 /* Register in which static-chain is passed to a function.  */
-#define STATIC_CHAIN_REGNUM (GP_TEMP_FIRST + 2)
+#define STATIC_CHAIN_REGNUM \
+  ((TARGET_ZICFILP) ? (GP_TEMP_FIRST + 23) : (GP_TEMP_FIRST + 2))
 
 /* Registers used as temporaries in prologue/epilogue code.
 

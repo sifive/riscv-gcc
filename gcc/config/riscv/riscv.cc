@@ -6670,7 +6670,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 			      | (STATIC_CHAIN_REGNUM << SHIFT_RD)
 			      | (STATIC_CHAIN_REGNUM << SHIFT_RS1)
 			      | ((static_chain_offset - 4) << SHIFT_IMM);
-	  trampoline_cfi[4] = OPCODE_LUI | (0 << SHIFT_RD);
+	  trampoline_cfi[4] = OPCODE_LUI | (RISCV_CALL_ADDRESS_LPAD_REGNUM << SHIFT_RD);
 	  trampoline_cfi[5] = OPCODE_JALR | (RISCV_PROLOGUE_TEMP_REGNUM << SHIFT_RS1);
 
 	  /* Copy the trampoline code.  */
