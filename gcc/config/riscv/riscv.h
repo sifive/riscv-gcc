@@ -202,7 +202,8 @@ ASM_MISA_SPEC
 #define PARM_BOUNDARY BITS_PER_WORD
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY ((TARGET_RVC || TARGET_ZCA) ? 16 : 32)
+#define FUNCTION_BOUNDARY \
+  (((TARGET_RVC || TARGET_ZCA) && !TARGET_ZICFILP) ? 16 : 32)
 
 /* The smallest supported stack boundary the calling convention supports.  */
 #define STACK_BOUNDARY \
@@ -427,7 +428,8 @@ ASM_MISA_SPEC
 #define RISCV_DWARF_VLENB (4096 + 0xc22)
 
 /* Register in which static-chain is passed to a function.  */
-#define STATIC_CHAIN_REGNUM (GP_TEMP_FIRST + 2)
+#define STATIC_CHAIN_REGNUM \
+  ((TARGET_ZICFILP) ? (GP_TEMP_FIRST + 23) : (GP_TEMP_FIRST + 2))
 
 /* Registers used as temporaries in prologue/epilogue code.
 
@@ -444,6 +446,10 @@ ASM_MISA_SPEC
 #define RISCV_CALL_ADDRESS_TEMP_REGNUM (GP_TEMP_FIRST + 1)
 #define RISCV_CALL_ADDRESS_TEMP(MODE) \
   gen_rtx_REG (MODE, RISCV_CALL_ADDRESS_TEMP_REGNUM)
+
+#define RISCV_CALL_ADDRESS_LPAD_REGNUM (GP_TEMP_FIRST + 2)
+#define RISCV_CALL_ADDRESS_LPAD(MODE) \
+  gen_rtx_REG (MODE, RISCV_CALL_ADDRESS_LPAD_REGNUM)
 
 #define RETURN_ADDR_MASK (1 << RETURN_ADDR_REGNUM)
 #define S0_MASK (1 << S0_REGNUM)
@@ -790,7 +796,8 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
 
 /* Trampolines are a block of code followed by two pointers.  */
 
-#define TRAMPOLINE_CODE_SIZE 16
+#define TRAMPOLINE_CODE_SIZE ((TARGET_ZICFILP) ? 24 : 16)
+
 #define TRAMPOLINE_SIZE		\
   ((Pmode == SImode)		\
    ? TRAMPOLINE_CODE_SIZE	\
