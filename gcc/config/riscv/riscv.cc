@@ -6211,6 +6211,9 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Mark the end of the (empty) prologue.  */
   emit_note (NOTE_INSN_PROLOGUE_END);
 
+  if (TARGET_ZICFILP)
+    emit_insn(gen_lpad (const1_rtx));
+
   /* Determine if we can use a sibcall to call FUNCTION directly.  */
   fnaddr = gen_rtx_MEM (FUNCTION_MODE, XEXP (DECL_RTL (function), 0));
 
