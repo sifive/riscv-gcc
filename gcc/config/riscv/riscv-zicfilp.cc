@@ -33,6 +33,7 @@
 #include "tm_p.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "expr.h"
 #include "emit-rtl.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -112,6 +113,18 @@ rest_of_insert_landing_pad (void)
 	      emit_insn_after (gen_lpad (const1_rtx), insn);
 	      continue;
 	    }
+
+	  if (INSN_P (insn) && INSN_CODE (insn) == CODE_FOR_gpr_save)
+	    {
+	      emit_move_insn (RISCV_CALL_ADDRESS_LPAD (Pmode), const1_rtx);
+	      emit_insn_before (gen_lpad_align (), insn);
+	      emit_insn_after (gen_lpad (const1_rtx), insn);
+	      continue;
+	    }
+
+	  if (INSN_P (insn) && INSN_CODE (insn) == CODE_FOR_gpr_restore)
+	    emit_move_insn (RISCV_CALL_ADDRESS_LPAD (Pmode), const1_rtx);
+
 	}
     }
 
