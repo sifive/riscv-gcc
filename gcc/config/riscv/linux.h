@@ -61,6 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 	-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
     %{static:-static} %{static-pie:-static -pie --no-dynamic-linker -z text}}"
 
+#define TARGET_ASM_FILE_END riscv_file_end_indicate_exec_stack
+
 #define STARTFILE_PREFIX_SPEC 			\
    "/lib" XLEN_SPEC "/" ABI_SPEC "/ "		\
    "/usr/lib" XLEN_SPEC "/" ABI_SPEC "/ "	\
