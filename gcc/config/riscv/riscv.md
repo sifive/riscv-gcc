@@ -3078,59 +3078,56 @@
 
   if (TARGET_ZICFISS)
     {
+      rtx t0 = gen_rtx_REG (Pmode, RISCV_PROLOGUE_TEMP_REGNUM);
       /* Restore shadow stack pointer from the first slot
 	 and stack pointer from the second slot.  */
       rtx ssp_slot = adjust_address (operands[1], word_mode, 0);
       stack_slot = adjust_address (operands[1], Pmode, UNITS_PER_WORD);
 
       /* Get the current shadow stack pointer.  */
-      rtx reg_ssp = force_reg (word_mode, const0_rtx);
-      emit_insn (gen_ssrdp (word_mode, reg_ssp, reg_ssp));
-
-      /* Compare through subtraction the saved and the current ssp
-	 to decide if ssp has to be adjusted.  */
-      reg_ssp = expand_simple_binop (word_mode, MINUS,
-				     reg_ssp, ssp_slot,
-				     reg_ssp, 1, OPTAB_DIRECT);
+      rtx cur_ssp = force_reg (word_mode, const0_rtx);
+      emit_insn (gen_ssrdp (word_mode, cur_ssp, cur_ssp));
 
       /* Compare and jump over adjustment code.  */
       rtx noadj_label = gen_label_rtx ();
-      emit_cmp_and_jump_insns (reg_ssp, const0_rtx, EQ, NULL_RTX,
+      emit_cmp_and_jump_insns (cur_ssp, const0_rtx, EQ, NULL_RTX,
 			       word_mode, 1, noadj_label);
 
-      /* Compute the number of frames to adjust.  */
-      rtx reg_adj = gen_lowpart (ptr_mode, reg_ssp);
-      rtx reg_adj_neg = expand_simple_unop (ptr_mode, NEG, reg_adj,
-					    NULL_RTX, 1);
-
-      reg_adj = expand_simple_binop (ptr_mode, LSHIFTRT, reg_adj_neg,
-				     GEN_INT (exact_log2 (UNITS_PER_WORD)),
-				     reg_adj, 1, OPTAB_DIRECT);
-
-      /* Check if number of frames <= 4096 so no loop is needed.  */
-      rtx inc_label = gen_label_rtx ();
-      rtx reg_4096 = force_reg (word_mode, GEN_INT (4096));
-      emit_cmp_and_jump_insns (reg_adj, reg_4096, LEU, NULL_RTX,
-			       ptr_mode, 1, inc_label);
-
-      /* Adjust the ssp in a loop.  */
       rtx loop_label = gen_label_rtx ();
       emit_label (loop_label);
       LABEL_NUSES (loop_label) = 1;
 
-      reg_adj = expand_simple_binop (ptr_mode, MINUS,
-				     reg_adj, reg_4096,
-				     reg_adj, 1, OPTAB_DIRECT);
-      emit_insn (gen_write_ssp (word_mode, reg_adj));
+      /* Check if current ssp less than jump buffer ssp,
+	 so no loop is needed.  */
+      emit_cmp_and_jump_insns (ssp_slot, cur_ssp, LE, NULL_RTX,
+			       ptr_mode, 1, noadj_label);
 
-      /* Compare and jump to the loop label.  */
-      emit_cmp_and_jump_insns (reg_adj, reg_4096, GTU, NULL_RTX,
-			       ptr_mode, 1, loop_label);
+      /* Advance by a maximum of 4K at a time to avoid unwinding
+	 past bounds of the shadow stack.  */
+      rtx reg_4096 = force_reg (word_mode, GEN_INT (4096));
+      rtx cmp_ssp  = gen_reg_rtx (word_mode);
+      cmp_ssp = expand_simple_binop (ptr_mode, MINUS,
+				     ssp_slot, cur_ssp,
+				     cmp_ssp, 1, OPTAB_DIRECT);
 
-      emit_label (inc_label);
-      LABEL_NUSES (inc_label) = 1;
+      /* Update curr_ssp from jump buffer ssp.  */
+      emit_move_insn (cur_ssp, ssp_slot);
+      emit_insn (gen_write_ssp (word_mode, cur_ssp));
+      emit_jump_insn (gen_jump (loop_label));
 
-      emit_insn (gen_write_ssp (word_mode, reg_ssp));
+      /* Adjust the ssp in a loop.  */
+      rtx cmp_4k_label = gen_label_rtx ();
+      emit_label (cmp_4k_label);
+      LABEL_NUSES (cmp_4k_label) = 1;
+
+      /* Add 4k for curr_ssp.  */
+      cur_ssp = expand_simple_binop (ptr_mode, PLUS,
+				     cur_ssp, reg_4096,
+				     cur_ssp, 1, OPTAB_DIRECT);
+      emit_insn (gen_write_ssp (word_mode, cur_ssp));
+      emit_insn (gen_sspush (Pmode, t0));
+      emit_insn (gen_sspopchk (Pmode, t0));
+      emit_jump_insn (gen_jump (loop_label));
 
       emit_label (noadj_label);
       LABEL_NUSES (noadj_label) = 1;
