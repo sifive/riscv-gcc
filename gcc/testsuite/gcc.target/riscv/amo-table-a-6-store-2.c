@@ -6,10 +6,11 @@
 
 /*
 ** foo:
+**	...
 **	lw\ta[0-9]+,0\(a1\)
 **	fence\trw,w
 **	sw\ta[0-9]+,0\(a0\)
-**	ret
+**	...
 */
 void foo (int* bar, int* baz)
 {

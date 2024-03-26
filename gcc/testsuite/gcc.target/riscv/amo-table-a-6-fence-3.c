@@ -6,8 +6,9 @@
 
 /*
 ** foo:
+**	...
 **	fence\trw,w
-**	ret
+**	...
 */
 void foo()
 {

@@ -7,8 +7,9 @@
 
 /*
 ** foo:
+**	...
 **	amoadd\.w\.aqrl\tzero,a1,0\(a0\)
-**	ret
+**	...
 */
 void foo (int* bar, int* baz)
 {

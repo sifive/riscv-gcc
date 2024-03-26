@@ -6,8 +6,9 @@
 
 /*
 ** foo:
+**	...
 **	fence\.tso
-**	ret
+**	...
 */
 void foo()
 {
