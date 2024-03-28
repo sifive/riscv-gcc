@@ -3023,7 +3023,7 @@
       stack_slot = adjust_address (operands[0], Pmode, UNITS_PER_WORD);
 
       rtx reg_ssp = force_reg (word_mode, const0_rtx);
-      emit_insn (gen_ssrdp (word_mode, reg_ssp, reg_ssp));
+      emit_insn (gen_ssrdp (word_mode, reg_ssp));
       emit_move_insn (ssp_slot, reg_ssp);
     }
   else
@@ -3054,7 +3054,7 @@
 
       /* Get the current shadow stack pointer.  */
       rtx cur_ssp = force_reg (word_mode, const0_rtx);
-      emit_insn (gen_ssrdp (word_mode, cur_ssp, cur_ssp));
+      emit_insn (gen_ssrdp (word_mode, cur_ssp));
 
       /* Compare and jump over adjustment code.  */
       rtx noadj_label = gen_label_rtx ();
@@ -3295,8 +3295,7 @@
 
 (define_insn "@ssrdp<mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
-	(unspec_volatile [(match_operand:P 1 "register_operand" "0")]
-			 UNSPECV_SSRDP))]
+	(unspec_volatile [(const_int 0)] UNSPECV_SSRDP))]
   "TARGET_ZICFISS"
   "ssrdp\t%0"
   [(set_attr "type" "zicfiss")
