@@ -5214,6 +5214,7 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 	}
 
       if (TARGET_ZICFISS && epilogue && !sibcall_p
+	  && !(maybe_eh_return && crtl->calls_eh_return)
 	  && (regno == RETURN_ADDR_REGNUM))
 	riscv_save_restore_reg (word_mode, RISCV_PROLOGUE_TEMP_REGNUM,
 				offset, fn);
@@ -5669,7 +5670,8 @@ riscv_expand_epilogue (int style)
     emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
 			      EH_RETURN_STACKADJ_RTX));
 
-  if (TARGET_ZICFISS)
+  if (TARGET_ZICFISS
+      && !((style == EXCEPTION_RETURN) && crtl->calls_eh_return))
     {
       if (BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM)
 	  && style != SIBCALL_RETURN)
@@ -5695,6 +5697,7 @@ riscv_expand_epilogue (int style)
   else if (style != SIBCALL_RETURN)
     {
       if (TARGET_ZICFISS
+	  && !((style == EXCEPTION_RETURN) && crtl->calls_eh_return)
 	  && BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM))
 	emit_jump_insn (gen_simple_return_internal (t0));
       else
