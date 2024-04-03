@@ -22,37 +22,66 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#define LIBGCC2_UNITS_PER_WORD (__riscv_xlen / 8)
+
 /* Unwind the shadow stack for EH.  */
 #undef _Unwind_Frames_Extra
 #define _Unwind_Frames_Extra(x)					\
   do								\
     {								\
-      _Unwind_Word ssp;						\
+      _Unwind_Word ssp = 0;					\
       asm volatile ("ssrdp %0" : "=r"(ssp));			\
       if (ssp != 0)						\
 	{							\
 	  _Unwind_Word tmp = (x);				\
-	  while (tmp > ssp)					\
+	  tmp = tmp * LIBGCC2_UNITS_PER_WORD;			\
+	  while (tmp > 4096)					\
 	    {							\
-	      if ((tmp - ssp) >= 4096)				\
-		ssp += 4096;					\
-	      else						\
-		ssp = tmp;					\
+	      ssp += 4096;					\
+	      tmp -= 4096;					\
 	      asm volatile ("csrw ssp, %0" :: "r"(ssp));	\
 	      asm volatile ("sspush x5");			\
 	      asm volatile ("sspopchk x5");			\
+	    }							\
+								\
+	  if (tmp > 0)						\
+	    {							\
+	      ssp += tmp;					\
+	      asm volatile ("csrw ssp, %0" :: "r"(ssp));	\
 	    }							\
 	}							\
     }								\
     while (0)
 
+// FIXME: The unwinding for signal handler, we have not verified it yet.
 #undef _Unwind_Frames_Increment
 #define _Unwind_Frames_Increment(exc, context, frames)	\
+  if (_Unwind_IsSignalFrame (context))			\
+    do							\
+      {							\
+	_Unwind_Word ssp, prev_ssp, token;		\
+	asm volatile ("ssrdp %0" : "=r"(ssp));		\
+	if (ssp != 0)					\
+	  {						\
+	    do						\
+	      {						\
+		/* Look for a restore token.  */	\
+		token = (*(_Unwind_Word *) (ssp - 8));	\
+		prev_ssp = token & ~7;			\
+		if (prev_ssp == ssp)			\
+		  break;				\
+		ssp += 8;				\
+	      }						\
+	    while (1);					\
+	    frames += (token & 0x4) ? 3 : 2;		\
+	  }						\
+      }							\
+    while (0);						\
+  else							\
     {							\
       frames++;						\
       if (exc->exception_class != 0			\
-	  && _Unwind_GetIP (context) != 0		\
-	  && !_Unwind_IsSignalFrame (context))		\
+	  && _Unwind_GetIP (context) != 0)		\
 	{						\
 	  _Unwind_Word ssp;				\
 	  asm volatile ("ssrdp %0" : "=r"(ssp));	\
