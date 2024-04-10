@@ -53,35 +53,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
     }								\
     while (0)
 
-// FIXME: The unwinding for signal handler, we have not verified it yet.
 #undef _Unwind_Frames_Increment
 #define _Unwind_Frames_Increment(exc, context, frames)	\
-  if (_Unwind_IsSignalFrame (context))			\
-    do							\
-      {							\
-	_Unwind_Word ssp, prev_ssp, token;		\
-	asm volatile ("ssrdp %0" : "=r"(ssp));		\
-	if (ssp != 0)					\
-	  {						\
-	    do						\
-	      {						\
-		/* Look for a restore token.  */	\
-		token = (*(_Unwind_Word *) (ssp - 8));	\
-		prev_ssp = token & ~7;			\
-		if (prev_ssp == ssp)			\
-		  break;				\
-		ssp += 8;				\
-	      }						\
-	    while (1);					\
-	    frames += (token & 0x4) ? 3 : 2;		\
-	  }						\
-      }							\
-    while (0);						\
-  else							\
     {							\
       frames++;						\
       if (exc->exception_class != 0			\
-	  && _Unwind_GetIP (context) != 0)		\
+	  && _Unwind_GetIP (context) != 0		\
+	  && !_Unwind_IsSignalFrame (context))		\
 	{						\
 	  _Unwind_Word ssp;				\
 	  asm volatile ("ssrdp %0" : "=r"(ssp));	\
