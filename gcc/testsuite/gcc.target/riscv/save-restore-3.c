@@ -1,3 +1,4 @@
+/* { dg-require-effective-target riscv_no_cfi } */
 /* { dg-options "-msave-restore -mcmodel=medlow" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Og" } } */
 

@@ -1889,6 +1889,18 @@ proc check_linker_plugin_available { } {
   } "-flto -fuse-linker-plugin"]
 }
 
+# Return 1 if the target has RISC-V CFI extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_no_cfi { } {
+    # Check that we are compiling for CFI.
+    return [check_no_compiler_messages riscv_no_cfi assembly {
+       #if defined(__riscv_zicfiss) || defined(__riscv_zicfilp)
+       #error "Has Zicfiss or Zicfilp extension"
+       #endif
+    }]
+}
+
 # Return 1 if the target is RV32, 0 otherwise.  Cache the result.
 
 proc check_effective_target_rv32 { } {

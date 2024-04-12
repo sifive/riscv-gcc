@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target riscv_no_cfi } */
 /* { dg-options "-O2 -dp" } */
 /* This was extracted from coremark.  */
 
