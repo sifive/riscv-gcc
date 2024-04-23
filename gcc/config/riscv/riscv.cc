@@ -4772,6 +4772,9 @@ riscv_save_reg_p (unsigned int regno)
       if (regno == GP_REGNUM || regno == THREAD_POINTER_REGNUM)
 	return false;
 
+      if (regno == RETURN_ADDR_REGNUM && TARGET_ZICFISS)
+       return true;
+
       /* We must save every register used in this function.  If this is not a
 	 leaf function, then we must save all temporary registers.  */
       if (df_regs_ever_live_p (regno)
@@ -5171,7 +5174,8 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 
       if (TARGET_ZICFISS && epilogue && !sibcall_p
 	  && !(maybe_eh_return && crtl->calls_eh_return)
-	  && (regno == RETURN_ADDR_REGNUM))
+	  && (regno == RETURN_ADDR_REGNUM)
+	  && !cfun->machine->interrupt_handler_p)
 	riscv_save_restore_reg (word_mode, RISCV_PROLOGUE_TEMP_REGNUM,
 				offset, fn);
       else
@@ -5615,7 +5619,8 @@ riscv_expand_epilogue (int style)
       && !((style == EXCEPTION_RETURN) && crtl->calls_eh_return))
     {
       if (BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM)
-	  && style != SIBCALL_RETURN)
+	  && style != SIBCALL_RETURN
+	  && !cfun->machine->interrupt_handler_p)
         emit_insn (gen_sspopchk (Pmode, t0));
       else
         emit_insn (gen_sspopchk (Pmode, ra));
@@ -5639,7 +5644,8 @@ riscv_expand_epilogue (int style)
     {
       if (TARGET_ZICFISS
 	  && !((style == EXCEPTION_RETURN) && crtl->calls_eh_return)
-	  && BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM))
+	  && BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM)
+	  && !cfun->machine->interrupt_handler_p)
 	emit_jump_insn (gen_simple_return_internal (t0));
       else
 	emit_jump_insn (gen_simple_return_internal (ra));
