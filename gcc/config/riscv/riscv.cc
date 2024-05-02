@@ -4096,7 +4096,7 @@ riscv_legitimize_call_address (rtx addr)
       if (TARGET_ZICFILP)
 	{
 	  rtx sw_guarded = RISCV_CALL_ADDRESS_LPAD (Pmode);
-	  emit_insn (gen_set_guarded (Pmode, sw_guarded, reg));
+	  emit_insn (gen_set_guarded (Pmode, reg));
 	  return sw_guarded;
 	}
 
