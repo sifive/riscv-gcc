@@ -681,3 +681,7 @@ Specifies whether the fence.tso instruction should be used.
 mautovec-segment
 Target Integer Var(riscv_mautovec_segment) Init(1)
 Enable (default) or disable generation of vector segment load/store instructions.
+
+mcfi-ss
+Target Bool Var(riscv_cfi_ss) Init(1)
+Only for disable CFI shadow stack instructions.
