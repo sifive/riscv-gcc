@@ -258,3 +258,7 @@ Set the version of RISC-V ISA spec.
 minline-atomics
 Target Var(TARGET_INLINE_SUBWORD_ATOMIC) Init(1)
 Always inline subword atomic operations.
+
+mcfi-ss
+Target Bool Var(riscv_cfi_ss) Init(1)
+Only for disable CFI shadow stack instructions.

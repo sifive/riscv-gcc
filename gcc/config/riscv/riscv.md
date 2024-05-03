@@ -3047,7 +3047,7 @@
 {
   rtx stack_slot;
 
-  if (TARGET_ZICFISS)
+  if (is_zicfiss_p ())
     {
       /* Copy shadow stack pointer to the first slot
 	 and stack pointer to the second slot.  */
@@ -3076,7 +3076,7 @@
 {
   rtx stack_slot;
 
-  if (TARGET_ZICFISS)
+  if (is_zicfiss_p ())
     {
       rtx t0 = gen_rtx_REG (Pmode, RISCV_PROLOGUE_TEMP_REGNUM);
       /* Restore shadow stack pointer from the first slot

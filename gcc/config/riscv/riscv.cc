@@ -154,6 +154,9 @@ struct GTY(())  machine_function {
   /* True if attributes on current function have been checked.  */
   bool attributes_checked_p;
 
+  /* True if current function disable CFI shadow stack.  */
+  bool no_cfi_ss_p;
+
   /* The current frame information, calculated by riscv_compute_frame_info.  */
   struct riscv_frame_info frame;
 
@@ -383,6 +386,9 @@ static const struct attribute_spec riscv_attribute_table[] =
   /* This attribute generates prologue/epilogue for interrupt handlers.  */
   { "interrupt", 0, 1, false, true, true, false,
     riscv_handle_type_attribute, NULL },
+  /* The attribute disable CFI shadow stack.  */
+  { "no_cfi_ss", 0, 0, true, false, false, false,
+    riscv_handle_fndecl_attribute, NULL },
 
   /* The following two are used for the built-in properties of the Vector type
      and are not used externally */
@@ -4058,6 +4064,16 @@ riscv_naked_function_p (tree func)
   return NULL_TREE != lookup_attribute ("naked", DECL_ATTRIBUTES (func_decl));
 }
 
+/* Return true if FUNC disable CFI shadow stack.  */
+static bool
+riscv_no_cfi_ss_p (tree func)
+{
+  tree func_decl = func;
+  if (func == NULL_TREE)
+    func_decl = current_function_decl;
+  return NULL_TREE != lookup_attribute ("no_cfi_ss", DECL_ATTRIBUTES (func_decl));
+}
+
 /* Implement TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS.  */
 static bool
 riscv_allocate_stack_slots_for_args ()
@@ -4816,8 +4832,8 @@ riscv_save_reg_p (unsigned int regno)
       if (regno == GP_REGNUM || regno == THREAD_POINTER_REGNUM)
 	return false;
 
-      if (regno == RETURN_ADDR_REGNUM && TARGET_ZICFISS)
-       return true;
+      if (regno == RETURN_ADDR_REGNUM && is_zicfiss_p ())
+	return true;
 
       /* We must save every register used in this function.  If this is not a
 	 leaf function, then we must save all temporary registers.  */
@@ -5216,7 +5232,7 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 	    }
 	}
 
-      if (TARGET_ZICFISS && epilogue && !sibcall_p
+      if (is_zicfiss_p () && epilogue && !sibcall_p
 	  && !(maybe_eh_return && crtl->calls_eh_return)
 	  && (regno == RETURN_ADDR_REGNUM)
 	  && !cfun->machine->interrupt_handler_p)
@@ -5356,7 +5372,7 @@ riscv_expand_prologue (void)
   if (cfun->machine->naked_p)
     return;
 
-  if (TARGET_ZICFISS)
+  if (is_zicfiss_p ())
     emit_insn (gen_sspush (Pmode, gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM)));
 
   /* When optimizing for size, call a subroutine to save the registers.  */
@@ -5674,7 +5690,7 @@ riscv_expand_epilogue (int style)
     emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
 			      EH_RETURN_STACKADJ_RTX));
 
-  if (TARGET_ZICFISS
+  if (is_zicfiss_p ()
       && !((style == EXCEPTION_RETURN) && crtl->calls_eh_return))
     {
       if (BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM)
@@ -5701,7 +5717,7 @@ riscv_expand_epilogue (int style)
     }
   else if (style != SIBCALL_RETURN)
     {
-      if (TARGET_ZICFISS
+      if (is_zicfiss_p ()
 	  && !((style == EXCEPTION_RETURN) && crtl->calls_eh_return)
 	  && BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM)
 	  && !cfun->machine->interrupt_handler_p)
@@ -5897,7 +5913,7 @@ riscv_can_use_return_insn (void)
 {
   return (reload_completed && known_eq (cfun->machine->frame.total_size, 0)
 	  && ! cfun->machine->interrupt_handler_p
-	  && !TARGET_ZICFISS);
+	  && !is_zicfiss_p ());
 }
 
 /* Given that there exists at least one variable that is set (produced)
@@ -6777,6 +6793,7 @@ riscv_set_current_function (tree decl)
   cfun->machine->naked_p = riscv_naked_function_p (decl);
   cfun->machine->interrupt_handler_p
     = riscv_interrupt_type_p (TREE_TYPE (decl));
+  cfun->machine->no_cfi_ss_p = riscv_no_cfi_ss_p (decl);
 
   if (cfun->machine->naked_p && cfun->machine->interrupt_handler_p)
     error ("function attributes %qs and %qs are mutually exclusive",
@@ -7390,6 +7407,21 @@ riscv_file_end_indicate_exec_stack ()
       fprintf (asm_out_file, "5:\n");
     }
 }
+
+bool is_zicfiss_p ()
+{
+  if (TARGET_ZICFISS)
+    {
+      if (cfun && cfun->machine->no_cfi_ss_p)
+       return false;
+      else if (!riscv_cfi_ss)
+       return false;
+      else
+       return true;
+    }
+
+  return false;
+};
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
