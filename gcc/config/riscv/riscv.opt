@@ -641,3 +641,7 @@ Enum(tls_type) String(desc) Value(TLS_DESCRIPTORS)
 mtls-dialect=
 Target RejectNegative Joined Enum(tls_type) Var(riscv_tls_dialect) Init(TLS_TRADITIONAL) Save
 Specify TLS dialect.
+
+mcfi-ss
+Target Bool Var(riscv_cfi_ss) Init(1)
+Only for disable CFI shadow stack instructions.
