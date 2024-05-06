@@ -2633,11 +2633,11 @@
   [(set (pc) (match_operand 0 "register_operand"))]
   ""
 {
-  if (TARGET_ZICFILP)
+  if (is_zicfilp_p ())
     emit_insn (gen_set_lpl (Pmode, const1_rtx));
 
   operands[0] = force_reg (Pmode, operands[0]);
-  if (TARGET_ZICFILP)
+  if (is_zicfilp_p ())
     {
       if (Pmode == SImode)
 	emit_jump_insn (gen_indirect_jump_cfisi (operands[0]));
@@ -2679,7 +2679,7 @@
 					 gen_rtx_LABEL_REF (Pmode, operands[1]),
 					 NULL_RTX, 0, OPTAB_DIRECT);
 
-  if (TARGET_ZICFILP)
+  if (is_zicfilp_p ())
     {
       rtx t2 = RISCV_CALL_ADDRESS_LPAD (GET_MODE (operands[0]));
       emit_move_insn (t2, operands[0]);

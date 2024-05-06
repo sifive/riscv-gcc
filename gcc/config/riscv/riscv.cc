@@ -157,6 +157,9 @@ struct GTY(())  machine_function {
   /* True if current function disable CFI shadow stack.  */
   bool no_cfi_ss_p;
 
+  /* True if current function disable CFI landing pad.  */
+  bool no_cfi_lp_p;
+
   /* The current frame information, calculated by riscv_compute_frame_info.  */
   struct riscv_frame_info frame;
 
@@ -388,6 +391,9 @@ static const struct attribute_spec riscv_attribute_table[] =
     riscv_handle_type_attribute, NULL },
   /* The attribute disable CFI shadow stack.  */
   { "no_cfi_ss", 0, 0, true, false, false, false,
+    riscv_handle_fndecl_attribute, NULL },
+  /* The attribute disable CFI landing pad.  */
+  { "no_cfi_lp", 0, 0, true, false, false, false,
     riscv_handle_fndecl_attribute, NULL },
 
   /* The following two are used for the built-in properties of the Vector type
@@ -4074,6 +4080,16 @@ riscv_no_cfi_ss_p (tree func)
   return NULL_TREE != lookup_attribute ("no_cfi_ss", DECL_ATTRIBUTES (func_decl));
 }
 
+/* Return true if FUNC disable CFI landing pad.  */
+static bool
+riscv_no_cfi_lp_p (tree func)
+{
+  tree func_decl = func;
+  if (func == NULL_TREE)
+    func_decl = current_function_decl;
+  return NULL_TREE != lookup_attribute ("no_cfi_lp", DECL_ATTRIBUTES (func_decl));
+}
+
 /* Implement TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS.  */
 static bool
 riscv_allocate_stack_slots_for_args ()
@@ -4110,7 +4126,7 @@ riscv_legitimize_call_address (rtx addr)
       rtx reg = RISCV_CALL_ADDRESS_TEMP (Pmode);
       riscv_emit_move (reg, addr);
 
-      if (TARGET_ZICFILP)
+      if (is_zicfilp_p ())
 	{
 	  rtx sw_guarded = RISCV_CALL_ADDRESS_LPAD (Pmode);
 	  emit_insn (gen_set_guarded (Pmode, reg));
@@ -4120,7 +4136,7 @@ riscv_legitimize_call_address (rtx addr)
       return reg;
     }
 
-  if (TARGET_ZICFILP && REG_P (addr))
+  if (is_zicfilp_p () && REG_P (addr))
     emit_insn (gen_set_lpl (Pmode, const1_rtx));
 
   return addr;
@@ -6236,7 +6252,7 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Mark the end of the (empty) prologue.  */
   emit_note (NOTE_INSN_PROLOGUE_END);
 
-  if (TARGET_ZICFILP)
+  if (is_zicfilp_p ())
     emit_insn(gen_lpad (const1_rtx));
 
   /* Determine if we can use a sibcall to call FUNCTION directly.  */
@@ -6564,7 +6580,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 
   /* Work out the offsets of the pointers from the start of the
      trampoline code.  */
-  if (!TARGET_ZICFILP)
+  if (!is_zicfilp_p())
     gcc_assert (ARRAY_SIZE (trampoline) * 4 == TRAMPOLINE_CODE_SIZE);
   else
     gcc_assert (ARRAY_SIZE (trampoline_cfi) * 4 == TRAMPOLINE_CODE_SIZE);
@@ -6653,7 +6669,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       static_chain_offset = TRAMPOLINE_CODE_SIZE;
       target_function_offset = static_chain_offset + GET_MODE_SIZE (ptr_mode);
 
-      if (!TARGET_ZICFILP)
+      if (!is_zicfilp_p())
 	{
 	  /* auipc   t2, 0
 	     l[wd]   t0, (target_function_offset)(t2)
@@ -6794,6 +6810,7 @@ riscv_set_current_function (tree decl)
   cfun->machine->interrupt_handler_p
     = riscv_interrupt_type_p (TREE_TYPE (decl));
   cfun->machine->no_cfi_ss_p = riscv_no_cfi_ss_p (decl);
+  cfun->machine->no_cfi_lp_p = riscv_no_cfi_lp_p (decl);
 
   if (cfun->machine->naked_p && cfun->machine->interrupt_handler_p)
     error ("function attributes %qs and %qs are mutually exclusive",
@@ -7418,6 +7435,21 @@ bool is_zicfiss_p ()
        return false;
       else
        return true;
+    }
+
+  return false;
+};
+
+bool is_zicfilp_p ()
+{
+  if (TARGET_ZICFILP)
+    {
+      if (cfun && cfun->machine->no_cfi_lp_p)
+	return false;
+      else if (!riscv_cfi_lp)
+	return false;
+      else
+	return true;
     }
 
   return false;

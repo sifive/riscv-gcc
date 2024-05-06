@@ -151,7 +151,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return TARGET_ZICFILP;
+      return is_zicfilp_p ();
     }
 
   virtual unsigned int execute (function *)

@@ -262,3 +262,7 @@ Always inline subword atomic operations.
 mcfi-ss
 Target Bool Var(riscv_cfi_ss) Init(1)
 Only for disable CFI shadow stack instructions.
+
+mcfi-lp
+Target Bool Var(riscv_cfi_lp) Init(1)
+Only for disable CFI landing pad instructions.
