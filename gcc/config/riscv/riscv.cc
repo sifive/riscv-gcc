@@ -205,6 +205,9 @@ struct GTY(())  machine_function {
   /* True if current function disable CFI shadow stack.  */
   bool no_cfi_ss_p;
 
+  /* True if current function disable CFI landing pad.  */
+  bool no_cfi_lp_p;
+
   /* The current frame information, calculated by riscv_compute_frame_info.  */
   struct riscv_frame_info frame;
 
@@ -666,6 +669,9 @@ static const attribute_spec riscv_gnu_attributes[] =
    NULL},
   /* The attribute disable CFI shadow stack.  */
   { "no_cfi_ss", 0, 0, true, false, false, false,
+    riscv_handle_fndecl_attribute, NULL },
+  /* The attribute disable CFI landing pad.  */
+  { "no_cfi_lp", 0, 0, true, false, false, false,
     riscv_handle_fndecl_attribute, NULL },
 
   /* The following two are used for the built-in properties of the Vector type
@@ -6673,6 +6679,16 @@ riscv_no_cfi_ss_p (tree func)
   return NULL_TREE != lookup_attribute ("no_cfi_ss", DECL_ATTRIBUTES (func_decl));
 }
 
+/* Return true if FUNC disable CFI landing pad.  */
+static bool
+riscv_no_cfi_lp_p (tree func)
+{
+  tree func_decl = func;
+  if (func == NULL_TREE)
+    func_decl = current_function_decl;
+  return NULL_TREE != lookup_attribute ("no_cfi_lp", DECL_ATTRIBUTES (func_decl));
+}
+
 /* Implement TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS.  */
 static bool
 riscv_allocate_stack_slots_for_args ()
@@ -11246,6 +11262,7 @@ riscv_set_current_function (tree decl)
       cfun->machine->interrupt_handler_p
 	= riscv_interrupt_type_p (TREE_TYPE (decl));
       cfun->machine->no_cfi_ss_p = riscv_no_cfi_ss_p (decl);
+      cfun->machine->no_cfi_lp_p = riscv_no_cfi_lp_p (decl);
 
       if (cfun->machine->naked_p && cfun->machine->interrupt_handler_p)
 	error ("function attributes %qs and %qs are mutually exclusive",
@@ -14047,7 +14064,12 @@ bool is_zicfiss_p ()
 bool is_zicfilp_p ()
 {
   if (TARGET_ZICFILP && (flag_cf_protection & CF_BRANCH))
-    return true;
+    {
+      if (cfun && cfun->machine->no_cfi_lp_p)
+	return false;
+      else
+	return true;
+    }
 
   return false;
 }
