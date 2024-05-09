@@ -94,6 +94,11 @@ rest_of_insert_landing_pad (void)
   rtx lpad_insn;
   rtx_insn *insn;
   basic_block bb;
+  rtx lp_value = const1_rtx;
+
+  int attribute_lp_value = riscv_get_lp_value (cfun->decl);
+  if (attribute_lp_value != -1)
+    lp_value = GEN_INT (attribute_lp_value);
 
   bb = 0;
   FOR_EACH_BB_FN (bb, cfun)
@@ -108,21 +113,20 @@ rest_of_insert_landing_pad (void)
 		   || bb->flags & BB_NON_LOCAL_GOTO_TARGET))
 	    {
 	      emit_insn_before (gen_lpad_align (), insn);
-	      emit_insn_after (gen_lpad (const0_rtx), insn);
+	      emit_insn_after (gen_lpad (lp_value), insn);
 	      continue;
 	    }
 
 	  if (INSN_P (insn) && INSN_CODE (insn) == CODE_FOR_gpr_save)
 	    {
-	      emit_move_insn (RISCV_CALL_ADDRESS_LPAD (Pmode), const0_rtx);
+	      emit_move_insn (RISCV_CALL_ADDRESS_LPAD (Pmode), lp_value);
 	      emit_insn_before (gen_lpad_align (), insn);
-	      emit_insn_after (gen_lpad (const0_rtx), insn);
+	      emit_insn_after (gen_lpad (lp_value), insn);
 	      continue;
 	    }
 
 	  if (INSN_P (insn) && INSN_CODE (insn) == CODE_FOR_gpr_restore)
-	    emit_move_insn (RISCV_CALL_ADDRESS_LPAD (Pmode), const0_rtx);
-
+	    emit_move_insn (RISCV_CALL_ADDRESS_LPAD (Pmode), lp_value);
 	}
     }
 
@@ -132,7 +136,7 @@ rest_of_insert_landing_pad (void)
     {
       bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
       insn = BB_HEAD (bb);
-      lpad_insn = gen_lpad (const0_rtx);
+      lpad_insn = gen_lpad (lp_value);
       emit_insn_before (lpad_insn, insn);
     }
 

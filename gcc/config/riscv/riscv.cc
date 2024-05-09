@@ -208,6 +208,9 @@ struct GTY(())  machine_function {
   /* True if current function disable CFI landing pad.  */
   bool no_cfi_lp_p;
 
+  /* Get a landing pad value from landing_pad_value attribute.  */
+  int lp_value;
+
   /* The current frame information, calculated by riscv_compute_frame_info.  */
   struct riscv_frame_info frame;
 
@@ -653,6 +656,7 @@ static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_rvv_vector_bits_attribute (tree *, tree, tree, int,
 						    bool *);
+static tree riscv_handle_lpad_value_attribute (tree *, tree, tree, int, bool *);
 
 /* Defining target-specific uses of __attribute__.  */
 static const attribute_spec riscv_gnu_attributes[] =
@@ -673,6 +677,10 @@ static const attribute_spec riscv_gnu_attributes[] =
   /* The attribute disable CFI landing pad.  */
   { "no_cfi_lp", 0, 0, true, false, false, false,
     riscv_handle_fndecl_attribute, NULL },
+  /* Set a landing pad value, and the landing pad value
+     starts from 0 to 0xfffff.  */
+  { "landing_pad_value", 1, 1, false, false, false, false,
+    riscv_handle_lpad_value_attribute, NULL },
 
   /* The following two are used for the built-in properties of the Vector type
      and are not used externally */
@@ -6652,6 +6660,43 @@ riscv_handle_rvv_vector_bits_attribute (tree *node, tree name, tree args,
   return NULL_TREE;
 }
 
+static tree
+riscv_handle_lpad_value_attribute (tree *node, tree name,
+				   tree args,
+				   int flags ATTRIBUTE_UNUSED,
+				   bool *no_add_attrs)
+{
+  if (is_attribute_p ("landing_pad_value", name))
+    {
+      if (args)
+	{
+	  tree cst = TREE_VALUE (args);
+	  if (TREE_CODE (cst) != INTEGER_CST)
+	    {
+	      warning (OPT_Wattributes, "%qE attribute requires an integer argument",
+		       name);
+	      *no_add_attrs = true;
+	    }
+	  else
+	    {
+	      if (!IN_RANGE (TREE_INT_CST_LOW (cst), 0, 0xfffff))
+		{
+		  warning (OPT_Wattributes, "%qE attribute is out of range",
+			   name);
+		  *no_add_attrs = true;
+		}
+	    }
+	}
+      else
+	{
+	  warning (OPT_Wattributes, "%qE requires an argument", name);
+	  *no_add_attrs = true;
+	}
+    }
+
+  return NULL_TREE;
+}
+
 /* Return true if function TYPE is an interrupt function.  */
 static bool
 riscv_interrupt_type_p (tree type)
@@ -6687,6 +6732,25 @@ riscv_no_cfi_lp_p (tree func)
   if (func == NULL_TREE)
     func_decl = current_function_decl;
   return NULL_TREE != lookup_attribute ("no_cfi_lp", DECL_ATTRIBUTES (func_decl));
+}
+
+int
+riscv_get_lp_value (tree func)
+{
+  tree attr;
+  tree func_decl = func;
+  if (func == NULL_TREE)
+    func_decl = current_function_decl;
+
+  attr = lookup_attribute ("landing_pad_value", DECL_ATTRIBUTES (func_decl));
+
+  if (attr)
+    {
+      tree attr_args = TREE_VALUE (attr);
+      return TREE_INT_CST_LOW (TREE_VALUE (attr_args));
+    }
+
+  return -1;
 }
 
 /* Implement TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS.  */
@@ -10449,7 +10513,14 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   emit_note (NOTE_INSN_PROLOGUE_END);
 
   if (is_zicfilp_p ())
-    emit_insn(gen_lpad (const0_rtx));
+    {
+      rtx lp_value = const1_rtx;
+
+      if (cfun->machine->lp_value != -1)
+	lp_value = GEN_INT (cfun->machine->lp_value);
+
+      emit_insn(gen_lpad (lp_value));
+    }
 
   /* Determine if we can use a sibcall to call FUNCTION directly.  */
   fnaddr = gen_rtx_MEM (FUNCTION_MODE, XEXP (DECL_RTL (function), 0));
@@ -11263,6 +11334,7 @@ riscv_set_current_function (tree decl)
 	= riscv_interrupt_type_p (TREE_TYPE (decl));
       cfun->machine->no_cfi_ss_p = riscv_no_cfi_ss_p (decl);
       cfun->machine->no_cfi_lp_p = riscv_no_cfi_lp_p (decl);
+      cfun->machine->lp_value = riscv_get_lp_value (decl);
 
       if (cfun->machine->naked_p && cfun->machine->interrupt_handler_p)
 	error ("function attributes %qs and %qs are mutually exclusive",
