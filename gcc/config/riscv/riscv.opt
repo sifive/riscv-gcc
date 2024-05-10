@@ -523,6 +523,10 @@ Mask(XSFVCP) Var(riscv_sifive_subext)
 
 Mask(XSFCEASE) Var(riscv_sifive_subext)
 
+Mask(XSFVQMACCDOD)    Var(riscv_sifive_subext)
+
+Mask(XSFVQMACCQOQ)  Var(riscv_sifive_subext)
+
 Enum
 Name(isa_spec_class) Type(enum riscv_isa_spec_class)
 Supported ISA specs (for use with the -misa-spec= option):
