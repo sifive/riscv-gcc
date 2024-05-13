@@ -38,3 +38,5 @@ along with GCC; see the file COPYING3.  If not see
 #define ENDFILE_SPEC "crtend%O%s"
 
 #define RISCV_USE_CUSTOMISED_MULTI_LIB select_by_abi_arch_cmodel
+
+#define TARGET_ASM_FILE_END riscv_file_end_indicate_exec_stack
