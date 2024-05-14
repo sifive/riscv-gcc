@@ -131,6 +131,14 @@ enum rvv_vector_bits_enum {
   RVV_VECTOR_BITS_ZVL,
 };
 
+enum lpad_type
+{
+  LPAD_FIXED_ONE,
+  LPAD_SIMPLE,
+  LPAD_FUNC_SIG,
+  LPAD_NONE
+};
+
 #define TARGET_ZICOND_LIKE (TARGET_ZICOND || (TARGET_XVENTANACONDOPS && TARGET_64BIT))
 
 /* Bit of riscv_zvl_flags will set continually, N-1 bit will set if N-bit is

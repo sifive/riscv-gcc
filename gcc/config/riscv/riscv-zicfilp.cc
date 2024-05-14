@@ -94,9 +94,9 @@ rest_of_insert_landing_pad (void)
   rtx lpad_insn;
   rtx_insn *insn;
   basic_block bb;
-  rtx lp_value = const1_rtx;
+  rtx lp_value = riscv_get_lp_value ();
 
-  int attribute_lp_value = riscv_get_lp_value (cfun->decl);
+  int attribute_lp_value = riscv_attribute_get_lp_value (cfun->decl);
   if (attribute_lp_value != -1)
     lp_value = GEN_INT (attribute_lp_value);
 

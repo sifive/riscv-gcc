@@ -687,5 +687,24 @@ Target Bool Var(riscv_cfi_ss) Init(1)
 Only for disable CFI shadow stack instructions.
 
 mcfi-lp
-Target Bool Var(riscv_cfi_lp) Init(1)
-Only for disable CFI landing pad instructions.
+Target Bool Var(riscv_cfi_lp) Init(1) Undocumented
+
+mcfi-lp=
+Target RejectNegative Joined Enum(lpad_type) Var(riscv_lpad_type) Init(LPAD_FIXED_ONE) Undocumented
+Specify if CFI landing pad hardware should be used.
+
+Enum
+Name(lpad_type) Type(enum lpad_type)
+Known CFI landing pad scheme (for use with the -mcfi-lp= option):
+
+EnumValue
+Enum(lpad_type) String(fixed-one) Value(LPAD_FIXED_ONE)
+
+EnumValue
+Enum(lpad_type) String(simple) Value(LPAD_SIMPLE)
+
+EnumValue
+Enum(lpad_type) String(func-sig) Value(LPAD_FUNC_SIG)
+
+EnumValue
+Enum(lpad_type) String(none) Value(LPAD_NONE)
