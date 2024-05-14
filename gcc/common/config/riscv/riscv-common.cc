@@ -558,6 +558,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"xsfmm32t", ISA_SPEC_CLASS_UNRATIFIED, 0, 5},
   /* SiFive PMP-based Memory Types Extension */
   {"xsfpmpmt", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  /* Xsfcease */
+  {"xsfcease", ISA_SPEC_CLASS_UNRATIFIED, 1, 0},
+  {"xsfcease", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
 
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
