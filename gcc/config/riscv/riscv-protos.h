@@ -135,7 +135,8 @@ extern void riscv_asm_output_external (FILE *, const tree, const char *);
 extern bool
 riscv_zcmp_valid_stack_adj_bytes_p (HOST_WIDE_INT, int);
 extern void riscv_legitimize_poly_move (machine_mode, rtx, rtx, rtx);
-extern int riscv_get_lp_value (tree);
+extern int riscv_attribute_get_lp_value (tree);
+extern rtx riscv_get_lp_value ();
 
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx, bool *invert_ptr = 0);

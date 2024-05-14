@@ -216,7 +216,7 @@ struct GTY(())  machine_function {
   bool no_cfi_lp_p;
 
   /* Get a landing pad value from landing_pad_value attribute.  */
-  int lp_value;
+  int attribute_lp_value;
 
   /* The current frame information, calculated by riscv_compute_frame_info.  */
   struct riscv_frame_info frame;
@@ -6190,7 +6190,7 @@ riscv_no_cfi_lp_p (tree func)
 }
 
 int
-riscv_get_lp_value (tree func)
+riscv_attribute_get_lp_value (tree func)
 {
   tree attr;
   tree func_decl = func;
@@ -6206,6 +6206,23 @@ riscv_get_lp_value (tree func)
     }
 
   return -1;
+}
+
+rtx
+riscv_get_lp_value ()
+{
+  switch (riscv_lpad_type)
+    {
+    case LPAD_FIXED_ONE:
+      return const1_rtx;
+    case LPAD_SIMPLE:
+      return const0_rtx;
+    /* TODO: For function signature schcme, not needed for now.  */
+    case LPAD_FUNC_SIG:
+      return const1_rtx;
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* Implement TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS.  */
@@ -9672,10 +9689,10 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   if (is_zicfilp_p ())
     {
-      rtx lp_value = const1_rtx;
+      rtx lp_value = riscv_get_lp_value ();
 
-      if (cfun->machine->lp_value != -1)
-	lp_value = GEN_INT (cfun->machine->lp_value);
+      if (cfun->machine->attribute_lp_value != -1)
+	lp_value = GEN_INT (cfun->machine->attribute_lp_value);
 
       emit_insn(gen_lpad (lp_value));
     }
@@ -10415,7 +10432,7 @@ riscv_set_current_function (tree decl)
 	= riscv_interrupt_type_p (TREE_TYPE (decl));
       cfun->machine->no_cfi_ss_p = riscv_no_cfi_ss_p (decl);
       cfun->machine->no_cfi_lp_p = riscv_no_cfi_lp_p (decl);
-      cfun->machine->lp_value = riscv_get_lp_value (decl);
+      cfun->machine->attribute_lp_value = riscv_attribute_get_lp_value (decl);
 
       if (cfun->machine->naked_p && cfun->machine->interrupt_handler_p)
 	error ("function attributes %qs and %qs are mutually exclusive",
@@ -11803,7 +11820,7 @@ bool is_zicfilp_p ()
     {
       if (cfun && cfun->machine->no_cfi_lp_p)
 	return false;
-      else if (!riscv_cfi_lp)
+      else if (riscv_lpad_type == LPAD_NONE)
 	return false;
       else
 	return true;
