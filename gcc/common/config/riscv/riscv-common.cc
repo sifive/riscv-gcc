@@ -547,15 +547,15 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"xsfvfexpa",    ISA_SPEC_CLASS_UNRATIFIED, 0, 2},
   {"xsfvfexpa64e", ISA_SPEC_CLASS_UNRATIFIED, 0, 2},
   /* Mammoth */
-  {"xsfmm32ea", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
-  {"xsfmmbase", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
-  {"xsfmm32a", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
-  {"xsfmm32a8f", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
-  {"xsfmm32a4i", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
-  {"xsfmm64a", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
-  {"xsfmm128t", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
-  {"xsfmm64t", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
-  {"xsfmm32t", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
+  {"xsfmm32ea", ISA_SPEC_CLASS_UNRATIFIED, 0, 5},
+  {"xsfmmbase", ISA_SPEC_CLASS_UNRATIFIED, 0, 5},
+  {"xsfmm32a", ISA_SPEC_CLASS_UNRATIFIED, 0, 5},
+  {"xsfmm32a8f", ISA_SPEC_CLASS_UNRATIFIED, 0, 5},
+  {"xsfmm32a4i", ISA_SPEC_CLASS_UNRATIFIED, 0, 5},
+  {"xsfmm64a", ISA_SPEC_CLASS_UNRATIFIED, 0, 5},
+  {"xsfmm128t", ISA_SPEC_CLASS_UNRATIFIED, 0, 5},
+  {"xsfmm64t", ISA_SPEC_CLASS_UNRATIFIED, 0, 5},
+  {"xsfmm32t", ISA_SPEC_CLASS_UNRATIFIED, 0, 5},
 
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
