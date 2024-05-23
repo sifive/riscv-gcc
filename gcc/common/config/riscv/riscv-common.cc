@@ -193,6 +193,10 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"ssstateen", "zicsr"},
   {"sstc", "zicsr"},
 
+  {"zicfiss", "zicsr"},
+  {"zicfiss", "zimop"},
+  {"zicfilp", "zicsr"},
+
   /* SiFive */
   {"a", "zaamo"},
   {"a", "zalrsc"},
