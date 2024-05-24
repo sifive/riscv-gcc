@@ -230,6 +230,24 @@ static const riscv_implied_info_t riscv_implied_info[] =
 
   {"xsfvcp", "zve32x"},
 
+  /* SiFive */
+  {"smwgd", "smwg"},
+  {"xsfvfhbfmin", "zve32f"},
+  {"zvfbfmin", "zfbfmin"},
+  {"xsfvfexpa", "zve32f"},
+  {"xsfvfexpa64e", "xsfvfexpa"},
+  {"xsfvfexpa64e", "zve64d"},
+  /* Mammoth */
+  {"xsfmm32ea", "v"},
+  {"xsfmmbase", "v"},
+  {"xsfmm32a", "xsfmmbase"},
+  {"xsfmm32a8f", "xsfmmbase"},
+  {"xsfmm32a4i", "xsfmmbase"},
+  {"xsfmm64a", "xsfmmbase"},
+  {"xsfmm128t", "xsfmmbase"},
+  {"xsfmm64t", "xsfmmbase"},
+  {"xsfmm32t", "xsfmmbase"},
+
   {NULL, NULL}
 };
 
@@ -444,6 +462,101 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"xsfvqmaccdod",    ISA_SPEC_CLASS_NONE, 1, 0},
   {"xsfvfnrclipxfqf", ISA_SPEC_CLASS_NONE, 1, 0},
 
+  /* SiFive */
+  {"e", ISA_SPEC_CLASS_NONE,     1, 9},
+
+  {"sdext", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"sdtrig", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"shcounterenw", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"shvstvala", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"shtvala", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"shvstvecd", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"shvsatpa", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"shgatpa", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"ss", ISA_SPEC_CLASS_NONE, 1, 13},
+  {"ss", ISA_SPEC_CLASS_NONE, 1, 12},
+  {"svbare", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"svptead", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"ssccptr", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"sstvecd", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"sstvala", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"sscounterenw", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"ssu64xl", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"svade", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"svadu", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"sv39", ISA_SPEC_CLASS_NONE, 1, 12},
+  {"sv48", ISA_SPEC_CLASS_NONE, 1, 12},
+  {"sv57", ISA_SPEC_CLASS_NONE, 1, 12},
+
+  {"smrnmi", ISA_SPEC_CLASS_UNRATIFIED, 0, 5},
+  {"smwgd", ISA_SPEC_CLASS_UNRATIFIED, 0, 3},
+  {"smwg",  ISA_SPEC_CLASS_UNRATIFIED, 0, 3},
+  {"sswg",  ISA_SPEC_CLASS_UNRATIFIED, 0, 3},
+  {"ssqosid",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"ssstrict", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"v",       ISA_SPEC_CLASS_UNRATIFIED, 0, 10},
+  {"zvlsseg", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvlsseg", ISA_SPEC_CLASS_UNRATIFIED, 0, 10},
+
+  {"zama16b",  ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zba", ISA_SPEC_CLASS_UNRATIFIED, 0, 93},
+  {"zbb", ISA_SPEC_CLASS_UNRATIFIED, 0, 93},
+
+  {"zfa",      ISA_SPEC_CLASS_UNRATIFIED, 0, 2},
+  {"zfbfmin",  ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
+
+  {"zicsr", ISA_SPEC_CLASS_NONE, 2, 0},
+  {"zifencei", ISA_SPEC_CLASS_NONE, 2, 0},
+
+  {"zjid", ISA_SPEC_CLASS_UNRATIFIED, 0, 0},
+  /* Zjpm */
+  {"smnpm", ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
+  {"smmpm", ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
+  {"ssnpm", ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
+  {"sspm",  ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
+  {"supm",  ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
+
+  {"zvfbfmin", ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
+  {"zvfbfwma", ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
+
+  {"zvkns",  ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"zvknf",  ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"zvknha", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"zvknhb", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"zvkb",   ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"zvkg",   ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"zvksed", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"zvksh",  ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+
+  {"xsifivecdiscarddlone", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"xsifivecflushdlone", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+
+  {"xsfvqmaccdod", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"xsfvqmaccqoq", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"xsfvfwmaccqqq", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xsfvfwmaccqqq", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"xsfvfnrclipxfqf", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"xsfvcp", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"xsfvfhbfmin", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"xsfvqdotq", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"xsfpgflushdlone", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"xsfvfexpa",    ISA_SPEC_CLASS_UNRATIFIED, 0, 2},
+  {"xsfvfexpa64e", ISA_SPEC_CLASS_UNRATIFIED, 0, 2},
+  /* Mammoth */
+  {"xsfmm32ea", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
+  {"xsfmmbase", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
+  {"xsfmm32a", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
+  {"xsfmm32a8f", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
+  {"xsfmm32a4i", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
+  {"xsfmm64a", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
+  {"xsfmm128t", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
+  {"xsfmm64t", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
+  {"xsfmm32t", ISA_SPEC_CLASS_UNRATIFIED, 0, 4},
+
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
@@ -462,6 +575,9 @@ static const struct riscv_ext_version riscv_combine_info[] =
   {"zvks", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvksc", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvksg", ISA_SPEC_CLASS_NONE, 1, 0},
+  /* SiFive */
+  {"a",  ISA_SPEC_CLASS_NONE, 1, 0},
+
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
