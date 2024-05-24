@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "-march given" { *-*-* } { "-march=*" } } */
-/* { dg-options "-mcpu=sifive-p450 -mabi=lp64d" } */
+/* { dg-options "-mcpu=sifive-p450 -mabi=lp64d -Wno-riscv-implicit-extension-version" } */
 /* SiFive p450 => rv64imafdc_za64rs_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei_zihintntl_zihintpause_zihpm_zfhmin_zba_zbb_zbs */
 
 #if !((__riscv_xlen == 64)		\

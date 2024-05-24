@@ -1,7 +1,7 @@
 /* Verify the regrename won't rename registers to register which never used
    before.  */
 /* { dg-do compile } */
-/* { dg-options "-frename-registers" } */
+/* { dg-options "-frename-registers -fno-pic" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 static unsigned _t = 0;
@@ -16,4 +16,4 @@ foo (void)
    regradless of the REG_ALLOC_ORDER.
    In theory, t2 should not used in such small program if regrename
    not executed incorrectly, because t0-a2 should be enough.  */
-/* { dg-final { scan-assembler-not "t2"  { target { no-opts "-flto" } } } } */
+/* { dg-final { scan-assembler-not "\tt2"  { target { no-opts "-flto" } } } } */

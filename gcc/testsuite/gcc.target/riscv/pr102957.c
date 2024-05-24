@@ -4,4 +4,5 @@ int foo()
 {
 }
 
+/* { dg-error "'-march=rv64gzb': unsupported extension 'zb'" "" { target *-*-* } 0 } */
 /* { dg-error "extension 'zb' starts with 'z' but is unsupported standard extension" "" { target *-*-* } 0 } */
