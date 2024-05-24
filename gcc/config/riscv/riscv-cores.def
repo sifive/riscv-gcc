@@ -36,6 +36,7 @@
 RISCV_TUNE("rocket", generic, rocket_tune_info)
 RISCV_TUNE("sifive-3-series", generic, rocket_tune_info)
 RISCV_TUNE("sifive-5-series", generic, rocket_tune_info)
+RISCV_TUNE("sifive-6-series", sifive_7, sifive_6_tune_info)
 RISCV_TUNE("sifive-7-series", sifive_7, sifive_7_tune_info)
 RISCV_TUNE("sifive-7n-series", sifive_7n, sifive_7n_tune_info)
 RISCV_TUNE("sifive-p400-series", sifive_p400, sifive_p400_tune_info)
