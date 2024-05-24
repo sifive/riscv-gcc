@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "-march given" { *-*-* } { "-march=*" } } */
-/* { dg-options "-mcpu=sifive-x280 -mabi=lp64" } */
+/* { dg-options "-mcpu=sifive-x280 -mabi=lp64 -Wno-riscv-implicit-extension-version" } */
 /* SiFive x280 => rv64imafdcv_zfh_zba_zbb_zvfh_zvl512b */
 
 #if !((__riscv_xlen == 64)		\
