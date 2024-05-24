@@ -118,7 +118,7 @@
 
 (define_insn_reservation "sifive_p600_alu" 1
   (and (eq_attr "tune" "sifive_p600")
-       (eq_attr "type" "unknown,arith,logical,shift,slt,multi,bitmanip,\
+       (eq_attr "type" "unknown,arith,logical,shift,slt,multi,bitmanip,shnadd,\
 			clz,ctz,rotate,min,max,minu,maxu,condmove,mvpair,zicond"))
   "int_pipe+sifive_p600_ialu")
 

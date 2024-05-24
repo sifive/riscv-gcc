@@ -114,7 +114,7 @@
 
 (define_insn_reservation "sifive_p400_alu" 1
   (and (eq_attr "tune" "sifive_p400")
-       (eq_attr "type" "unknown,arith,logical,shift,slt,multi,bitmanip,\
+       (eq_attr "type" "unknown,arith,logical,shift,slt,multi,bitmanip,shnadd,\
 			clz,ctz,rotate,min,max,minu,maxu,condmove,mvpair,zicond"))
   "p400_int_pipe+sifive_p400_ialu")
 
