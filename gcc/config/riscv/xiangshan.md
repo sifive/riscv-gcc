@@ -95,7 +95,7 @@
 
 (define_insn_reservation "xiangshan_alu" 1
   (and (eq_attr "tune" "xiangshan")
-       (eq_attr "type" "nop,const,branch,arith,shift,slt,multi,logical,move,bitmanip,unknown"))
+       (eq_attr "type" "nop,const,branch,arith,shift,slt,multi,logical,move,bitmanip,shnadd,unknown"))
   "xs_alu_rs")
 
 ;; Someone familiar with the xiangshan uarch needs to put

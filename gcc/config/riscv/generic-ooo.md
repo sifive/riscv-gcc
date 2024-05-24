@@ -88,7 +88,7 @@
   (and (eq_attr "tune" "generic_ooo")
        (eq_attr "type" "unknown,const,arith,shift,slt,multi,auipc,nop,logical,\
 			move,bitmanip,rotate,min,max,minu,maxu,clz,ctz,atomic,\
-			condmove,mvpair,zicond"))
+			condmove,mvpair,zicond,shnadd"))
   "generic_ooo_issue,generic_ooo_ixu_alu")
 
 (define_insn_reservation "generic_ooo_sfb_alu" 2
