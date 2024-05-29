@@ -3114,6 +3114,7 @@
       emit_move_insn (cur_ssp, ssp_slot);
       emit_insn (gen_write_ssp (word_mode, cur_ssp));
       emit_jump_insn (gen_jump (loop_label));
+      emit_barrier ();
 
       /* Adjust the ssp in a loop.  */
       rtx cmp_4k_label = gen_label_rtx ();
@@ -3128,6 +3129,7 @@
       emit_insn (gen_sspush (Pmode, t0));
       emit_insn (gen_sspopchk (Pmode, t0));
       emit_jump_insn (gen_jump (loop_label));
+      emit_barrier ();
 
       emit_label (noadj_label);
       LABEL_NUSES (noadj_label) = 1;
