@@ -48,18 +48,32 @@ X:				\
 #define FEATURE_1_BCFI 2
 
 /* Add a NT_GNU_PROPERTY_TYPE_0 note.  */
-#define GNU_PROPERTY(type, value)	\
-  .section .note.gnu.property, "a";	\
-  .p2align 3;				\
-  .word 4;				\
-  .word 16;				\
-  .word 5;				\
-  .asciz "GNU";				\
-  .word type;				\
-  .word 4;				\
-  .word value;				\
-  .word 0;				\
-  .text
+#if __riscv_xlen == 32
+#  define GNU_PROPERTY(type, value)	\
+    .section .note.gnu.property, "a";	\
+    .p2align 2;				\
+    .word 4;				\
+    .word 12;				\
+    .word 5;				\
+    .asciz "GNU";			\
+    .word type;				\
+    .word 4;				\
+    .word value;			\
+    .text
+#else
+#  define GNU_PROPERTY(type, value)	\
+    .section .note.gnu.property, "a";	\
+    .p2align 3;				\
+    .word 4;				\
+    .word 16;				\
+    .word 5;				\
+    .asciz "GNU";			\
+    .word type;				\
+    .word 4;				\
+    .word value;			\
+    .word 0;				\
+    .text
+#endif
 
 /* Add GNU property note with the supported features to all asm code
    where sysdep.h is included.  */
