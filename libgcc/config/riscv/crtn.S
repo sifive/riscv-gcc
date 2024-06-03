@@ -19,7 +19,11 @@
 
 #if defined (VALUE_FOR_FEATURE_1_AND)
         .section ".note.gnu.property", "a"
+#  if __riscv_xlen == 32
         .p2align 3
+#  else
+        .p2align 2
+#  endif
         .long 1f - 0f           /* name length */
         .long 5f - 2f           /* data length */
         .long 5                 /* note type */
@@ -31,6 +35,10 @@
 3:
         .long VALUE_FOR_FEATURE_1_AND
 4:
+#  if __riscv_xlen == 32
         .p2align 3
+#  else
+        .p2align 2
+#  endif
 5:
 #endif
