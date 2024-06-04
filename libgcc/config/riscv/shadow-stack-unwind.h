@@ -65,7 +65,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	  asm volatile ("ssrdp %0" : "=r"(ssp));	\
 	  if (ssp != 0)					\
 	    {						\
-	      ssp += 8 * frames;			\
+	      ssp += LIBGCC2_UNITS_PER_WORD * frames;	\
 	      _Unwind_Word ra = *(_Unwind_Word *) ssp;	\
 	      if (ra != _Unwind_GetIP (context))	\
 		return _URC_FATAL_PHASE2_ERROR;		\
