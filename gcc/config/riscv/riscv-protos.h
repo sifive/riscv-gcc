@@ -184,7 +184,8 @@ extern void riscv_init_builtins (void);
 
 /* Routines implemented in riscv-common.cc.  */
 extern std::string riscv_arch_str (bool version_p = true);
-extern void riscv_parse_arch_string (const char *, struct gcc_options *, location_t);
+extern void riscv_parse_arch_string (const char *, struct gcc_options *,
+				     location_t, bool);
 
 extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
 

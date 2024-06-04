@@ -49,14 +49,14 @@ public:
   riscv_selftest_arch_abi_setter (const char *arch, enum riscv_abi_type abi)
     : m_arch_backup (riscv_arch_str ()), m_abi_backup (riscv_abi)
   {
-    riscv_parse_arch_string (arch, &global_options, UNKNOWN_LOCATION);
+    riscv_parse_arch_string (arch, &global_options, UNKNOWN_LOCATION, false);
     riscv_abi = abi;
     riscv_reinit ();
   }
   ~riscv_selftest_arch_abi_setter ()
   {
     riscv_parse_arch_string (m_arch_backup.c_str (), &global_options,
-			     UNKNOWN_LOCATION);
+			     UNKNOWN_LOCATION, false);
     riscv_abi = m_abi_backup;
     riscv_reinit ();
   }
