@@ -3266,7 +3266,7 @@
   [(set (pc) (match_operand:P 0 "register_operand" "l"))]
   "!TARGET_ZICFILP"
   "jr\t%0"
-  [(set_attr "type" "jump")
+  [(set_attr "type" "jalr")
    (set_attr "mode" "none")])
 
 (define_insn "indirect_jump_cfi<mode>"
@@ -3274,7 +3274,7 @@
    (use (reg:P T2_REGNUM))]
   "TARGET_ZICFILP"
   "jr\t%0"
-  [(set_attr "type" "jump")
+  [(set_attr "type" "jalr")
    (set_attr "mode" "none")])
 
 (define_expand "tablejump"
@@ -3312,7 +3312,7 @@
    (use (label_ref (match_operand 1 "" "")))]
   "!TARGET_ZICFILP"
   "jr\t%0"
-  [(set_attr "type" "jump")
+  [(set_attr "type" "jalr")
    (set_attr "mode" "none")])
 
 (define_insn "tablejump_cfi<mode>"
@@ -3320,7 +3320,7 @@
    (use (label_ref (match_operand 0 "")))]
   "TARGET_ZICFILP"
   "jr\tt2"
-  [(set_attr "type" "jump")
+  [(set_attr "type" "jalr")
    (set_attr "mode" "none")])
 
 ;;
