@@ -1749,6 +1749,8 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"za64rs", &gcc_options::x_riscv_za_subext, MASK_ZA64RS},
   {"za128rs", &gcc_options::x_riscv_za_subext, MASK_ZA128RS},
   {"zawrs", &gcc_options::x_riscv_za_subext, MASK_ZAWRS},
+  /* SiFive */
+  {"zacas", &gcc_options::x_riscv_za_subext, MASK_ZACAS},
 
   {"zba",    &gcc_options::x_riscv_zb_subext, MASK_ZBA},
   {"zbb",    &gcc_options::x_riscv_zb_subext, MASK_ZBB},
@@ -1782,6 +1784,9 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zicbom", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOM},
   {"zicbop", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOP},
   {"zic64b", &gcc_options::x_riscv_zicmo_subext, MASK_ZIC64B},
+  /* SiFive */
+  {"zicfiss", &gcc_options::x_riscv_zi_subext, MASK_ZICFISS},
+  {"zicfilp", &gcc_options::x_riscv_zi_subext, MASK_ZICFILP},
 
   {"zve32x",   &gcc_options::x_target_flags, MASK_VECTOR},
   {"zve32f",   &gcc_options::x_target_flags, MASK_VECTOR},
@@ -1890,12 +1895,6 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"xtheadvector",  &gcc_options::x_target_flags, MASK_VECTOR},
 
   {"xventanacondops", &gcc_options::x_riscv_xventana_subext, MASK_XVENTANACONDOPS},
-
-  /* SiFive */
-  {"zacas", &gcc_options::x_riscv_za_subext, MASK_ZACAS},
-  {"zicfiss", &gcc_options::x_riscv_zi_subext, MASK_ZICFISS},
-  {"zicfilp", &gcc_options::x_riscv_zi_subext, MASK_ZICFILP},
-
   {NULL, NULL, 0}
 };
 
