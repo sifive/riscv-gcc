@@ -476,11 +476,11 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 
   {"zjid", ISA_SPEC_CLASS_UNRATIFIED, 0, 0},
   /* Zjpm */
-  {"smnpm", ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
-  {"smmpm", ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
-  {"ssnpm", ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
-  {"sspm",  ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
-  {"supm",  ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
+  {"smnpm", ISA_SPEC_CLASS_UNRATIFIED, 1, 0},
+  {"smmpm", ISA_SPEC_CLASS_UNRATIFIED, 1, 0},
+  {"ssnpm", ISA_SPEC_CLASS_UNRATIFIED, 1, 0},
+  {"sspm",  ISA_SPEC_CLASS_UNRATIFIED, 1, 0},
+  {"supm",  ISA_SPEC_CLASS_UNRATIFIED, 1, 0},
 
   {"zvfbfmin", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvfbfmin", ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
