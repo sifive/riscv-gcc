@@ -10220,9 +10220,10 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       hi_chain = riscv_force_binary (SImode, AND, hi_chain,
 				     uimm_mask);
       lui_hi_chain_code = OPCODE_LUI | (STATIC_CHAIN_REGNUM << SHIFT_RD);
+      rtx lui_hi_chain_value = force_reg (SImode, gen_int_mode (lui_hi_chain_code,
+								SImode));
       rtx lui_hi_chain = riscv_force_binary (SImode, IOR, hi_chain,
-					     gen_int_mode (lui_hi_chain_code, SImode));
-
+					     lui_hi_chain_value);
       mem = adjust_address (m_tramp, SImode, 0);
       riscv_emit_move (mem, riscv_swap_instruction (lui_hi_chain));
 
