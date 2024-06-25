@@ -603,6 +603,14 @@ static const char *riscv_tunes[] =
     NULL
 };
 
+static const sifive_profile sifive_profile_tables[] =
+{
+#define SIFIVE_PROFILE(NAME, ARCH) \
+    {NAME, ARCH},
+#include "../../../config/riscv/sifive-profile.def"
+  {NULL, NULL}
+};
+
 static const char *riscv_supported_std_ext (void);
 
 bool riscv_subset_list::parse_failed = false;
@@ -1277,6 +1285,20 @@ riscv_subset_list::parse_base_ext (const char *p)
   unsigned major_version = 0;
   unsigned minor_version = 0;
   bool explicit_version_p = false;
+
+  if (startswith (p, "sf"))
+    {
+      const sifive_profile *sifive_profile_info = &sifive_profile_tables[0];
+      for (;sifive_profile_info->name != NULL; ++sifive_profile_info)
+	{
+	  const char *name = sifive_profile_info->name;
+	  if (strcmp (p, name) == 0)
+	    {
+	      p = sifive_profile_info->arch;
+	      break;
+	    }
+	}
+    }
 
   if (startswith (p, "rv32"))
     {
@@ -2205,7 +2227,7 @@ riscv_expand_arch (int argc ATTRIBUTE_UNUSED,
   bool x = false;
   for (int i = 0; i < argc; ++i)
     {
-      if (argv[i][0] == 'r')
+      if (argv[i][0] == 'r' || argv[i][0] == 's')
 	arch_str = argv[i];
       if (strcmp (argv[i], "-menable-experimental-extensions") == 0)
 	riscv_enable_exp_ext = 1;

@@ -324,6 +324,14 @@ struct cpu_vector_cost
   const regmove_vector_cost *regmove;
 };
 
+struct sifive_profile {
+  /* SiFive profile name.  */
+  const char *name;
+
+  /* Default arch for this profile.  */
+  const char *arch;
+};
+
 /* Routines implemented in riscv-selftests.cc.  */
 #if CHECKING_P
 namespace selftest {
