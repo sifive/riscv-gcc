@@ -139,6 +139,7 @@ riscv-zicfilp.o: $(srcdir)/config/riscv/riscv-zicfilp.cc \
 PASSES_EXTRA += $(srcdir)/config/riscv/riscv-passes.def
 
 $(common_out_file): $(srcdir)/config/riscv/riscv-cores.def \
+    $(srcdir)/config/riscv/sifive-profile.def \
     $(srcdir)/config/riscv/riscv-protos.h \
     $(srcdir)/config/riscv/riscv-subset.h
 

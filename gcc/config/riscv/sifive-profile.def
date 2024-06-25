@@ -1,0 +1,48 @@
+#ifndef SIFIVE_PROFILE
+#define SIFIVE_PROFILE(NAME, ARCH)
+#endif
+
+SIFIVE_PROFILE("sfa23", "rv64imafdcvh_zic64b_zicbom_zicbop_zicboz_ziccamoa" \
+			"_ziccif_zicclsm_ziccrse_zicfilp_zicfiss_zicntr_zicond" \
+			"_zicsr_zifencei_zihintntl_zihintpause_zihpm_zimop" \
+			"_za64rs_zawrs_zfa_zfhmin_zca_zcb_zcmop_zba_zbb_zbs_zkr" \
+			"_zkt_zvbb_zve32f_zve32x_zve64d_zve64f_zve64x_zvfhmin" \
+			"_zvkb_zvkt_zvl128b_zvl32b_zvl64b_shcounterenw_shgatpa" \
+			"_shtvala_shvsatpa_shvstvala_shvstvecd_ssaia_ssccptr" \
+			"_sscofpmf_sscounterenw_ssnpm_ssqosid_ssstateen_sstc" \
+			"_sstvala_sstvecd_ssu64xl_svade_svbare_svinval_svnapot_svpbmt")
+
+SIFIVE_PROFILE("sfb23", "rv64imafdc_zic64b_zicbom_zicbop_zicboz_ziccamoa" \
+			"_ziccif_zicclsm_ziccrse_zicfilp_zicfiss_zicntr_zicond" \
+			"_zicsr_zifencei_zihintntl_zihintpause_zihpm_zimop" \
+			"_za64rs_zawrs_zfa_zfhmin_zca_zcb_zcmop_zba_zbb_zbs_zkt" \
+			"_ssccptr_sscofpmf_sscounterenw_sstc_sstvala_sstvecd" \
+			"_ssu64xl_svade_svbare_svinval_svnapot_svpbmt")
+
+SIFIVE_PROFILE("sfe23", "rv32imc_zicbop_zicntr_zicond_zicsr_zifencei_zihintntl" \
+			"_zimop_zaamo_zca_zcb_zcmop_zba_zbb_zbs_zkt")
+
+SIFIVE_PROFILE("sfp23", "rv64imafdcvh_zic64b_zicbom_zicbop_zicboz_ziccamoa" \
+			"_ziccif_zicclsm_ziccrse_zicfilp_zicfiss_zicntr_zicond" \
+			"_zicsr_zifencei_zihintntl_zihintpause_zihpm_zimop_za64rs" \
+			"_zawrs_zfa_zfbfmin_zfh_zfhmin_zca_zcb_zcmop_zba_zbb_zbs_zkr" \
+			"_zkt_zvbb_zve32f_zve32x_zve64d_zve64f_zve64x_zvfbfmin" \
+			"_zvfbfwma_zvfh_zvfhmin_zvkb_zvkt_zvl128b_zvl32b_zvl64b" \
+			"_shcounterenw_shgatpa_shtvala_shvsatpa_shvstvala_shvstvecd" \
+			"_ssaia_ssccptr_sscofpmf_sscounterenw_ssnpm_ssqosid_ssstateen" \
+			"_sstc_sstvala_sstvecd_ssu64xl_svade_svbare_svinval_svnapot_svpbmt_xsfvqdotq")
+
+SIFIVE_PROFILE("sfs23", "rv64imc_zicbop_zicntr_zicond_zicsr_zifencei_zihintntl" \
+			"_zimop_zaamo_zca_zcb_zcmop_zba_zbb_zbs_zkt")
+
+SIFIVE_PROFILE("sfx23", "rv64imafdcvh_zic64b_zicbom_zicbop_zicboz_ziccamoa" \
+			"_ziccif_zicclsm_ziccrse_zicfilp_zicfiss_zicntr_zicond" \
+			"_zicsr_zifencei_zihintntl_zihintpause_zihpm_zimop" \
+			"_za64rs_zawrs_zfa_zfbfmin_zfh_zfhmin_zca_zcb_zcmop" \
+			"_zba_zbb_zbs_zkr_zkt_zvbb_zve32f_zve32x_zve64d_zve64f" \
+			"_zve64x_zvfbfmin_zvfbfwma_zvfh_zvfhmin_zvkb_zvkt_zvl128b" \
+			"_zvl32b_zvl64b_shcounterenw_shgatpa_shtvala_shvsatpa" \
+			"_shvstvala_shvstvecd_ssaia_ssccptr_sscofpmf_sscounterenw" \
+			"_ssnpm_ssqosid_ssstateen_sstc_sstvala_sstvecd_ssu64xl" \
+			"_svade_svbare_svinval_svnapot_svpbmt_xsfvfexpa_xsfvfnrclipxfqf")
+#undef RISCV_CORE
