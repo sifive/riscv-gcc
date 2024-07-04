@@ -209,6 +209,9 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"xsfvfexpa", "zve32f"},
   {"xsfvfexpa64e", "xsfvfexpa"},
   {"xsfvfexpa64e", "zve64d"},
+  {"xsfvfexp32e", "zve32f"},
+  {"xsfvfexp16e", "zvfh"},
+  {"xsfvfbfexp16e", "zve32f"},
   {"zacas", "a"},
 
   /* Mammoth */
@@ -513,6 +516,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"xsfpgflushdlone", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
   {"xsfvfexpa",    ISA_SPEC_CLASS_UNRATIFIED, 0, 2},
   {"xsfvfexpa64e", ISA_SPEC_CLASS_UNRATIFIED, 0, 2},
+  {"xsfvfexp32e", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"xsfvfexp16e", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"xsfvfbfexp16e", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
   /* Mammoth */
   {"xsfmm32ea", ISA_SPEC_CLASS_UNRATIFIED, 0, 5},
   {"xsfmmbase", ISA_SPEC_CLASS_UNRATIFIED, 0, 5},
