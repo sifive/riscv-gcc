@@ -1215,6 +1215,11 @@ AC_ARG_WITH(multilib-generator,
 :,
 with_multilib_generator=default)
 
+AC_ARG_WITH(cmodel,
+[AS_HELP_STRING([--with-cmodel], [Code model configuration string (RISC-V only)])],
+:,
+with_cmodel=medlow)
+
 # -------------------------
 # Checks for other programs
 # -------------------------
