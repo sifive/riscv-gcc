@@ -1003,6 +1003,7 @@ with_changes_root_url
 enable_languages
 with_multilib_list
 with_multilib_generator
+with_cmodel
 with_zstd
 with_zstd_include
 with_zstd_lib
@@ -1890,6 +1891,7 @@ Optional Packages:
                           RISC-V, SH and x86-64 only)
   --with-multilib-generator
                           Multi-libs configuration string (RISC-V only)
+  --with-cmodel           Code model configuration string (RISC-V only)
   --with-zstd=PATH        specify prefix directory for installed zstd library.
                           Equivalent to --with-zstd-include=PATH/include plus
                           --with-zstd-lib=PATH/lib
@@ -8403,6 +8405,15 @@ if test "${with_multilib_generator+set}" = set; then :
   withval=$with_multilib_generator; :
 else
   with_multilib_generator=default
+fi
+
+
+
+# Check whether --with-cmodel was given.
+if test "${with_cmodel+set}" = set; then :
+  withval=$with_cmodel; :
+else
+  with_cmodel=medlow
 fi
 
 

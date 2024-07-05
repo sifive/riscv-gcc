@@ -4879,6 +4879,9 @@ case "${target}" in
 		large)
 			tm_defines="${tm_defines} TARGET_DEFAULT_CMODEL=CM_LARGE"
 			;;
+		compact)
+			tm_defines="${tm_defines} TARGET_DEFAULT_CMODEL=CM_COMPACT"
+			;;
 		*)
 			echo "invalid option for --with-cmodel: '${with_cmodel}', available values are 'medlow' 'medany' 'large'" 1>&2
 			exit 1
