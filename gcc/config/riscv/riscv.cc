@@ -10179,10 +10179,14 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   uint32_t trampoline_cfi[6];
   unsigned int i;
   HOST_WIDE_INT static_chain_offset, target_function_offset;
+  HOST_WIDE_INT lp_value = INTVAL (riscv_get_lp_value ());
+
+  if (cfun->machine->attribute_lp_value != -1)
+    lp_value = cfun->machine->attribute_lp_value;
 
   /* Work out the offsets of the pointers from the start of the
      trampoline code.  */
-  if (!is_zicfilp_p())
+  if (!is_zicfilp_p ())
     gcc_assert (ARRAY_SIZE (trampoline) * 4 == TRAMPOLINE_CODE_SIZE);
   else
     gcc_assert (ARRAY_SIZE (trampoline_cfi) * 4 == TRAMPOLINE_CODE_SIZE);
@@ -10207,6 +10211,17 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       unsigned HOST_WIDE_INT lo_chain_code, lo_func_code;
 
       rtx uimm_mask = force_reg (SImode, gen_int_mode (-IMM_REACH, SImode));
+      unsigned insn_count = 0;
+
+      /* Insert lpad, if zicfilp is enabled.  */
+      if (is_zicfilp_p ())
+	{
+ 	  unsigned HOST_WIDE_INT lpad_code;
+	  lpad_code = OPCODE_AUIPC | (0 << SHIFT_RD) | (lp_value << IMM_BITS);
+	  mem = adjust_address (m_tramp, SImode, 0);
+	  riscv_emit_move (mem, gen_int_mode (lpad_code, SImode));
+	  insn_count++;
+	}
 
       /* 0xfff.  */
       rtx imm12_mask = gen_reg_rtx (SImode);
@@ -10224,8 +10239,10 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 								SImode));
       rtx lui_hi_chain = riscv_force_binary (SImode, IOR, hi_chain,
 					     lui_hi_chain_value);
-      mem = adjust_address (m_tramp, SImode, 0);
+      mem = adjust_address (m_tramp, SImode,
+			    insn_count * GET_MODE_SIZE (SImode));
       riscv_emit_move (mem, riscv_swap_instruction (lui_hi_chain));
+      insn_count++;
 
       /* Gen lui t0, hi(func).  */
       rtx hi_func = riscv_force_binary (SImode, PLUS, target_function,
@@ -10236,8 +10253,10 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       rtx lui_hi_func = riscv_force_binary (SImode, IOR, hi_func,
 					    gen_int_mode (lui_hi_func_code, SImode));
 
-      mem = adjust_address (m_tramp, SImode, 1 * GET_MODE_SIZE (SImode));
+      mem = adjust_address (m_tramp, SImode,
+			    insn_count * GET_MODE_SIZE (SImode));
       riscv_emit_move (mem, riscv_swap_instruction (lui_hi_func));
+      insn_count++;
 
       /* Gen addi t2, t2, lo(chain).  */
       rtx lo_chain = riscv_force_binary (SImode, AND, chain_value,
@@ -10251,8 +10270,23 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       rtx addi_lo_chain = riscv_force_binary (SImode, IOR, lo_chain,
 					      force_reg (SImode, GEN_INT (lo_chain_code)));
 
-      mem = adjust_address (m_tramp, SImode, 2 * GET_MODE_SIZE (SImode));
+      mem = adjust_address (m_tramp, SImode,
+			    insn_count * GET_MODE_SIZE (SImode));
       riscv_emit_move (mem, riscv_swap_instruction (addi_lo_chain));
+      insn_count++;
+
+      /* For zicfilp only, insert lui t2, 1, because use jr t0.  */
+      if (is_zicfilp_p ())
+	{
+	  unsigned HOST_WIDE_INT set_lpl_code;
+	  set_lpl_code  = OPCODE_LUI
+			  | (RISCV_CALL_ADDRESS_LPAD_REGNUM << SHIFT_RD)
+			  | (lp_value << IMM_BITS);
+	  mem = adjust_address (m_tramp, SImode,
+				insn_count * GET_MODE_SIZE (SImode));
+	  riscv_emit_move (mem, gen_int_mode (set_lpl_code, SImode));
+	  insn_count++;
+	}
 
       /* Gen jr t0, lo(func).  */
       rtx lo_func = riscv_force_binary (SImode, AND, target_function,
@@ -10264,7 +10298,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       rtx jr_lo_func = riscv_force_binary (SImode, IOR, lo_func,
 					   force_reg (SImode, GEN_INT (lo_func_code)));
 
-      mem = adjust_address (m_tramp, SImode, 3 * GET_MODE_SIZE (SImode));
+      mem = adjust_address (m_tramp, SImode, insn_count * GET_MODE_SIZE (SImode));
       riscv_emit_move (mem, riscv_swap_instruction (jr_lo_func));
     }
   else
@@ -10272,7 +10306,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       static_chain_offset = TRAMPOLINE_CODE_SIZE;
       target_function_offset = static_chain_offset + GET_MODE_SIZE (ptr_mode);
 
-      if (!is_zicfilp_p())
+      if (!is_zicfilp_p ())
 	{
 	  /* auipc   t2, 0
 	     l[wd]   t0, (target_function_offset)(t2)
@@ -10308,7 +10342,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	     lui     t2, 1
 	     jr      t0
 	  */
-	  trampoline_cfi[0] = OPCODE_AUIPC | (0 << SHIFT_RD) | (1 << IMM_BITS);
+	  trampoline_cfi[0] = OPCODE_AUIPC | (0 << SHIFT_RD) | (lp_value << IMM_BITS);
 	  trampoline_cfi[1] = OPCODE_AUIPC | (STATIC_CHAIN_REGNUM << SHIFT_RD);
 	  trampoline_cfi[2] = (Pmode == DImode ? OPCODE_LD : OPCODE_LW)
 			      | (RISCV_PROLOGUE_TEMP_REGNUM << SHIFT_RD)
@@ -10318,7 +10352,9 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 			      | (STATIC_CHAIN_REGNUM << SHIFT_RD)
 			      | (STATIC_CHAIN_REGNUM << SHIFT_RS1)
 			      | ((static_chain_offset - 4) << SHIFT_IMM);
-	  trampoline_cfi[4] = OPCODE_LUI | (RISCV_CALL_ADDRESS_LPAD_REGNUM << SHIFT_RD);
+	  trampoline_cfi[4] = OPCODE_LUI
+			      | (RISCV_CALL_ADDRESS_LPAD_REGNUM << SHIFT_RD)
+			      | (lp_value << IMM_BITS);
 	  trampoline_cfi[5] = OPCODE_JALR | (RISCV_PROLOGUE_TEMP_REGNUM << SHIFT_RS1);
 
 	  /* Copy the trampoline code.  */
