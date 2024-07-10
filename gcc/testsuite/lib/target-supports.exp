@@ -11753,10 +11753,9 @@ proc check_vect_support_and_set_flags { } {
 	if [check_effective_target_riscv_v] {
 	    set dg-do-what-default run
 	} else {
-	    foreach item [add_options_for_riscv_v ""] {
-		lappend DEFAULT_VECTCFLAGS $item
-	    }
-	    set dg-do-what-default compile
+	    # If the target doesn't support vector, return 0 to skip all the tests
+	    # that depend on the check
+	    return 0
 	}
     } elseif [istarget loongarch*-*-*] {
       # Set the default vectorization option to "-mlsx" due to the problem
