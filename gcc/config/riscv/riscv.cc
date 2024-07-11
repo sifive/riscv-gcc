@@ -2301,7 +2301,8 @@ riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
 	  rtx insn = NULL_RTX;
 	  rtx high = gen_rtx_HIGH (Pmode, copy_rtx (addr));
 
-	  if (temp == NULL)
+	  if (temp == NULL
+	      || GET_MODE_CLASS (GET_MODE(temp)) != MODE_INT)
 	    temp = gen_reg_rtx (Pmode);
 
 	  if (Pmode == DImode)
@@ -2333,7 +2334,8 @@ riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
 	  compact_code_needed = true;
 	  crtl->uses_pic_offset_table = 1;
 
-	  if (temp == NULL)
+	  if (temp == NULL
+	      || GET_MODE_CLASS (GET_MODE(temp)) != MODE_INT)
 	    temp = gen_reg_rtx (Pmode);
 
 	  if (Pmode == DImode)
