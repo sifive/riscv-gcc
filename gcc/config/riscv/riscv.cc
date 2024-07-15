@@ -11869,7 +11869,7 @@ bool is_zicfiss_p ()
     }
 
   return false;
-};
+}
 
 bool is_zicfilp_p ()
 {
@@ -11884,7 +11884,7 @@ bool is_zicfilp_p ()
     }
 
   return false;
-};
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
