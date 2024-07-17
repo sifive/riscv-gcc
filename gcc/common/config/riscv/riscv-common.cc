@@ -2318,6 +2318,17 @@ riscv_expand_arch_from_cpu (int argc ATTRIBUTE_UNUSED,
   return xasprintf ("-march=%s", arch.c_str());
 }
 
+/* Spec function (see %:function(args) in spec doc) to determine whether to use
+   CFI.  */
+const char *
+riscv_use_cfi (int argc,
+               const char **argv)
+{
+  if (strstr(argv[argc-1], "zimop") != NULL)
+      return "";
+  return NULL;
+}
+
 /* Report error if not found suitable multilib.  */
 const char *
 riscv_multi_lib_check (int argc ATTRIBUTE_UNUSED,
@@ -2489,9 +2500,20 @@ riscv_check_conds (
 
 static const char *
 riscv_select_multilib_by_abi (
+  const std::string &riscv_current_arch_str,
   const std::string &riscv_current_abi_str,
   const std::vector<riscv_multi_lib_info_t> &multilib_infos)
 {
+  if (riscv_current_arch_str.find("zimop") != std::string::npos)
+    {
+      for (auto& multilib_info: multilib_infos)
+      {
+        if (riscv_current_abi_str == multilib_info.abi_str
+            && multilib_info.path.find("/cfi") != std::string::npos)
+          return xstrdup (multilib_info.path.c_str ());
+      }
+    }
+
   for (ssize_t i = multilib_infos.size () - 1; i >= 0; --i)
     if (riscv_current_abi_str == multilib_infos[i].abi_str)
       return xstrdup (multilib_infos[i].path.c_str ());
@@ -2670,8 +2692,9 @@ riscv_compute_multilib (
   switch (select_kind)
     {
     case select_by_abi:
-      return riscv_select_multilib_by_abi (riscv_current_abi_str,
-					   multilib_infos);
+      return riscv_select_multilib_by_abi (riscv_current_arch_str,
+                                           riscv_current_abi_str,
+                                           multilib_infos);
     case select_by_abi_arch_cmodel:
       return riscv_select_multilib (riscv_current_abi_str, subset_list,
 				    switches, n_switches, multilib_infos);
