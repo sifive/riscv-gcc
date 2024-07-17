@@ -22,7 +22,9 @@ along with GCC; see the file COPYING3.  If not see
     GNU_USER_TARGET_OS_CPP_BUILTINS();				\
   } while (0)
 
-#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-riscv" XLEN_SPEC "-" ABI_SPEC ".so.1"
+#define GLIBC_DYNAMIC_LINKER \
+  "%{%:riscv_use_cfi(%{march*:%*}):/lib/ld-linux-riscv" XLEN_SPEC "-" ABI_SPEC "-cfi.so.1;" \
+  ":/lib/ld-linux-riscv" XLEN_SPEC "-" ABI_SPEC ".so.1}" \
 
 #define MUSL_ABI_SUFFIX \
   "%{mabi=ilp32:-sf}" \
@@ -64,9 +66,15 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_ASM_FILE_END riscv_file_end_indicate_exec_stack
 
 #define STARTFILE_PREFIX_SPEC 			\
-   "/lib" XLEN_SPEC "/" ABI_SPEC "/ "		\
-   "/usr/lib" XLEN_SPEC "/" ABI_SPEC "/ "	\
-   "/lib/ "					\
-   "/usr/lib/ "
+  "%{%:riscv_use_cfi(%{march*:%*}):"		\
+  "  /lib" XLEN_SPEC "-cfi/" ABI_SPEC "/ "		\
+  "  /usr/lib" XLEN_SPEC "-cfi/" ABI_SPEC "/ "	\
+  "  /lib-cfi/ "					\
+  "  /usr/lib-cfi/ "					\
+  ";:"						\
+  "  /lib" XLEN_SPEC "/" ABI_SPEC "/ "	\
+  "  /usr/lib" XLEN_SPEC "/" ABI_SPEC "/ "	\
+  "  /lib/ "				\
+  "  /usr/lib/}"
 
 #define RISCV_USE_CUSTOMISED_MULTI_LIB select_by_abi

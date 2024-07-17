@@ -51,13 +51,15 @@ extern const char *riscv_expand_arch_from_cpu (int argc, const char **argv);
 extern const char *riscv_default_mtune (int argc, const char **argv);
 extern const char *riscv_multi_lib_check (int argc, const char **argv);
 extern const char *riscv_arch_help (int argc, const char **argv);
+extern const char *riscv_use_cfi (int argc, const char **argv);
 
 # define EXTRA_SPEC_FUNCTIONS						\
   { "riscv_expand_arch", riscv_expand_arch },				\
   { "riscv_expand_arch_from_cpu", riscv_expand_arch_from_cpu },		\
   { "riscv_default_mtune", riscv_default_mtune },			\
   { "riscv_multi_lib_check", riscv_multi_lib_check },			\
-  { "riscv_arch_help", riscv_arch_help },
+  { "riscv_arch_help", riscv_arch_help },				\
+  { "riscv_use_cfi", riscv_use_cfi },				\
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-arch is ignored if -march or -mcpu is specified.
