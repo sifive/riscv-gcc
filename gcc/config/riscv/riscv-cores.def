@@ -93,7 +93,7 @@ RISCV_CORE("sifive-s61r",     "rv64imac_zic64b_ziccamoa_ziccif_ziccrse_zicsr_zif
 RISCV_CORE("sifive-s76",      "rv64imafdc", "sifive-7-series")
 RISCV_CORE("sifive-s76n",     "rv64imafdc_zifencei_zba_zbb", "sifive-7m-series")
 RISCV_CORE("sifive-s76m",     "rv64imafdc_zba_zbb", "sifive-7m-series")
-RISCV_CORE("sifive-s76r",      "rv64imafc_zic64b_ziccamoa_ziccif_ziccrse_zicsr_zifencei_zihintpause_zihpm_za64rs_zba_zbb_zcb_zcmp_zcmt_zkt_xsifivecdiscarddlone_xsifivecflushdlone", "sifive-7n-series")
+RISCV_CORE("sifive-s76r",      "rv64imafc_zic64b_ziccamoa_ziccif_ziccrse_zicsr_zifencei_zihintpause_zihpm_za64rs_zba_zbb_zcb_zcmp_zcmt_zkt_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1", "sifive-7n-series")
 
 RISCV_CORE("sifive-u54",      "rv64imafdc", "sifive-5-series")
 RISCV_CORE("sifive-u64",      "rv64imafdc_zba_zbb", "sifive-6-series")
@@ -108,7 +108,7 @@ RISCV_CORE("sifive-p260t",     "rv64imafdcvh_zba_zbb_zbs_zcb_zfh_zkt_zicbop_"
                                "zicbom_zicboz_zifencei_zicsr_zihintpause_"
                                "zihintntl_ziccif_ziccamoa_ziccrse_zihpm_za64rs_"
                                "zic64b_zvl128b_zvfh_zvbb_xsfvfhbfmin_"
-                               "xsifivecdiscarddlone_xsifivecflushdlone",
+                               "xsifivecdiscarddlone0p1_xsifivecflushdlone0p1",
                                 "sifive-7-series")
 RISCV_CORE("sifive-p270",     "rv64imafdcv_zfh_zba_zbb_zvfh_zvl256b", "sifive-7-series")
 RISCV_CORE("sifive-p270n",     "rv64imafdcv_zfh_zba_zbb_zvfh_zvl256b", "sifive-7n-series")
@@ -119,39 +119,39 @@ RISCV_CORE("sifive-x390",     "rv64imafdcv_zba_zbb_zbs_zcb_zicond_zfa_zicbom_"
                               "zfh_zkt_zicbop_zicboz_zifencei_zicsr_zihintpause_"
                               "zihintntl_ziccif_ziccamoa_ziccrse_zihpm_za64rs_"
                               "zic64b_zvl1024b_zvfh_zvfbfmin_zvbb_xsfvqmaccqoq_"
-                              "xsfvfnrclipxfqf_xsifivecdiscarddlone_"
-                              "xsifivecflushdlone_xsfvfwmaccqqq", "sifive-7-series")
+                              "xsfvfnrclipxfqf_xsifivecdiscarddlone0p1_"
+                              "xsifivecflushdlone0p1_xsfvfwmaccqqq", "sifive-7-series")
 RISCV_CORE("sifive-x392-ea-singlevalu", "rv64imafdcv_zba_zbb_zbs_zcb_zicond_zfa_zicbom_"
                                         "zfh_zkt_zicbop_zicboz_zifencei_zicsr_zihintpause_"
                                         "zihintntl_ziccif_ziccamoa_ziccrse_zihpm_za64rs_"
                                         "zic64b_zvl1024b_zvfh_zvfbfmin_zvbb_xsfvqmaccqoq_"
-                                        "xsfvfnrclipxfqf_xsifivecdiscarddlone_"
-                                        "xsifivecflushdlone_xsfvfwmaccqqq", "sifive-7-series")
+                                        "xsfvfnrclipxfqf_xsifivecdiscarddlone0p1_"
+                                        "xsifivecflushdlone0p1_xsfvfwmaccqqq", "sifive-7-series")
 RISCV_CORE("sifive-x392-ea-dualvalu", "rv64imafdcv_zba_zbb_zbs_zcb_zicond_zfa_zicbom_"
                                       "zfh_zkt_zicbop_zicboz_zifencei_zicsr_zihintpause_"
                                       "zihintntl_ziccif_ziccamoa_ziccrse_zihpm_za64rs_"
                                       "zic64b_zvl1024b_zvfh_zvfbfmin_zvbb_xsfvqmaccqoq_"
-                                      "xsfvfnrclipxfqf_xsifivecdiscarddlone_"
-                                      "xsifivecflushdlone_xsfvfwmaccqqq", "sifive-7-series")
+                                      "xsfvfnrclipxfqf_xsifivecdiscarddlone0p1_"
+                                      "xsifivecflushdlone0p1_xsfvfwmaccqqq", "sifive-7-series")
 RISCV_CORE("sifive-p450",     "rv64imafdc_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei" \
 			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs"
-			      "_xsifivecdiscarddlone_xsifivecflushdlone", "sifive-p500-series")
+			      "_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1", "sifive-p500-series")
 RISCV_CORE("sifive-p470",     "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei" \
 			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs_zvbb1p0_zvknc1p0_zvkng1p0_zvksc1p0_zvksg1p0" \
-			      "_xsifivecdiscarddlone_xsifivecflushdlone_zvl128b", "sifive-p500-series")
+			      "_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1_zvl128b", "sifive-p500-series")
 RISCV_CORE("sifive-p550",     "rv64imafdc_zifencei_zfhmin_zba_zbb", "sifive-p500-series")
 RISCV_CORE("sifive-p650",     "rv64imafdc_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei" \
 			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs" \
-			      "_xsifivecdiscarddlone_xsifivecflushdlone", "sifive-p600-series")
+			      "_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1", "sifive-p600-series")
 RISCV_CORE("sifive-p670",     "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei" \
 			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs_zvbb1p0_zvknc1p0_zvkng1p0_zvksc1p0_zvksg1p0" \
-			      "_xsifivecdiscarddlone_xsifivecflushdlone_zvl128b", "sifive-p600-series")
+			      "_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1_zvl128b", "sifive-p600-series")
 RISCV_CORE("sifive-p670s",    "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_ziccrse_zicond_zicsr_zifencei_zihintntl" \
 			      "_zihintpause_zihpm_za64rs_zawrs_zfa_zfh_zba_zbb_zbs_zvbb1p0_zvfbfmin_zvfbfwma_zvfhmin_zvknc1p0" \
-			      "_zvkng1p0_zvksc1p0_zvksg1p0_xsifivecdiscarddlone_xsifivecflushdlone", "sifive-p600-series")
+			      "_zvkng1p0_zvksc1p0_zvksg1p0_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1", "sifive-p600-series")
 RISCV_CORE("sifive-p870s",    "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_ziccrse_zicond_zicsr_zifencei_zihintntl" \
 			      "_zihintpause_zihpm_za64rs_zawrs_zfa_zfh_zba_zbb_zbs_zvbb1p0_zvfbfmin_zvfbfwma_zvfhmin_zvknc1p0" \
-			      "_zvkng1p0_zvksc1p0_zvksg1p0_xsifivecdiscarddlone_xsifivecflushdlone", "sifive-p600-series")
+			      "_zvkng1p0_zvksc1p0_zvksg1p0_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1", "sifive-p600-series")
 
 RISCV_CORE("thead-c906",      "rv64imafdc_xtheadba_xtheadbb_xtheadbs_xtheadcmo_"
 			      "xtheadcondmov_xtheadfmemidx_xtheadmac_"
