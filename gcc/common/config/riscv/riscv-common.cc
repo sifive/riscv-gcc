@@ -506,6 +506,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"sswg",  ISA_SPEC_CLASS_UNRATIFIED, 0, 3},
   {"ssqosid",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"ssstrict", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"skvt", ISA_SPEC_CLASS_UNRATIFIED, 0, 2},
 
   {"v",       ISA_SPEC_CLASS_UNRATIFIED, 0, 10},
   {"zvlsseg", ISA_SPEC_CLASS_NONE, 1, 0},
