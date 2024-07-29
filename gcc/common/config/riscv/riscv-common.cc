@@ -394,6 +394,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"smepmp",    ISA_SPEC_CLASS_NONE, 1, 0},
   {"smstateen", ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"smctr", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"ssctr", ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"ssaia",     ISA_SPEC_CLASS_NONE, 1, 0},
   {"sscofpmf",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"ssstateen", ISA_SPEC_CLASS_NONE, 1, 0},
