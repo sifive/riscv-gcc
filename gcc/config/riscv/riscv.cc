@@ -10405,6 +10405,9 @@ riscv_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
   if (riscv_cmodel == CM_LARGE)
     return false;
 
+  if (riscv_cmodel == CM_COMPACT)
+    return false;
+
   return true;
 }
 
