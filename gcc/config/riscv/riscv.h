@@ -112,16 +112,16 @@ extern const char *riscv_arch_help (int argc, const char **argv);
 ASM_MISA_SPEC
 
 #undef DRIVER_SELF_SPECS
-#define DRIVER_SELF_SPECS						       \
-"%{march=help:%:riscv_arch_help()} "					       \
-"%{print-supported-extensions:%:riscv_arch_help()} "			       \
-"%{-print-supported-extensions:%:riscv_arch_help()} "			       \
-  "%{menable-experimental-extensions:-menable-experimental-extensions} "       \
-  "%{!Wno-riscv-implicit-extension-version:-Wriscv-implicit-extension-"        \
-  "version} "								       \
-"%{Werror=riscv-implicit-extension-version:-Werror=riscv-implicit-extension-version})}"  \
-"%{march=*:%:riscv_expand_arch(%*)} "					       \
-"%{!march=*:%{mcpu=*:%:riscv_expand_arch_from_cpu(%*)}} "
+#define DRIVER_SELF_SPECS                                                  \
+"%{march=help:%:riscv_arch_help()} "                                       \
+"%{print-supported-extensions:%:riscv_arch_help()} "                       \
+"%{-print-supported-extensions:%:riscv_arch_help()} "                      \
+"%{march=*:%:riscv_expand_arch(%* "                                        \
+"%{menable-experimental-extensions:-menable-experimental-extensions} "     \
+"%{!Wno-riscv-implicit-extension-version:-Wriscv-implicit-extension-"      \
+  "version} "                                                              \
+ "%{Werror=riscv-implicit-extension-version:-Werror=riscv-implicit-extension-version})}"  \
+ "%{!march=*:%{mcpu=*:%:riscv_expand_arch_from_cpu(%*)}} "
 
 #define LOCAL_LABEL_PREFIX	"."
 #define USER_LABEL_PREFIX	""
