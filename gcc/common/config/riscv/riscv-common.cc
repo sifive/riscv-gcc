@@ -1034,15 +1034,15 @@ riscv_subset_list::parsing_subset_version (const char *ext,
     *minor_version = minor;
     if (!found)
       {
-	error_at ("%<-march=%s%>: unsupported version number %<%d.%d%> for "
-		  "extension %<%s%>",
+	error_at (m_loc, "%<-march=%s%>: unsupported version number %<%d.%d%>"
+		  " for extension %<%s%>",
 		  m_arch, major, minor, ext);
 	return p;
       }
     }
   if (isa_spec_class == ISA_SPEC_CLASS_UNKNOWN)
     {
-    error_at ("%<-march=%s%>: unsupported extension %<%s%>", m_arch, ext);
+    error_at (m_loc, "%<-march=%s%>: unsupported extension %<%s%>", m_arch, ext);
     return p;
     }
 
@@ -1522,7 +1522,7 @@ fail:
 riscv_subset_list *
 riscv_subset_list::clone () const
 {
-  riscv_subset_list *new_list = new riscv_subset_list (m_arch, m_loc);
+  riscv_subset_list *new_list = new riscv_subset_list (m_arch, m_loc, false);
   for (riscv_subset_t *itr = m_head; itr != NULL; itr = itr->next)
     new_list->add (itr->name.c_str (), itr->major_version, itr->minor_version,
 		   itr->explicit_version_p, true);

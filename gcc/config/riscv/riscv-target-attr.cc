@@ -90,7 +90,7 @@ riscv_target_attr_parser::parse_arch (const char *str)
   /* Check if it's setting full arch string.  */
   if (strncmp ("rv", str, strlen ("rv")) == 0)
     {
-      m_subset_list = riscv_subset_list::parse (str, m_loc);
+      m_subset_list = riscv_subset_list::parse (str, m_loc, false);
 
       if (m_subset_list == nullptr)
 	goto fail;
@@ -107,7 +107,7 @@ riscv_target_attr_parser::parse_arch (const char *str)
       const char *token = strtok_r (str_to_check, ",", &str_to_check);
       const char *local_arch_str = global_options.x_riscv_arch_string;
       m_subset_list = local_arch_str
-		      ? riscv_subset_list::parse (local_arch_str, m_loc)
+		      ? riscv_subset_list::parse (local_arch_str, m_loc, false)
 		      : riscv_cmdline_subset_list ()->clone ();
       m_subset_list->set_loc (m_loc);
       m_subset_list->set_allow_adding_dup (true);
@@ -181,7 +181,7 @@ riscv_target_attr_parser::handle_cpu (const char *str)
   if (m_subset_list == nullptr)
     {
       const char *arch_str = cpu_info->arch;
-      m_subset_list = riscv_subset_list::parse (arch_str, m_loc);
+      m_subset_list = riscv_subset_list::parse (arch_str, m_loc, false);
       gcc_assert (m_subset_list);
     }
 
