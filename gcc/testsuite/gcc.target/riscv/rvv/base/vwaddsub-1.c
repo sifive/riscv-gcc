@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target rv64 } */
 /* { dg-add-options riscv_v } */
 /* { dg-additional-options "-std=gnu99 -O3 -fno-schedule-insns -fno-schedule-insns2" } */
 
