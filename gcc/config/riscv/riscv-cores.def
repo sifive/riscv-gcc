@@ -121,18 +121,6 @@ RISCV_CORE("sifive-x390",     "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_
                               "zba_zbb_zbs_zkr_zkt_zvbb_zvfbfmin_zvfbfwma_zvfh_zvl1024b_"
                               "xsfcease_xsfvfexpa_xsfvfnrclipxfqf_xsfvfwmaccqqq_xsfvqdotq_"
                               "xsfvqmaccqoq_xsifivecdiscarddlone_xsifivecflushdlone", "sifive-7-series")
-RISCV_CORE("sifive-x392-ea-singlevalu", "rv64imafdcv_zba_zbb_zbs_zcb_zicond_zfa_zicbom_"
-                                        "zfh_zkt_zicbop_zicboz_zifencei_zicsr_zihintpause_"
-                                        "zihintntl_ziccif_ziccamoa_ziccrse_zihpm_za64rs_"
-                                        "zic64b_zvl1024b_zvfh_zvfbfmin_zvbb_xsfvqmaccqoq_"
-                                        "xsfvfnrclipxfqf_xsifivecdiscarddlone0p1_"
-                                        "xsifivecflushdlone0p1_xsfvfwmaccqqq", "sifive-7-series")
-RISCV_CORE("sifive-x392-ea-dualvalu", "rv64imafdcv_zba_zbb_zbs_zcb_zicond_zfa_zicbom_"
-                                      "zfh_zkt_zicbop_zicboz_zifencei_zicsr_zihintpause_"
-                                      "zihintntl_ziccif_ziccamoa_ziccrse_zihpm_za64rs_"
-                                      "zic64b_zvl1024b_zvfh_zvfbfmin_zvbb_xsfvqmaccqoq_"
-                                      "xsfvfnrclipxfqf_xsifivecdiscarddlone0p1_"
-                                      "xsifivecflushdlone0p1_xsfvfwmaccqqq", "sifive-7-series")
 RISCV_CORE("sifive-p450",     "rv64imafdc_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei" \
 			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs"
 			      "_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1", "sifive-p500-series")
