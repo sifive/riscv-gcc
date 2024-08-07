@@ -145,7 +145,7 @@ RISCV_CORE("sifive-p650",     "rv64imafdc_zic64b_zicbom_zicbop_zicboz_ziccamoa_z
 RISCV_CORE("sifive-p670",     "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei" \
 			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs_zvbb1p0_zvknc1p0_zvkng1p0_zvksc1p0_zvksg1p0" \
 			      "_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1_zvl128b", "sifive-p600-series")
-RISCV_CORE("sifive-p670s",    "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_ziccrse_zicond_zicsr_zifencei_zihintntl" \
+RISCV_CORE("sifive-lion",     "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_ziccrse_zicond_zicsr_zifencei_zihintntl" \
 			      "_zihintpause_zihpm_za64rs_zawrs_zfa_zfh_zba_zbb_zbs_zvbb1p0_zvfbfmin_zvfbfwma_zvfhmin_zvknc1p0" \
 			      "_zvkng1p0_zvksc1p0_zvksg1p0_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1", "sifive-p600-series")
 RISCV_CORE("sifive-cheetah",  "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_ziccrse_zicond_zicsr_zifencei_zihintntl" \
