@@ -45,8 +45,8 @@ int main ()
   TYPE a[N];
   TYPE b[N];
 
-  a[0] = INT_MIN;
-  b[0] = INT_MIN;
+  a[0] = INT_MIN+1;
+  b[0] = INT_MIN+1;
 
   for (int i = 1; i < N; ++i)
     {
