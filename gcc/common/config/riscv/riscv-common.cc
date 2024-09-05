@@ -584,6 +584,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"xsfcease", ISA_SPEC_CLASS_UNRATIFIED, 1, 0},
   {"xsfcease", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
 
+  {"smcsrind", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"sscsrind", ISA_SPEC_CLASS_NONE, 1, 0},
+
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
