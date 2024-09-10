@@ -84,12 +84,12 @@
 (define_insn_reservation "sifive_p600_store" 1
   (and (eq_attr "tune" "sifive_p600")
        (eq_attr "type" "store"))
-  "sifive_p600_A+sifive_p600_st")
+  "sifive_p600_st")
 
 (define_insn_reservation "sifive_p600_fpstore" 1
   (and (eq_attr "tune" "sifive_p600")
        (eq_attr "type" "fpstore"))
-  "sifive_p600_A+sifive_p600_st")
+  "sifive_p600_st")
 
 (define_insn_reservation "sifive_p600_branch" 1
   (and (eq_attr "tune" "sifive_p600")
