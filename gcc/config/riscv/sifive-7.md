@@ -12,7 +12,7 @@
 (define_cpu_unit "sifive_7_idiv" "sifive_7")
 (define_cpu_unit "sifive_7_fpu" "sifive_7")
 
-(define_insn_reservation "sifive_7_load" 3
+(define_insn_reservation "sifive_7_load" 2
   (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "load"))
   "sifive_7_A")
@@ -57,10 +57,10 @@
        (eq_attr "type" "idiv"))
   "sifive_7_B,sifive_7_idiv*15")
 
-(define_insn_reservation "sifive_7_alu" 2
+(define_insn_reservation "sifive_7_alu" 1
   (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "unknown,arith,shift,slt,multi,logical,move,bitmanip,\
-			rotate,min,max,minu,maxu,clz,ctz,atomic,condmove,mvpair,zicond"))
+			min,max,minu,maxu,atomic,condmove,mvpair,zicond"))
   "sifive_7_A|sifive_7_B")
 
 (define_insn_reservation "sifive_7_alu_b" 2
