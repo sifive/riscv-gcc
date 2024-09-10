@@ -9914,6 +9914,11 @@ riscv_override_options_internal (struct gcc_options *opts)
 
   /* Convert -march and -mrvv-vector-bits to a chunks count.  */
   riscv_vector_chunks = riscv_convert_vector_chunks (opts);
+
+  if ((riscv_microarchitecture == sifive_7
+       || riscv_microarchitecture == sifive_7n)
+      && (stringop_strategy == STRATEGY_AUTO))
+    stringop_strategy = STRATEGY_SCALAR;
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
