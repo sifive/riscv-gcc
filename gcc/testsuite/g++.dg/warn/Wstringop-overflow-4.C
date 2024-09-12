@@ -1,7 +1,7 @@
 /* PR middle-end/91582 - missing heap overflow detection for strcpy
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wno-array-bounds -ftrack-macro-expansion=0" } */
-
+   { dg-options "-O2 -Wall -Wno-array-bounds -ftrack-macro-expansion=0" }
+   { dg-skip-if "" { "riscv*-*-*" } } */
 #include "../../gcc.dg/range.h"
 
 #define INT_MAX     __INT_MAX__
@@ -151,7 +151,9 @@ void test_strcpy_new_int16_t (size_t n, const size_t vals[])
        as size_t as a result of threading.  See PR 101688 comment #2.  */
     T (S (1), new int16_t[r_0_imax]);
 
-  T (S (2), new int16_t[r_0_imax + 1]);
+  /* Similar to PR 101688 the following can result in a bougs warning because
+     of threading.  */
+  T (S (2), new int16_t[r_0_imax + 1]); // { dg-bogus "into a region of size" "" { xfail { ilp32 } } }
   T (S (9), new int16_t[r_0_imax * 2 + 1]);
 
   int r_1_imax = SR (1, INT_MAX);

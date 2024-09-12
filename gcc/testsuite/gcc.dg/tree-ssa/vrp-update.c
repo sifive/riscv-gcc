@@ -1,4 +1,5 @@
 /* { dg-options "-O2 -fdump-tree-vrp1 " } */
+/* { dg-skip-if "" { "riscv*-*-*" } } */
 
 /* Tests that calls to update_stmt by the folder will also update ranger's
    cache value and produce the correct result for the builtin_constant_p

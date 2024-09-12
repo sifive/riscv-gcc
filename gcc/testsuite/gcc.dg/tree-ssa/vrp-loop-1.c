@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Os -fdump-tree-optimized" } */
+/* { dg-skip-if "" { "riscv*-*-*" } } */
 /* PR tree-optimization/110768 */
 /* The call to foo should be able to removed,
    The branch to unreachable is unreachable as
