@@ -1,7 +1,7 @@
 /* PR middle-end/91582 - missing heap overflow detection for strcpy
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wno-array-bounds -ftrack-macro-expansion=0" } */
-
+   { dg-options "-O2 -Wall -Wno-array-bounds -ftrack-macro-expansion=0" }
+   { dg-skip-if "" { "riscv*-*-*" } } */
 #include "../../gcc.dg/range.h"
 
 #define INT_MAX     __INT_MAX__

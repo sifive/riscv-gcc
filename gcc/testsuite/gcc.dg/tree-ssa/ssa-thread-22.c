@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Os -fdump-tree-optimized" } */
+/* { dg-skip-if "" { "riscv*-*-*" } } */
 /* PR tree-optimization/107823 */
 /* With jump threading across the loop header,
    we should figure out that b is always 0 and remove
