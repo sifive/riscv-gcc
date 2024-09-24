@@ -9933,6 +9933,14 @@ riscv_override_options_internal (struct gcc_options *opts)
       opts->x_flag_cf_protection
       = (cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
     }
+
+  if (TARGET_ZICFISS && !riscv_cfi_ss)
+    warning (0, "-mno-cfi-ss is no longer supported, "
+	     "please try -fcf-protection=none");
+
+  if (TARGET_ZICFILP && !riscv_cfi_lp)
+    warning (0, "-mno-cfi-lp is no longer supported, "
+	     "please try -fcf-protection=none");
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
@@ -11885,8 +11893,6 @@ bool is_zicfiss_p ()
     {
       if (cfun && cfun->machine->no_cfi_ss_p)
        return false;
-      else if (!riscv_cfi_ss)
-       return false;
       else
        return true;
     }
@@ -11900,8 +11906,6 @@ bool is_zicfilp_p ()
       && (flag_cf_protection & CF_BRANCH))
     {
       if (cfun && cfun->machine->no_cfi_lp_p)
-	return false;
-      else if (riscv_lpad_type == LPAD_NONE)
 	return false;
       else
 	return true;
