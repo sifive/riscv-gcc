@@ -643,7 +643,7 @@ Target RejectNegative Joined Enum(tls_type) Var(riscv_tls_dialect) Init(TLS_TRAD
 Specify TLS dialect.
 
 mcfi-ss
-Target Bool Var(riscv_cfi_ss) Init(1)
+Target Bool Var(riscv_cfi_ss) Init(1) Undocumented
 Only for disable CFI shadow stack instructions.
 
 mcfi-lp
