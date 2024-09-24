@@ -698,7 +698,7 @@ Target Integer Var(riscv_mautovec_segment) Init(1)
 Enable (default) or disable generation of vector segment load/store instructions.
 
 mcfi-ss
-Target Bool Var(riscv_cfi_ss) Init(1)
+Target Bool Var(riscv_cfi_ss) Init(1) Undocumented
 Only for disable CFI shadow stack instructions.
 
 mcfi-lp

@@ -1,6 +1,6 @@
 /* Verify the -mno-cfi-lp option.  */
 /* { dg-do compile { target { riscv64*-*-* } } } */
-/* { dg-options "-O0 -march=rv64gc_zicfilp -mabi=lp64d" } */
+/* { dg-options "-O0 -march=rv64gc_zicfilp -mabi=lp64d -fcf-protection=branch" } */
 
 __attribute__((landing_pad_value(-1)))
 int test1 (void)
