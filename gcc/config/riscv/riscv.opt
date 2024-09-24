@@ -260,7 +260,7 @@ Target Var(TARGET_INLINE_SUBWORD_ATOMIC) Init(1)
 Always inline subword atomic operations.
 
 mcfi-ss
-Target Bool Var(riscv_cfi_ss) Init(1)
+Target Bool Var(riscv_cfi_ss) Init(1) Undocumented
 Only for disable CFI shadow stack instructions.
 
 mcfi-lp

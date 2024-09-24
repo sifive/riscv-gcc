@@ -6358,6 +6358,26 @@ riscv_convert_vector_bits (void)
   return TARGET_VECTOR ? poly_uint16 (1, 1) : 1;
 }
 
+static void
+riscv_option_override_internal (struct gcc_options *opts,
+				struct gcc_options *opts_set)
+{
+
+  if (opts->x_flag_cf_protection != CF_NONE)
+    {
+      if ((opts->x_flag_cf_protection & CF_RETURN) == CF_RETURN
+	  && !TARGET_ZICFISS)
+	error ("%<-fcf-protection%> is not compatible with this target");
+
+      if ((opts->x_flag_cf_protection & CF_BRANCH) == CF_BRANCH
+	  && !TARGET_ZICFILP)
+	error ("%<-fcf-protection%> is not compatible with this target");
+
+      opts->x_flag_cf_protection
+      = (cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
+    }
+}
+
 /* Implement TARGET_OPTION_OVERRIDE.  */
 
 static void
@@ -6511,6 +6531,9 @@ riscv_option_override (void)
 
   /* Convert -march to a chunks count.  */
   riscv_vector_chunks = riscv_convert_vector_bits ();
+
+ riscv_option_override_internal (&global_options, &global_options_set);
+
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
@@ -7380,10 +7403,10 @@ riscv_file_end_indicate_exec_stack ()
   long GNU_PROPERTY_RISCV_FEATURE_1_AND  = 0;
   unsigned long feature_1_and = 0;
 
-  if (TARGET_ZICFILP)
+  if (is_zicfilp_p ())
     feature_1_and |= 0x1 << 0;
 
-  if (TARGET_ZICFISS)
+  if (is_zicfiss_p ())
     feature_1_and |= 0x1 << 1;
 
   if (feature_1_and)
@@ -7427,7 +7450,8 @@ riscv_file_end_indicate_exec_stack ()
 
 bool is_zicfiss_p ()
 {
-  if (TARGET_ZICFISS)
+  if (TARGET_ZICFISS
+      && (flag_cf_protection & CF_RETURN))
     {
       if (cfun && cfun->machine->no_cfi_ss_p)
        return false;
@@ -7442,7 +7466,8 @@ bool is_zicfiss_p ()
 
 bool is_zicfilp_p ()
 {
-  if (TARGET_ZICFILP)
+  if (TARGET_ZICFILP
+      && (flag_cf_protection & CF_BRANCH))
     {
       if (cfun && cfun->machine->no_cfi_lp_p)
 	return false;

@@ -2702,7 +2702,7 @@
 (define_insn "tablejump<mode>"
   [(set (pc) (match_operand:GPR 0 "register_operand" "l"))
    (use (label_ref (match_operand 1 "" "")))]
-  "!TARGET_ZICFILP"
+  "!is_zicfilp_p ()"
   "jr\t%0"
   [(set_attr "type" "jump")
    (set_attr "mode" "none")])
@@ -2710,7 +2710,7 @@
 (define_insn "tablejump_cfi<mode>"
   [(set (pc) (reg:GPR T2_REGNUM))
    (use (label_ref (match_operand 0 "")))]
-  "TARGET_ZICFILP"
+  "is_zicfilp_p ()"
   "jr\tt2"
   [(set_attr "type" "jump")
    (set_attr "mode" "none")])

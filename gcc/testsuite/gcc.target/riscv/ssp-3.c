@@ -1,6 +1,6 @@
 /* Verify the no_cfi_ss attribute.  */
 /* { dg-do compile { target { riscv64*-*-* } } } */
-/* { dg-options "-O0 -march=rv64gc_zicfiss -mabi=lp64d" } */
+/* { dg-options "-O0 -march=rv64gc_zicfiss -mabi=lp64d -fcf-protection=return" } */
 
 __attribute__((no_cfi_ss))
 int foo (void) { return 42; }
