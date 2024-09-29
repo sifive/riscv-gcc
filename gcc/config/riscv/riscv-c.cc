@@ -220,6 +220,7 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define_with_int_value ("__riscv_th_v_intrinsic",
 				   riscv_ext_version_value (0, 11));
 
+
   /* Define architecture extension test macros.  */
   builtin_define_with_int_value ("__riscv_arch_test", 1);
 
@@ -270,7 +271,8 @@ riscv_pragma_intrinsic (cpp_reader *)
   const char *name = TREE_STRING_POINTER (x);
 
   if (strcmp (name, "vector") == 0
-      || strcmp (name, "xtheadvector") == 0)
+      || strcmp (name, "xtheadvector") == 0
+      || strcmp (name, "sifive_vector"))
     {
       struct pragma_intrinsic_flags backup_flags;
 
