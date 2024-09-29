@@ -381,6 +381,7 @@
 ;; vidiv       vector single-width integer divide instructions
 ;; viwmul      vector widening integer multiply instructions
 ;; vimuladd    vector single-width integer multiply-add instructions
+;; vsfmuladd   vector matrix integer multiply-add instructions
 ;; viwmuladd   vector widening integer multiply-add instructions
 ;; vimerge     vector integer merge instructions
 ;; vimov       vector integer move vector instructions
@@ -485,7 +486,7 @@
    vldux,vldox,vstux,vstox,vldff,vldr,vstr,
    vlsegde,vssegte,vlsegds,vssegts,vlsegdux,vlsegdox,vssegtux,vssegtox,vlsegdff,
    vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,viminmax,
-   vimul,vidiv,viwmul,vimuladd,viwmuladd,vimerge,vimov,
+   vimul,vidiv,viwmul,vimuladd,vsfmuladd,viwmuladd,vimerge,vimov,
    vsalu,vaalu,vsmul,vsshift,vnclip,
    vfalu,vfwalu,vfmul,vfdiv,vfwmul,vfmuladd,vfwmuladd,vfsqrt,vfrecp,
    vfcmp,vfminmax,vfsgnj,vfclass,vfmerge,vfmov,

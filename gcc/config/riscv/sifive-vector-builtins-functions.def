@@ -1,0 +1,19 @@
+#ifndef DEF_RVV_FUNCTION
+#define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)
+#endif
+
+#define REQUIRED_EXTENSIONS XSFVQMACCQOQ_EXT
+DEF_RVV_FUNCTION (vqmaccu, sf_vqmacc, none_tu_preds, u_qqvv_ops)
+DEF_RVV_FUNCTION (vqmacc, sf_vqmacc, none_tu_preds, i_qqvv_ops)
+DEF_RVV_FUNCTION (vqmaccsu, sf_vqmacc, none_tu_preds, i_su_qqvv_ops)
+DEF_RVV_FUNCTION (vqmaccus, sf_vqmacc, none_tu_preds, i_us_qqvv_ops)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS XSFVQMACCDOD_EXT
+DEF_RVV_FUNCTION (vqmaccu, sf_vqmacc, none_tu_preds, u_qdvv_ops)
+DEF_RVV_FUNCTION (vqmacc, sf_vqmacc, none_tu_preds, i_qdvv_ops)
+DEF_RVV_FUNCTION (vqmaccsu, sf_vqmacc, none_tu_preds, i_su_qdvv_ops)
+DEF_RVV_FUNCTION (vqmaccus, sf_vqmacc, none_tu_preds, i_us_qdvv_ops)
+#undef REQUIRED_EXTENSIONS
+
+#undef DEF_RVV_FUNCTION

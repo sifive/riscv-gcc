@@ -4512,3 +4512,21 @@
   (V256DF "v64df")
   (V512DF "v128df")
 ])
+
+(define_mode_iterator V_SF [
+  RVVM8SI RVVM4SI RVVM2SI RVVM1SI
+])
+
+(define_mode_attr V_SF_QMACC [
+  (RVVM8SI "RVVM4QI")
+  (RVVM4SI "RVVM2QI")
+  (RVVM2SI "RVVM1QI")
+  (RVVM1SI "RVVMF2QI")
+])
+
+(define_mode_attr v_sf_qmacc [
+  (RVVM8SI "rvvm4qi")
+  (RVVM4SI "rvvm2qi")
+  (RVVM2SI "rvvm1qi")
+  (RVVM1SI "rvvmf2qi")
+])

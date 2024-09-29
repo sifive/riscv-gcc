@@ -311,6 +311,10 @@ extern const function_base *const vsuxb;
 extern const function_base *const vsuxh;
 extern const function_base *const vsuxw;
 extern const function_base *const vext_x_v;
+extern const function_base *const vqmacc;
+extern const function_base *const vqmaccu;
+extern const function_base *const vqmaccsu;
+extern const function_base *const vqmaccus;
 /* Below function_base are Vectro Crypto*/
 extern const function_base *const vandn;
 extern const function_base *const vbrev;

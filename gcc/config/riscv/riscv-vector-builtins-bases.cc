@@ -869,6 +869,94 @@ public:
   }
 };
 
+/* Implements vqmacc.  */
+class vqmacc : public function_base
+{
+public:
+  bool has_merge_operand_p () const override { return false; }
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    return pred == PRED_TYPE_tu;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    if (e.op_info->op == OP_TYPE_4x8x4)
+      return e.use_widen_ternop_insn (
+	code_for_pred_quad_mul_plus_qoq (SIGN_EXTEND, e.vector_mode ()));
+    if (e.op_info->op == OP_TYPE_2x8x2)
+      return e.use_widen_ternop_insn (
+	code_for_pred_quad_mul_plus_dod (SIGN_EXTEND, e.vector_mode ()));
+    gcc_unreachable ();
+  }
+};
+
+/* Implements vqmaccu.  */
+class vqmaccu : public function_base
+{
+public:
+  bool has_merge_operand_p () const override { return false; }
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    return pred == PRED_TYPE_tu;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    if (e.op_info->op == OP_TYPE_4x8x4)
+      return e.use_widen_ternop_insn (
+	code_for_pred_quad_mul_plus_qoq (ZERO_EXTEND, e.vector_mode ()));
+    if (e.op_info->op == OP_TYPE_2x8x2)
+      return e.use_widen_ternop_insn (
+	code_for_pred_quad_mul_plus_dod (SIGN_EXTEND, e.vector_mode ()));
+    gcc_unreachable ();
+  }
+};
+
+/* Implements vqmaccsu.  */
+class vqmaccsu : public function_base
+{
+public:
+  bool has_merge_operand_p () const override { return false; }
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    return pred == PRED_TYPE_tu;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    if (e.op_info->op == OP_TYPE_4x8x4)
+      return e.use_widen_ternop_insn (
+	code_for_pred_quad_mul_plussu_qoq (e.vector_mode ()));
+    if (e.op_info->op == OP_TYPE_2x8x2)
+      return e.use_widen_ternop_insn (
+	code_for_pred_quad_mul_plussu_dod (e.vector_mode ()));
+    gcc_unreachable ();
+  }
+};
+
+/* Implements vqmaccus.  */
+class vqmaccus : public function_base
+{
+public:
+  bool has_merge_operand_p () const override { return false; }
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    return pred == PRED_TYPE_tu;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    if (e.op_info->op == OP_TYPE_4x8x4)
+      return e.use_widen_ternop_insn (
+    code_for_pred_quad_mul_plusus_qoq (e.vector_mode ()));
+    if (e.op_info->op == OP_TYPE_2x8x2)
+      return e.use_widen_ternop_insn (
+	code_for_pred_quad_mul_plusus_dod (e.vector_mode ()));
+    gcc_unreachable ();
+  }
+};
+
 /* Implements vmand/vmnand/vmandn/vmxor/vmor/vmnor/vmorn/vmxnor  */
 template<rtx_code CODE>
 class mask_logic : public function_base
@@ -2758,6 +2846,10 @@ static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VSUXB> vs
 static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VSUXH> vsuxh_obj;
 static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VSUXW> vsuxw_obj;
 static CONSTEXPR const th_extract vext_x_v_obj;
+static CONSTEXPR const vqmacc vqmacc_obj;
+static CONSTEXPR const vqmaccu vqmaccu_obj;
+static CONSTEXPR const vqmaccsu vqmaccsu_obj;
+static CONSTEXPR const vqmaccsu vqmaccus_obj;
 
 /* Crypto Vector */
 static CONSTEXPR const vandn vandn_obj;
@@ -3088,6 +3180,10 @@ BASE (vsuxb)
 BASE (vsuxh)
 BASE (vsuxw)
 BASE (vext_x_v)
+BASE (vqmacc)
+BASE (vqmaccu)
+BASE (vqmaccsu)
+BASE (vqmaccus)
 /* Crypto vector */
 BASE (vandn)
 BASE (vbrev)

@@ -8521,3 +8521,4 @@
 
 (include "autovec.md")
 (include "autovec-opt.md")
+(include "sifive-vector.md")

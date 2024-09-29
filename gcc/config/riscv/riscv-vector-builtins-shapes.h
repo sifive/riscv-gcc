@@ -59,6 +59,7 @@ extern const function_shape *const seg_fault_load;
 extern const function_shape *const crypto_vv;
 extern const function_shape *const crypto_vi;
 extern const function_shape *const crypto_vv_no_op_type;
+extern const function_shape *const sf_vqmacc;
 }
 
 } // end namespace riscv_vector
