@@ -7652,7 +7652,7 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 	    }
 	}
 
-      if (is_zicfiss_p () && epilogue && !sibcall_p
+      if (need_shadow_stack_push_pop_p () && epilogue && !sibcall_p
 	  && !(maybe_eh_return && crtl->calls_eh_return)
 	  && (regno == RETURN_ADDR_REGNUM)
 	  && !cfun->machine->interrupt_handler_p)
@@ -7967,7 +7967,7 @@ riscv_expand_prologue (void)
   if (cfun->machine->naked_p)
     return;
 
-  if (is_zicfiss_p ())
+  if (need_shadow_stack_push_pop_p ())
     emit_insn (gen_sspush (Pmode, gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM)));
 
   /* prefer muti-push to save-restore libcall.  */
@@ -8561,7 +8561,7 @@ riscv_expand_epilogue (int style)
     emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
 			      EH_RETURN_STACKADJ_RTX));
 
-  if (is_zicfiss_p ()
+  if (need_shadow_stack_push_pop_p ()
       && !((style == EXCEPTION_RETURN) && crtl->calls_eh_return))
     {
       if (BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM)
@@ -8591,7 +8591,7 @@ riscv_expand_epilogue (int style)
     }
   else if (style != SIBCALL_RETURN)
     {
-      if (is_zicfiss_p ()
+      if (need_shadow_stack_push_pop_p ()
 	  && !((style == EXCEPTION_RETURN) && crtl->calls_eh_return)
 	  && BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM)
 	  && !cfun->machine->interrupt_handler_p)
@@ -8796,7 +8796,7 @@ riscv_can_use_return_insn (void)
 {
   return (reload_completed && known_eq (cfun->machine->frame.total_size, 0)
 	  && ! cfun->machine->interrupt_handler_p
-	  && !is_zicfiss_p ());
+	  && ! need_shadow_stack_push_pop_p ());
 }
 
 /* Given that there exists at least one variable that is set (produced)
@@ -11912,6 +11912,11 @@ bool is_zicfilp_p ()
     }
 
   return false;
+}
+
+bool need_shadow_stack_push_pop_p ()
+{
+  return is_zicfiss_p () && riscv_save_return_addr_reg_p ();
 }
 
 /* Initialize the GCC target structure.  */
