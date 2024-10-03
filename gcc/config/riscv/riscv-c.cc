@@ -229,7 +229,18 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
   if (TARGET_ZICFILP && ((flag_cf_protection & CF_BRANCH) == CF_BRANCH))
     {
       builtin_define ("__riscv_landing_pad");
-      builtin_define ("__riscv_landing_pad_unlabeled");
+      switch (riscv_lpad_type)
+	{
+	case LPAD_FIXED_ONE:
+	  builtin_define ("__riscv_landing_pad_fixed_one");
+	  break;
+	case LPAD_UNLABELED:
+	  builtin_define ("__riscv_landing_pad_unlabeled");
+	  break;
+	case LPAD_FUNC_SIG:
+	  builtin_define ("__riscv_landing_pad_func_sig");
+	  break;
+	}
     }
 
   const riscv_subset_list *subset_list = riscv_cmdline_subset_list ();

@@ -6760,7 +6760,7 @@ riscv_get_lp_value ()
     {
     case LPAD_FIXED_ONE:
       return const1_rtx;
-    case LPAD_SIMPLE:
+    case LPAD_UNLABELED:
       return const0_rtx;
     /* TODO: For function signature schcme, not needed for now.  */
     case LPAD_FUNC_SIG:

@@ -134,7 +134,7 @@ enum rvv_vector_bits_enum {
 enum lpad_type
 {
   LPAD_FIXED_ONE,
-  LPAD_SIMPLE,
+  LPAD_UNLABELED,
   LPAD_FUNC_SIG,
   LPAD_NONE
 };
