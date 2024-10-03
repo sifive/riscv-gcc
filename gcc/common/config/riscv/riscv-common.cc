@@ -540,6 +540,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"xsfvfnrclipxfqf", ISA_SPEC_CLASS_NONE, 1, 0},
   {"xsfvfnrclipxfqf", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
   {"xsfvcp", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
+  {"xsfvcp", ISA_SPEC_CLASS_UNRATIFIED, 1, 0},
   {"xsfvfhbfmin", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
   {"xsfvqdotq", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
   {"xsfpgflushdlone", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
