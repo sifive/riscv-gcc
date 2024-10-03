@@ -231,6 +231,27 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
 
   size_t max_ext_len = 0;
 
+  if (TARGET_ZICFISS && ((flag_cf_protection & CF_RETURN) == CF_RETURN))
+    builtin_define ("__riscv_shadow_stack");
+
+  if (TARGET_ZICFILP && ((flag_cf_protection & CF_BRANCH) == CF_BRANCH))
+    {
+      builtin_define ("__riscv_landing_pad");
+      switch (riscv_lpad_type)
+	{
+	case LPAD_FIXED_ONE:
+	  builtin_define ("__riscv_landing_pad_fixed_one");
+	  break;
+	case LPAD_UNLABELED:
+	  builtin_define ("__riscv_landing_pad_unlabeled");
+	  break;
+	case LPAD_FUNC_SIG:
+	  builtin_define ("__riscv_landing_pad_func_sig");
+	  break;
+	}
+    }
+
+
   /* Figure out the max length of extension name for reserving buffer.   */
   for (const riscv_subset_t *subset = subset_list->begin ();
        subset != subset_list->end ();
