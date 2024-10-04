@@ -474,7 +474,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"sv48", ISA_SPEC_CLASS_NONE, 1, 12},
   {"sv57", ISA_SPEC_CLASS_NONE, 1, 12},
 
-  {"smrnmi", ISA_SPEC_CLASS_UNRATIFIED, 0, 5},
+  {"smrnmi", ISA_SPEC_CLASS_NONE, 1, 0},
   {"smwgd", ISA_SPEC_CLASS_UNRATIFIED, 0, 3},
   {"smwg",  ISA_SPEC_CLASS_UNRATIFIED, 0, 3},
   {"sswg",  ISA_SPEC_CLASS_UNRATIFIED, 0, 3},
