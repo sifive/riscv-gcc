@@ -1354,5 +1354,5 @@ SHAPE(seg_fault_load, seg_fault_load)
 SHAPE(crypto_vv, crypto_vv)
 SHAPE(crypto_vi, crypto_vi)
 SHAPE(crypto_vv_no_op_type, crypto_vv_no_op_type)
-SHAPE(sf_vqmacc,sf_vqmacc)
+SHAPE(sf_vqmacc, sf_vqmacc)
 } // end namespace riscv_vector
