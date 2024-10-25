@@ -2321,10 +2321,11 @@ riscv_expand_arch_from_cpu (int argc ATTRIBUTE_UNUSED,
 /* Spec function (see %:function(args) in spec doc) to determine whether to use
    CFI.  */
 const char *
-riscv_use_cfi (int argc,
-               const char **argv)
+riscv_use_cfi (int argc, const char **argv)
 {
-  if (strstr(argv[argc-1], "zimop") != NULL)
+  if (strstr (argv[argc - 1], "zimop") != NULL
+      && (strstr (argv[argc - 1], "zicfiss") != NULL
+	  || strstr (argv[argc - 1], "zicfilp") != NULL))
       return "";
   return NULL;
 }
