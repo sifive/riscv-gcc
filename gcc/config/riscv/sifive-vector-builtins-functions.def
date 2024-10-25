@@ -16,4 +16,10 @@ DEF_RVV_FUNCTION (vqmaccsu, sf_vqmacc, none_tu_preds, i_su_qdvv_ops)
 DEF_RVV_FUNCTION (vqmaccus, sf_vqmacc, none_tu_preds, i_us_qdvv_ops)
 #undef REQUIRED_EXTENSIONS
 
+#define REQUIRED_EXTENSIONS XSFVFNRCLIPXFQF_EXT
+DEF_RVV_FUNCTION (xu, sf_vfnrclip, full_preds, u_clip_qf_ops)
+DEF_RVV_FUNCTION (x, sf_vfnrclip, full_preds, i_clip_qf_ops)
+
+#undef REQUIRED_EXTENSIONS
+
 #undef DEF_RVV_FUNCTION

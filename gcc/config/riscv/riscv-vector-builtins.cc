@@ -712,6 +712,11 @@ static CONSTEXPR const rvv_arg_type_info shift_wv_args[]
      rvv_arg_type_info (RVV_BASE_double_trunc_unsigned_vector),
      rvv_arg_type_info_end};
 
+static CONSTEXPR const rvv_arg_type_info clip_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_unsigned_vector),
+     rvv_arg_type_info_end};
+
 /* A list of args for vector_type func (vector_type) function.  */
 static CONSTEXPR const rvv_arg_type_info v_args[]
   = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info_end};
@@ -2521,6 +2526,22 @@ static CONSTEXPR const rvv_op_info i_narrow_shift_vwx_ops
      OP_TYPE_wx,				       /* Suffix */
      rvv_arg_type_info (RVV_BASE_double_trunc_vector), /* Return type */
      v_size_args /* Args */};
+
+/* A static operand information for double demote type func (vector_type,
+ * shift_type) function registration. */
+static CONSTEXPR const rvv_op_info u_clip_qf_ops
+  = {wextu_ops,					       /* Types */
+     OP_TYPE_f_qf,				       /* Suffix */
+     rvv_arg_type_info (RVV_BASE_double_trunc_unsigned_vector), /* Return type */
+     clip_args /* Args */};
+
+/* A static operand information for double demote type func (vector_type,
+ * shift_type) function registration. */
+static CONSTEXPR const rvv_op_info i_clip_qf_ops
+  = {wexti_ops,					       /* Types */
+     OP_TYPE_f_qf,				       /* Suffix */
+     rvv_arg_type_info (RVV_BASE_double_trunc_signed_vector), /* Return type */
+     clip_args /* Args */};
 
 /* A static operand information for double demote type func (vector_type,
  * size_t) function registration. */

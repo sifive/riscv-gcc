@@ -122,6 +122,8 @@ extern const function_base *const vssra;
 extern const function_base *const vssrl;
 extern const function_base *const vnclip;
 extern const function_base *const vnclipu;
+extern const function_base *const x;
+extern const function_base *const xu;
 extern const function_base *const vmand;
 extern const function_base *const vmnand;
 extern const function_base *const vmandn;

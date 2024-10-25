@@ -705,6 +705,31 @@ public:
   }
 };
 
+/* Implements vfnrclip.  */
+class vfnrclip : public function_base
+{
+public:
+  bool has_merge_operand_p () const override { return false; }
+  bool may_require_qfrm_p () const override { return true; }
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    if (pred == PRED_TYPE_mu || pred == PRED_TYPE_tu || pred == PRED_TYPE_tumu)
+    {
+      return true;
+    }
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    if (e.op_info->op == OP_TYPE_f_qf)
+    {
+      return e.use_exact_insn (
+	  code_for_pred_fnr_clip (ZERO_EXTEND, e.vector_mode ()));
+      gcc_unreachable ();
+    }
+  }
+};
+
 /* Implements vmseq/vmsne/vmslt/vmsgt/vmsle/vmsge.  */
 template<rtx_code CODE>
 class icmp : public function_base
@@ -2661,6 +2686,8 @@ static CONSTEXPR const sat_op<UNSPEC_VSSRL> vssrl_obj;
 static CONSTEXPR const sat_op<UNSPEC_VSSRA> vssra_obj;
 static CONSTEXPR const vnclip<UNSPEC_VNCLIP> vnclip_obj;
 static CONSTEXPR const vnclip<UNSPEC_VNCLIPU> vnclipu_obj;
+static CONSTEXPR const vfnrclip x_obj;
+static CONSTEXPR const vfnrclip xu_obj;
 static CONSTEXPR const mask_logic<AND> vmand_obj;
 static CONSTEXPR const mask_nlogic<AND> vmnand_obj;
 static CONSTEXPR const mask_notlogic<AND> vmandn_obj;
@@ -2995,6 +3022,8 @@ BASE (vssra)
 BASE (vssrl)
 BASE (vnclip)
 BASE (vnclipu)
+BASE (x)
+BASE (xu)
 BASE (vmand)
 BASE (vmnand)
 BASE (vmandn)

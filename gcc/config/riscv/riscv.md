@@ -391,6 +391,7 @@
 ;; vsmul       vector single-width fractional multiply with rounding and saturation instructions
 ;; vsshift     vector single-width scaling shift instructions
 ;; vnclip      vector narrowing fixed-point clip instructions
+;; vsfclip     vector fp32 to int8 ranged clip instructions
 ;; 13. Vector floating-point instructions
 ;; vfalu       vector single-width floating-point add/subtract instructions
 ;; vfwalu      vector widening floating-point add/subtract instructions
@@ -487,7 +488,7 @@
    vlsegde,vssegte,vlsegds,vssegts,vlsegdux,vlsegdox,vssegtux,vssegtox,vlsegdff,
    vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,viminmax,
    vimul,vidiv,viwmul,vimuladd,vsfmuladd,viwmuladd,vimerge,vimov,
-   vsalu,vaalu,vsmul,vsshift,vnclip,
+   vsalu,vaalu,vsmul,vsshift,vnclip,vsfclip,
    vfalu,vfwalu,vfmul,vfdiv,vfwmul,vfmuladd,vfwmuladd,vfsqrt,vfrecp,
    vfcmp,vfminmax,vfsgnj,vfclass,vfmerge,vfmov,
    vfcvtitof,vfcvtftoi,vfwcvtitof,vfwcvtftoi,
