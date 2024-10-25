@@ -4691,6 +4691,11 @@ case "${target}" in
 		*) echo "Unsupported RISC-V target ${target}" 1>&2; exit 1 ;;
 		esac
 
+		if test x$enable_multilib = xno; then
+			tm_defines="${tm_defines} TARGET_DISABLE_MULTILIB=1"
+		fi
+
+
 		case "${with_isa_spec}" in
 		""|default|20191213|201912)
 			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_20191213"

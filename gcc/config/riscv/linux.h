@@ -65,6 +65,13 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_ASM_FILE_END riscv_file_end_indicate_exec_stack
 
+#ifdef TARGET_DISABLE_MULTILIB
+#define STARTFILE_PREFIX_SPEC                   \
+   "/lib" XLEN_SPEC "/" ABI_SPEC "/ "           \
+   "/usr/lib" XLEN_SPEC "/" ABI_SPEC "/ "       \
+   "/lib/ "                                     \
+   "/usr/lib/ "
+#else
 #define STARTFILE_PREFIX_SPEC 			\
   "%{%:riscv_use_cfi(%{march*:%*}):"		\
   "  /lib" XLEN_SPEC "-cfi/" ABI_SPEC "/ "		\
@@ -76,5 +83,6 @@ along with GCC; see the file COPYING3.  If not see
   "  /usr/lib" XLEN_SPEC "/" ABI_SPEC "/ "	\
   "  /lib/ "				\
   "  /usr/lib/}"
+#endif
 
 #define RISCV_USE_CUSTOMISED_MULTI_LIB select_by_abi
