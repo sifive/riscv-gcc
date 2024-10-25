@@ -63,16 +63,25 @@ along with GCC; see the file COPYING3.  If not see
 	-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
     %{static:-static} %{static-pie:-static -pie --no-dynamic-linker -z text}}"
 
+#ifdef TARGET_DISABLE_MULTILIB
+#define STARTFILE_PREFIX_SPEC                   \
+   "/lib" XLEN_SPEC "/" ABI_SPEC "/ "           \
+   "/usr/lib" XLEN_SPEC "/" ABI_SPEC "/ "       \
+   "/lib/ "                                     \
+   "/usr/lib/ "
+#else
 #define STARTFILE_PREFIX_SPEC 			\
-  "%{%:riscv_use_cfi(%{march*:%*}):"		\
-  "  /lib" XLEN_SPEC "-cfi/" ABI_SPEC "/ "	\
+  "%{%:riscv_use_cfi(%{fcf-protection=*:%*}):"		\
+  "  /lib" XLEN_SPEC "-cfi/" ABI_SPEC "/ "		\
   "  /usr/lib" XLEN_SPEC "-cfi/" ABI_SPEC "/ "	\
-  "  /lib-cfi/ "				\
-  "  /usr/lib-cfi/ "				\
+  "  /lib-cfi/ "					\
+  "  /usr/lib-cfi/ "					\
   ";:"						\
-  "  /lib" XLEN_SPEC "/" ABI_SPEC "/ "		\
+  "  /lib" XLEN_SPEC "/" ABI_SPEC "/ "	\
   "  /usr/lib" XLEN_SPEC "/" ABI_SPEC "/ "	\
-  "  /lib/ "					\
+  "  /lib/ "				\
   "  /usr/lib/}"
+#endif
+
 
 #define RISCV_USE_CUSTOMISED_MULTI_LIB select_by_abi
