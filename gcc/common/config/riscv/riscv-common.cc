@@ -2323,10 +2323,19 @@ riscv_expand_arch_from_cpu (int argc ATTRIBUTE_UNUSED,
 const char *
 riscv_use_cfi (int argc, const char **argv)
 {
-  if (strstr (argv[argc - 1], "zimop") != NULL
-      && (strstr (argv[argc - 1], "zicfiss") != NULL
-	  || strstr (argv[argc - 1], "zicfilp") != NULL))
-      return "";
+  bool use_cfi = false;
+  for (int i = 0; i < argc; ++i)
+    {
+      if ((strcmp (argv[i], "full") == 0)
+	  || (strcmp (argv[i], "return") == 0))
+	use_cfi = true;
+      if (strcmp (argv[i], "none") == 0)
+	use_cfi = false;
+    }
+
+  if (use_cfi)
+    return "";
+
   return NULL;
 }
 
