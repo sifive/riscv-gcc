@@ -2530,16 +2530,17 @@ static CONSTEXPR const rvv_op_info i_narrow_shift_vwx_ops
 /* A static operand information for double demote type func (vector_type,
  * shift_type) function registration. */
 static CONSTEXPR const rvv_op_info u_clip_qf_ops
-  = {wextu_ops,					       /* Types */
-     OP_TYPE_f_qf,				       /* Suffix */
-     rvv_arg_type_info (RVV_BASE_double_trunc_unsigned_vector), /* Return type */
+  = {wextu_ops,	      /* Types */
+     OP_TYPE_xu_f_qf, /* Suffix */
+     rvv_arg_type_info (
+       RVV_BASE_double_trunc_unsigned_vector), /* Return type */
      clip_args /* Args */};
 
 /* A static operand information for double demote type func (vector_type,
  * shift_type) function registration. */
 static CONSTEXPR const rvv_op_info i_clip_qf_ops
-  = {wexti_ops,					       /* Types */
-     OP_TYPE_f_qf,				       /* Suffix */
+  = {wexti_ops,						      /* Types */
+     OP_TYPE_x_f_qf,					      /* Suffix */
      rvv_arg_type_info (RVV_BASE_double_trunc_signed_vector), /* Return type */
      clip_args /* Args */};
 

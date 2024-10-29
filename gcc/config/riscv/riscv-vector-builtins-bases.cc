@@ -721,12 +721,17 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    if (e.op_info->op == OP_TYPE_f_qf)
-    {
-      return e.use_exact_insn (
+    if (e.op_info->op == OP_TYPE_x_f_qf)
+      {
+	return e.use_exact_insn (
 	  code_for_pred_fnr_clip (ZERO_EXTEND, e.vector_mode ()));
-      gcc_unreachable ();
-    }
+      }
+    if (e.op_info->op == OP_TYPE_xu_f_qf)
+      {
+	return e.use_exact_insn (
+	  code_for_pred_fnr_clip_scalar (ZERO_EXTEND, e.vector_mode ()));
+      }
+    gcc_unreachable ();
   }
 };
 
@@ -908,10 +913,10 @@ public:
   {
     if (e.op_info->op == OP_TYPE_4x8x4)
       return e.use_widen_ternop_insn (
-	code_for_pred_quad_mul_plus_qoq (SIGN_EXTEND, e.vector_mode ()));
+	code_for_pred_matrix_mul_plus_qoq (SIGN_EXTEND, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_2x8x2)
       return e.use_widen_ternop_insn (
-	code_for_pred_quad_mul_plus_dod (SIGN_EXTEND, e.vector_mode ()));
+	code_for_pred_matrix_mul_plus_dod (SIGN_EXTEND, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -930,10 +935,10 @@ public:
   {
     if (e.op_info->op == OP_TYPE_4x8x4)
       return e.use_widen_ternop_insn (
-	code_for_pred_quad_mul_plus_qoq (ZERO_EXTEND, e.vector_mode ()));
+	code_for_pred_matrix_mul_plus_qoq (ZERO_EXTEND, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_2x8x2)
       return e.use_widen_ternop_insn (
-	code_for_pred_quad_mul_plus_dod (SIGN_EXTEND, e.vector_mode ()));
+	code_for_pred_matrix_mul_plus_dod (SIGN_EXTEND, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -952,10 +957,10 @@ public:
   {
     if (e.op_info->op == OP_TYPE_4x8x4)
       return e.use_widen_ternop_insn (
-	code_for_pred_quad_mul_plussu_qoq (e.vector_mode ()));
+	code_for_pred_matrix_mul_plussu_qoq (e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_2x8x2)
       return e.use_widen_ternop_insn (
-	code_for_pred_quad_mul_plussu_dod (e.vector_mode ()));
+	code_for_pred_matrix_mul_plussu_dod (e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -974,10 +979,10 @@ public:
   {
     if (e.op_info->op == OP_TYPE_4x8x4)
       return e.use_widen_ternop_insn (
-    code_for_pred_quad_mul_plusus_qoq (e.vector_mode ()));
+	code_for_pred_matrix_mul_plusus_qoq (e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_2x8x2)
       return e.use_widen_ternop_insn (
-	code_for_pred_quad_mul_plusus_dod (e.vector_mode ()));
+	code_for_pred_matrix_mul_plusus_dod (e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -2686,8 +2691,8 @@ static CONSTEXPR const sat_op<UNSPEC_VSSRL> vssrl_obj;
 static CONSTEXPR const sat_op<UNSPEC_VSSRA> vssra_obj;
 static CONSTEXPR const vnclip<UNSPEC_VNCLIP> vnclip_obj;
 static CONSTEXPR const vnclip<UNSPEC_VNCLIPU> vnclipu_obj;
-static CONSTEXPR const vfnrclip x_obj;
-static CONSTEXPR const vfnrclip xu_obj;
+static CONSTEXPR const vfnrclip sf_vfnrclip_x_obj;
+static CONSTEXPR const vfnrclip sf_vfnrclip_xu_obj;
 static CONSTEXPR const mask_logic<AND> vmand_obj;
 static CONSTEXPR const mask_nlogic<AND> vmnand_obj;
 static CONSTEXPR const mask_notlogic<AND> vmandn_obj;
@@ -2877,10 +2882,10 @@ static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VSUXB> vs
 static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VSUXH> vsuxh_obj;
 static CONSTEXPR const th_loadstore_width<true, LST_INDEXED, UNSPEC_TH_VSUXW> vsuxw_obj;
 static CONSTEXPR const th_extract vext_x_v_obj;
-static CONSTEXPR const vqmacc vqmacc_obj;
-static CONSTEXPR const vqmaccu vqmaccu_obj;
-static CONSTEXPR const vqmaccsu vqmaccsu_obj;
-static CONSTEXPR const vqmaccsu vqmaccus_obj;
+static CONSTEXPR const vqmacc sf_vqmacc_obj;
+static CONSTEXPR const vqmaccu sf_vqmaccu_obj;
+static CONSTEXPR const vqmaccsu sf_vqmaccsu_obj;
+static CONSTEXPR const vqmaccsu sf_vqmaccus_obj;
 
 /* Crypto Vector */
 static CONSTEXPR const vandn vandn_obj;
@@ -3022,8 +3027,8 @@ BASE (vssra)
 BASE (vssrl)
 BASE (vnclip)
 BASE (vnclipu)
-BASE (x)
-BASE (xu)
+BASE (sf_vfnrclip_x)
+BASE (sf_vfnrclip_xu)
 BASE (vmand)
 BASE (vmnand)
 BASE (vmandn)
@@ -3213,10 +3218,10 @@ BASE (vsuxb)
 BASE (vsuxh)
 BASE (vsuxw)
 BASE (vext_x_v)
-BASE (vqmacc)
-BASE (vqmaccu)
-BASE (vqmaccsu)
-BASE (vqmaccus)
+BASE (sf_vqmacc)
+BASE (sf_vqmaccu)
+BASE (sf_vqmaccsu)
+BASE (sf_vqmaccus)
 /* Crypto vector */
 BASE (vandn)
 BASE (vbrev)

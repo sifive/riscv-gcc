@@ -1297,8 +1297,7 @@ struct sf_vqmacc_def : public build_base
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
       return nullptr;
 
-    b.append_name ("__riscv_sf_");
-    b.append_name (instance.base_name);
+    b.append_base_name (instance.base_name);
 
     /* vop_v --> vop_v_<type>.  */
     if (!overloaded_p)
@@ -1330,14 +1329,12 @@ struct sf_vfnrclip_def : public build_base
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
       return nullptr;
 
-    b.append_name ("__riscv_sf_vfnrclip_");
-    printf("aaaaaa %s\n", instance.base_name);
-    b.append_name (instance.base_name);
+    b.append_base_name (instance.base_name);
 
     if (!overloaded_p)
       {
 	/* vop --> vop_<op>.  */
-	b.append_name (operand_suffixes[instance.op_info->op]);
+	b.append_name ("_f_qf");
   /* vop_v --> vop_v_<type>.  */
   b.append_name (type_suffixes[instance.type.index].vector);
 	/* vop_<op> --> vop_<op>_<type>. 

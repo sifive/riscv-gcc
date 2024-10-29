@@ -1,4 +1,4 @@
-(define_insn "@pred_quad_mul_plus<su><mode>_qoq"
+(define_insn "@pred_matrix_mul_plus<su><mode>_qoq"
   [(set (match_operand:V_SF 0 "register_operand"                    "=&vr")
 	(if_then_else:V_SF
 	  (unspec:<VM>
@@ -22,7 +22,7 @@
   [(set_attr "type" "vsfmuladd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "@pred_quad_mul_plussu<mode>_qoq"
+(define_insn "@pred_matrix_mul_plussu<mode>_qoq"
   [(set (match_operand:V_SF 0 "register_operand"                    "=&vr")
 	(if_then_else:V_SF
 	  (unspec:<VM>
@@ -46,7 +46,7 @@
   [(set_attr "type" "vsfmuladd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "@pred_quad_mul_plusus<mode>_qoq"
+(define_insn "@pred_matrix_mul_plusus<mode>_qoq"
   [(set (match_operand:V_SF 0 "register_operand"                    "=&vr")
 	(if_then_else:V_SF
 	  (unspec:<VM>
@@ -70,7 +70,7 @@
   [(set_attr "type" "vsfmuladd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "@pred_quad_mul_plus<su><mode>_dod"
+(define_insn "@pred_matrix_mul_plus<su><mode>_dod"
   [(set (match_operand:V_SF 0 "register_operand"                    "=&vr")
 	(if_then_else:V_SF
 	  (unspec:<VM>
@@ -94,7 +94,7 @@
   [(set_attr "type" "vsfmuladd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "@pred_quad_mul_plussu<mode>_dod"
+(define_insn "@pred_matrix_mul_plussu<mode>_dod"
   [(set (match_operand:V_SF 0 "register_operand"                    "=&vr")
 	(if_then_else:V_SF
 	  (unspec:<VM>
@@ -118,7 +118,7 @@
   [(set_attr "type" "vsfmuladd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "@pred_quad_mul_plusus<mode>_dod"
+(define_insn "@pred_matrix_mul_plusus<mode>_dod"
   [(set (match_operand:V_SF 0 "register_operand"                    "=&vr")
 	(if_then_else:V_SF
 	  (unspec:<VM>
