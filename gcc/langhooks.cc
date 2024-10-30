@@ -180,6 +180,13 @@ lhd_set_decl_assembler_name (tree decl)
   SET_DECL_ASSEMBLER_NAME (decl, id);
 }
 
+/* For C, always return NULL.  */
+const char *
+lhd_mangle_type (const tree decl)
+{
+  return NULL;
+}
+
 /* Forcibly overwrite the DECL_ASSEMBLER_NAME for DECL to NAME.  */
 void
 lhd_overwrite_decl_assembler_name (tree decl, tree name)

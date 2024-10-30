@@ -490,6 +490,10 @@ struct lang_hooks
      assembler does not talk about it.  */
   void (*set_decl_assembler_name) (tree);
 
+  /* For backend to use mangle_type_string () to generate type base
+     mangling string.  */
+  const char *(*mangle_type) (tree type);
+
   /* Overwrite the DECL_ASSEMBLER_NAME for a node.  The name is being
      changed (including to or from NULL_TREE).  */
   void (*overwrite_decl_assembler_name) (tree, tree);

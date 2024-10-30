@@ -1200,7 +1200,8 @@ write_unscoped_name (const tree decl)
 	 scope of a default argument.  */
       gcc_assert (context == global_namespace
 		  || TREE_CODE (context) == PARM_DECL
-		  || TREE_CODE (context) == FUNCTION_DECL);
+		  || TREE_CODE (context) == FUNCTION_DECL
+		  || TREE_CODE (context) == RECORD_TYPE);
 
       write_unqualified_name (decl);
     }

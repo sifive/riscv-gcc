@@ -3924,11 +3924,13 @@
   [(parallel [(call (match_operand 0 "")
 		    (match_operand 1 ""))
 	      (use (unspec:SI [
-		     (match_operand 2 "const_int_operand")
+		     (match_operand 2 "")
 	           ] UNSPEC_CALLEE_CC))])]
   ""
 {
   rtx target = riscv_legitimize_call_address (XEXP (operands[0], 0));
+  operands[2] = riscv_legitimize_cfi_call_args (operands[2],
+						REG_P (XEXP (operands[0], 0)));
   emit_call_insn (gen_sibcall_internal (target, operands[1], operands[2]));
   DONE;
 })
@@ -3951,11 +3953,13 @@
 		   (call (match_operand 1 "")
 			 (match_operand 2 "")))
 	      (use (unspec:SI [
-		     (match_operand 3 "const_int_operand")
+		     (match_operand 3 "")
 	           ] UNSPEC_CALLEE_CC))])]
   ""
 {
   rtx target = riscv_legitimize_call_address (XEXP (operands[1], 0));
+  operands[3] = riscv_legitimize_cfi_call_args (operands[3],
+						REG_P (XEXP (operands[1], 0)));
   emit_call_insn (gen_sibcall_value_internal (operands[0], target, operands[2],
 					      operands[3]));
   DONE;
@@ -3979,11 +3983,13 @@
   [(parallel [(call (match_operand 0 "")
 		    (match_operand 1 ""))
 	      (use (unspec:SI [
-		     (match_operand 2 "const_int_operand")
+		     (match_operand 2 "")
 	           ] UNSPEC_CALLEE_CC))])]
   ""
 {
   rtx target = riscv_legitimize_call_address (XEXP (operands[0], 0));
+  operands[2] = riscv_legitimize_cfi_call_args (operands[2],
+						REG_P (XEXP (operands[0], 0)));
   emit_call_insn (gen_call_internal (target, operands[1], operands[2]));
   DONE;
 })
@@ -4007,13 +4013,17 @@
 		   (call (match_operand 1 "")
 			 (match_operand 2 "")))
 	      (use (unspec:SI [
-		     (match_operand 3 "const_int_operand")
+		     (match_operand 3 "")
 	           ] UNSPEC_CALLEE_CC))])]
   ""
 {
+  /* riscv_call_tls_get_addr only assign variant_cc.  */
   rtx target = riscv_legitimize_call_address (XEXP (operands[1], 0));
+  operands[3] = riscv_legitimize_cfi_call_args (operands[3],
+						REG_P (XEXP (operands[1], 0)));
   emit_call_insn (gen_call_value_internal (operands[0], target, operands[2],
 					   operands[3]));
+
   DONE;
 })
 
@@ -4781,14 +4791,14 @@
 (define_insn "lpad"
   [(unspec_volatile [(match_operand 0 "immediate_operand" "i")] UNSPECV_LPAD)]
   "TARGET_ZICFILP"
-  "lpad\t%0"
+  "lpad\t%F0"
   [(set_attr "type" "auipc")])
 
 (define_insn "@set_lpl<mode>"
   [(set (reg:GPR T2_REGNUM)
 	(unspec_volatile [(match_operand:GPR 0 "immediate_operand" "i")] UNSPECV_SETLPL))]
    "TARGET_ZICFILP"
-   "lui\tt2,%0"
+   "lui\tt2, %F0"
   [(set_attr "type" "const")
    (set_attr "mode" "<MODE>")])
 

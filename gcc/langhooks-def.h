@@ -53,6 +53,7 @@ extern void lhd_print_error_function (diagnostic_text_output_format &,
 				      const char *,
 				      const struct diagnostic_info *);
 extern void lhd_set_decl_assembler_name (tree decl);
+extern const char *lhd_mangle_type (tree decl);
 extern void lhd_overwrite_decl_assembler_name (tree decl, tree name);
 extern bool lhd_warn_unused_global_decl (const_tree);
 extern tree lhd_simulate_enum_decl (location_t, const char *,
@@ -126,6 +127,7 @@ extern const char *lhd_get_sarif_source_language (const char *);
 #define LANG_HOOKS_FINISH_INCOMPLETE_DECL lhd_do_nothing_t
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL lhd_do_nothing_t
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME lhd_set_decl_assembler_name
+#define LANG_HOOKS_MANGLE_TYPE lhd_mangle_type
 #define LANG_HOOKS_OVERWRITE_DECL_ASSEMBLER_NAME lhd_overwrite_decl_assembler_name
 #define LANG_HOOKS_PRINT_STATISTICS	lhd_do_nothing
 #define LANG_HOOKS_PRINT_XNODE		lhd_print_tree_nothing
@@ -364,6 +366,7 @@ extern void lhd_end_section (void);
   LANG_HOOKS_FINISH_INCOMPLETE_DECL, \
   LANG_HOOKS_DUP_LANG_SPECIFIC_DECL, \
   LANG_HOOKS_SET_DECL_ASSEMBLER_NAME, \
+  LANG_HOOKS_MANGLE_TYPE, \
   LANG_HOOKS_OVERWRITE_DECL_ASSEMBLER_NAME, \
   LANG_HOOKS_PRINT_STATISTICS, \
   LANG_HOOKS_PRINT_XNODE, \
