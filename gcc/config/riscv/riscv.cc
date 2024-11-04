@@ -11171,14 +11171,25 @@ riscv_override_options_internal (struct gcc_options *opts)
     {
       if ((opts->x_flag_cf_protection & CF_RETURN) == CF_RETURN
 	  && !TARGET_ZICFISS)
-	error ("%<-fcf-protection%> is not compatible with this target");
+	{
+	  if (!riscv_no_warning)
+	    warning (0, "%<-fcf-protection%> is not "
+		     "compatible with this target");
 
-      if ((opts->x_flag_cf_protection & CF_BRANCH) == CF_BRANCH
+	  opts->x_flag_cf_protection = CF_NONE;
+	}
+      else if ((opts->x_flag_cf_protection & CF_BRANCH) == CF_BRANCH
 	  && !TARGET_ZICFILP)
-	error ("%<-fcf-protection%> is not compatible with this target");
+	{
+	  if (!riscv_no_warning)
+	    warning (0, "%<-fcf-protection%> is not "
+		     "compatible with this target");
 
-      opts->x_flag_cf_protection
-      = (cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
+	  opts->x_flag_cf_protection = CF_NONE;
+	}
+      else
+	opts->x_flag_cf_protection
+	= (cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
     }
 
   if (TARGET_ZICFISS && !riscv_cfi_ss)
