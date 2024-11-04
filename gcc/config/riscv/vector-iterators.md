@@ -4530,3 +4530,23 @@
   (RVVM2SI "rvvm1qi")
   (RVVM1SI "rvvmf2qi")
 ])
+
+(define_mode_iterator V_SF_FNRCLIP [
+  RVVMF8QI RVVMF4QI RVVMF2QI RVVM1QI RVVM2QI
+])
+
+(define_mode_attr V_SF_FNRCLIPXFQF [
+  (RVVMF2SF "RVVMF8QI")
+  (RVVM1SF "RVVMF4QI")
+  (RVVM2SF "RVVMF2QI")
+  (RVVM4SF "RVVM1QI")
+  (RVVM8SF "RVVM2QI")
+])
+
+(define_mode_attr v_sf_fnrclipxfqf [
+  (RVVMF2SF "rvvmf8qi")
+  (RVVM1SF "rvvmf4qi")
+  (RVVM2SF "rvvmf2qi")
+  (RVVM4SF "rvvm1qi")
+  (RVVM8SF "rvvm2qi")
+])

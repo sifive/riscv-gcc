@@ -710,7 +710,6 @@ class vfnrclip : public function_base
 {
 public:
   bool has_merge_operand_p () const override { return false; }
-  bool may_require_qfrm_p () const override { return true; }
   bool can_be_overloaded_p (enum predication_type_index pred) const override
   {
     if (pred == PRED_TYPE_mu || pred == PRED_TYPE_tu || pred == PRED_TYPE_tumu)

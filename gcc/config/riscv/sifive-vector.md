@@ -144,8 +144,8 @@
 
 ;; CLIP
 (define_insn "@pred_fnr_clip<v_su><mode>"
-  [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand"           "=vd,vd, vr, vr,vd, vr,  &vr,  &vr, vd, vr,  &vr,  &vr")
-	(if_then_else:<V_DOUBLE_TRUNC>
+  [(set (match_operand:<V_SF_FNRCLIPXFQF> 0 "register_operand"           "=vd,vd, vr, vr,vd, vr,  &vr,  &vr, vd, vr,  &vr,  &vr")
+	(if_then_else:<V_SF_FNRCLIPXFQF>
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_mask_operand"               " vm,vm,Wc1,Wc1,vm,Wc1,vmWc1,vmWc1, vm,Wc1,vmWc1,vmWc1")
 	     (match_operand 5 "vector_length_operand"                  " rK,rK, rK, rK,rK, rK,   rK,   rK, rK, rK,   rK,   rK")
@@ -156,14 +156,14 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)
 	     (reg:SI VXRM_REGNUM)] UNSPEC_VPREDICATE)
-	  (unspec:<V_DOUBLE_TRUNC>
+	  (unspec:<V_SF_FNRCLIPXFQF>
 	    [(match_operand:VWEXTI 3 "register_operand"                " vr,vr, vr, vr, 0,  0,   vr,   vr,  0,  0,   vr,   vr")
-	     (match_operand:<V_DOUBLE_TRUNC> 4 "vector_shift_operand"  "  0, 0,  0,  0,vr, vr,   vr,   vr, vk, vk,   vk,   vk")] VNCLIP)
-	  (match_operand:<V_DOUBLE_TRUNC> 2 "vector_merge_operand"     "  0,vu,  0, vu,vu, vu,   vu,    0, vu, vu,   vu,    0")))]
+	     (match_operand:<V_SF_FNRCLIPXFQF> 4 "vector_shift_operand"  "  0, 0,  0,  0,vr, vr,   vr,   vr, vk, vk,   vk,   vk")] VNCLIP)
+	  (match_operand:<V_SF_FNRCLIPXFQF> 2 "vector_merge_operand"     "  0,vu,  0, vu,vu, vu,   vu,    0, vu, vu,   vu,    0")))]
   "TARGET_VECTOR && TARGET_XSFVFNRCLIPXFQF"
   "sf.vfnrclip.x.f.qf%o4\t%0,%3,%v4%p1"
   [(set_attr "type" "vsfclip")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set_attr "mode" "<V_SF_FNRCLIPXFQF>")
    (set_attr "spec_restriction" "thv,thv,thv,thv,thv,thv,none,none,thv,thv,none,none")])
 
 (define_insn "@pred_fnr_clip<v_su><mode>_scalar"
