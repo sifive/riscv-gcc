@@ -114,14 +114,16 @@ RISCV_CORE("sifive-p270n",     "rv64imafdcv_zfh_zba_zbb_zvfh_zvl256b", "sifive-7
 RISCV_CORE("sifive-x280",     "rv64imafdcv_zfh_zba_zbb_zvfh_zvl512b_xsfvfhbfmin_xsfvqmaccqoq", "sifive-7-series")
 RISCV_CORE("sifive-x280n",    "rv64imafdcv_zfh_zba_zbb_zvfh_zvl512b_xsfvfhbfmin_xsfvqmaccqoq_xsfvfnrclipxfqf_xsfvfwmaccqqq", "sifive-7-series")
 RISCV_CORE("sifive-x280o",    "rv64imafdcv_zfh_zba_zbb_zvfh_zvl512b_xsfvfhbfmin_xsfvqmaccqoq_xsfvfnrclipxfqf_xsfvfwmaccqqq", "sifive-7-series")
-RISCV_CORE("sifive-x390",     "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_"
-                              "zicclsm_ziccrse_zicntr_zicond_zicsr_zifencei_zihintntl_"
-                              "zihintpause_zihpm_zimop_za64rs_zawrs_zfa_zfh_zcb_zcmop_"
-                              "zba_zbb_zbs_zkr_zkt_zvbb_zvfbfmin_zvfbfwma_zvfh_zvkt_zvl1024b_"
-                              "xsfcease0p1_xsfpgflushdlone0p1_xsfvfbfa0p1_xsfvfbfexp16e0p1_"
-                              "xsfvfexp16e0p1_xsfvfexp32e0p1_xsfvfexpa0p2_xsfvfnrclipxfqf_"
-                              "xsfvfwmaccqqq_xsfvqdotq0p1_xsfvqmaccqoq_xsifivecdiscarddlone0p1_"
-                              "xsifivecflushdlone0p1", "sifive-7-series")
+RISCV_CORE ("sifive-x390",
+	   "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_" \
+	   "zicclsm_ziccrse_zicfilp1p0_zicfiss1p0_zicntr_zicond_zicsr_" \
+	   "zifencei_zihintntl_zihintpause_zihpm_zimop_za64rs_zawrs_zfa_" \
+	   "zfh_zfhmin_zcb_zcmop_zba_zbb_zbs_zkr_zkt_zvbb_zvfbfmin_" \
+	   "zvfbfwma_zvfh_zvfhmin_zvkt_zvl1024b_xsfcease0p1_" \
+	   "xsfpgflushdlone0p1_xsfvfbfa0p1_xsfvfbfexp16e0p1_" \
+	   "xsfvfexp16e0p1_xsfvfexp32e0p1_xsfvfexpa0p2_xsfvfnrclipxfqf_" \
+	   "xsfvfwmaccqqq_xsfvqdotq0p1_xsfvqmaccqoq_xsifivecdiscarddlone0p1_" \
+	   "xsifivecflushdlone0p1", "sifive-7-series")
 RISCV_CORE("sifive-p450",     "rv64imafdc_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei" \
 			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs"
 			      "_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1", "sifive-p500-series")
