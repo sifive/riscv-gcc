@@ -573,6 +573,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"smcsrind", ISA_SPEC_CLASS_NONE, 1, 0},
   {"sscsrind", ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"xsfsci",  ISA_SPEC_CLASS_NONE, 1, 0},
+
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
@@ -1962,6 +1964,8 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"xtheadvector",  &gcc_options::x_target_flags, MASK_VECTOR},
 
   {"xventanacondops", &gcc_options::x_riscv_xventana_subext, MASK_XVENTANACONDOPS},
+
+  {"xsfsci", &gcc_options::x_riscv_xsf_subext, MASK_XSFSCI},
   {NULL, NULL, 0}
 };
 

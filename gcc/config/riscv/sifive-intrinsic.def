@@ -1,0 +1,24 @@
+/* Builtin functions for SiFive extensions.
+   Copyright (C) 2024 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+// SiFive Scalar Coprocessor Interface.
+RISCV_BUILTIN (sifive_sci_x_xx_si, "sf_sci_x_xx32", RISCV_BUILTIN_DIRECT, RISCV_USI_FTYPE_SI_SI_USI_USI, xsfsci32),
+RISCV_BUILTIN (sifive_sci_x_xx_di, "sf_sci_x_xx64", RISCV_BUILTIN_DIRECT, RISCV_UDI_FTYPE_SI_SI_UDI_UDI, xsfsci64),
+RISCV_BUILTIN (sifive_sci_xx_si, "sf_sci_xx32", RISCV_BUILTIN_DIRECT_NO_TARGET, RISCV_VOID_FTYPE_SI_SI_USI_USI, xsfsci32),
+RISCV_BUILTIN (sifive_sci_xx_di, "sf_sci_xx64", RISCV_BUILTIN_DIRECT_NO_TARGET, RISCV_VOID_FTYPE_SI_SI_UDI_UDI, xsfsci64),

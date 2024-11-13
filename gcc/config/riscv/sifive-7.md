@@ -60,7 +60,7 @@
 (define_insn_reservation "sifive_7_alu" 1
   (and (eq_attr "tune" "sifive_7,sifive_7n")
        (eq_attr "type" "unknown,arith,shift,slt,multi,logical,move,bitmanip,\
-			min,max,minu,maxu,atomic,condmove,mvpair,zicond"))
+			min,max,minu,maxu,atomic,condmove,mvpair,zicond,ssci"))
   "sifive_7_A|sifive_7_B")
 
 (define_insn_reservation "sifive_7_alu_b" 2

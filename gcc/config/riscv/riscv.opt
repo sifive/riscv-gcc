@@ -498,6 +498,9 @@ int riscv_xventana_subext
 
 Mask(XVENTANACONDOPS) Var(riscv_xventana_subext)
 
+TargetVariable
+int riscv_xsf_subext
+
 Enum
 Name(isa_spec_class) Type(enum riscv_isa_spec_class)
 Supported ISA specs (for use with the -misa-spec= option):
