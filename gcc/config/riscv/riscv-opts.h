@@ -174,4 +174,7 @@ enum riscv_tls_type {
 #define TARGET_VECTOR_AUTOVEC_SEGMENT					       \
   (TARGET_VECTOR && riscv_mautovec_segment)
 
+#define MASK_XSFSCI (1 << 0)
+#define TARGET_XSFSCI ((riscv_xsf_subext & MASK_XSFSCI) != 0)
+
 #endif /* ! GCC_RISCV_OPTS_H */

@@ -137,6 +137,9 @@ AVAIL (cvalu, TARGET_XCVALU && !TARGET_64BIT)
 AVAIL (cvelw, TARGET_XCVELW && !TARGET_64BIT)
 AVAIL (cvsimd, TARGET_XCVSIMD && !TARGET_64BIT)
 
+AVAIL (xsfsci32, TARGET_XSFSCI && !TARGET_64BIT)
+AVAIL (xsfsci64, TARGET_XSFSCI && TARGET_64BIT)
+
 /* Construct a riscv_builtin_description from the given arguments.
 
    INSN is the name of the associated instruction pattern, without the
@@ -212,6 +215,7 @@ static const struct riscv_builtin_description riscv_builtins[] = {
   #include "riscv-cmo.def"
   #include "riscv-scalar-crypto.def"
   #include "corev.def"
+  #include "sifive-intrinsic.def"
 
   DIRECT_BUILTIN (frflags, RISCV_USI_FTYPE, hard_float),
   DIRECT_NO_TARGET_BUILTIN (fsflags, RISCV_VOID_FTYPE_USI, hard_float),
