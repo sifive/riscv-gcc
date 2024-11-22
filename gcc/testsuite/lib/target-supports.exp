@@ -2168,6 +2168,17 @@ proc check_effective_target_riscv_zbkc { } {
     }]
 }
 
+# Return 1 if the target arch supports the CFI extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_cfi_support { } {
+    return ![check_no_compiler_messages cfi_full assembly {
+       #if defined(__riscv_shadow_stack) || defined(__riscv_landing_pad)
+       #error "Skip CFI full"
+       #endif
+    }]
+}
+
 # Return 1 if the target arch supports the XTheadVector extension, 0 otherwise.
 # Cache the result.
 

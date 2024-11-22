@@ -21,6 +21,10 @@ if ![istarget riscv*-*-*] then {
   return
 }
 
+if [check_effective_target_cfi_support] then {
+    return
+}
+
 lappend ADDITIONAL_TORTURE_OPTIONS {-Og -g} {-Oz}
 
 # Load support procs.
