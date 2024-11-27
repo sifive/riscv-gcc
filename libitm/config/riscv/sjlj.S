@@ -142,3 +142,60 @@ GTM_longjmp:
 #ifdef __linux__
 .section .note.GNU-stack, "", @progbits
 #endif
+
+/* GNU_PROPERTY_RISCV64_* macros from elf.h for use in asm code.  */
+#define FEATURE_1_AND 0xc0000000
+#define FEATURE_1_FCFI 1
+#define FEATURE_1_BCFI 2
+
+/* Add a NT_GNU_PROPERTY_TYPE_0 note.  */
+#if __riscv_xlen == 32
+#  define GNU_PROPERTY(type, value)	\
+    .section .note.gnu.property, "a";	\
+    .p2align 2;				\
+    .word 4;				\
+    .word 12;				\
+    .word 5;				\
+    .asciz "GNU";			\
+    .word type;				\
+    .word 4;				\
+    .word value;			\
+    .text
+#else
+#  define GNU_PROPERTY(type, value)	\
+    .section .note.gnu.property, "a";	\
+    .p2align 3;				\
+    .word 4;				\
+    .word 16;				\
+    .word 5;				\
+    .asciz "GNU";			\
+    .word type;				\
+    .word 4;				\
+    .word value;			\
+    .word 0;				\
+    .text
+#endif
+
+/* Add GNU property note with the supported features to all asm code
+   where sysdep.h is included.  */
+#undef __VALUE_FOR_FEATURE_1_AND
+#if defined (__riscv_zicfilp) || defined (__riscv_zicfiss)
+#  if defined (__riscv_zicfilp)
+#    if defined (__riscv_zicfiss)
+#      define __VALUE_FOR_FEATURE_1_AND 0x3
+#    else
+#      define __VALUE_FOR_FEATURE_1_AND 0x1
+#    endif
+#  else
+#    if defined (__riscv_zicfiss)
+#      define __VALUE_FOR_FEATURE_1_AND 0x2
+#    else
+#      error "What?"
+#    endif
+#  endif
+#endif
+
+#if defined (__VALUE_FOR_FEATURE_1_AND)
+GNU_PROPERTY (FEATURE_1_AND, __VALUE_FOR_FEATURE_1_AND)
+#endif
+#undef __VALUE_FOR_FEATURE_1_AND
