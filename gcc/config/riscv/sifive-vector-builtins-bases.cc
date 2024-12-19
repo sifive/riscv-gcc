@@ -195,12 +195,89 @@ public:
   }
 };
 
+/* Implements SiFive sf.vc.  */
+class sf_vc : public function_base
+{
+public:
+
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_USE_COPROCESSORS;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_x:
+	return e.use_exact_insn (code_for_sf_vc_x (e.vector_mode ()));
+      case OP_TYPE_i:
+	return e.use_exact_insn (code_for_sf_vc_i (e.vector_mode ()));
+      case OP_TYPE_vv:
+	return e.use_exact_insn (code_for_sf_vc_vv (e.vector_mode ()));
+      case OP_TYPE_xv:
+	return e.use_exact_insn (code_for_sf_vc_xv (e.vector_mode ()));
+      case OP_TYPE_iv:
+	return e.use_exact_insn (code_for_sf_vc_iv (e.vector_mode ()));
+      case OP_TYPE_fv:
+	return e.use_exact_insn (code_for_sf_vc_fv (e.vector_mode ()));
+      case OP_TYPE_v_x:
+	return e.use_exact_insn (code_for_sf_vc_v_x (e.vector_mode ()));
+      case OP_TYPE_v_i:
+	return e.use_exact_insn (code_for_sf_vc_v_i (e.vector_mode ()));
+      case OP_TYPE_v_vv:
+	return e.use_exact_insn (code_for_sf_vc_v_vv (e.vector_mode ()));
+      case OP_TYPE_v_xv:
+	return e.use_exact_insn (code_for_sf_vc_v_xv (e.vector_mode ()));
+      case OP_TYPE_v_iv:
+	return e.use_exact_insn (code_for_sf_vc_v_iv (e.vector_mode ()));
+      case OP_TYPE_v_fv:
+	return e.use_exact_insn (code_for_sf_vc_v_fv (e.vector_mode ()));
+      case OP_TYPE_vvv:
+	return e.use_exact_insn (code_for_sf_vc_vvv (e.vector_mode ()));
+      case OP_TYPE_xvv:
+	return e.use_exact_insn (code_for_sf_vc_xvv (e.vector_mode ()));
+      case OP_TYPE_ivv:
+	return e.use_exact_insn (code_for_sf_vc_ivv (e.vector_mode ()));
+      case OP_TYPE_fvv:
+	return e.use_exact_insn (code_for_sf_vc_fvv (e.vector_mode ()));
+      case OP_TYPE_vvw:
+	return e.use_exact_insn (code_for_sf_vc_vvw (e.vector_mode ()));
+      case OP_TYPE_xvw:
+	return e.use_exact_insn (code_for_sf_vc_xvw (e.vector_mode ()));
+      case OP_TYPE_ivw:
+	return e.use_exact_insn (code_for_sf_vc_ivw (e.vector_mode ()));
+      case OP_TYPE_fvw:
+	return e.use_exact_insn (code_for_sf_vc_fvw (e.vector_mode ()));
+      case OP_TYPE_v_vvv:
+	return e.use_exact_insn (code_for_sf_vc_v_vvv (e.vector_mode ()));
+      case OP_TYPE_v_xvv:
+	return e.use_exact_insn (code_for_sf_vc_v_xvv (e.vector_mode ()));
+      case OP_TYPE_v_ivv:
+	return e.use_exact_insn (code_for_sf_vc_v_ivv (e.vector_mode ()));
+      case OP_TYPE_v_fvv:
+	return e.use_exact_insn (code_for_sf_vc_v_fvv (e.vector_mode ()));
+      case OP_TYPE_v_vvw:
+	return e.use_exact_insn (code_for_sf_vc_v_vvw (e.vector_mode ()));
+      case OP_TYPE_v_xvw:
+	return e.use_exact_insn (code_for_sf_vc_v_xvw (e.vector_mode ()));
+      case OP_TYPE_v_ivw:
+	return e.use_exact_insn (code_for_sf_vc_v_ivw (e.vector_mode ()));
+      case OP_TYPE_v_fvw:
+	return e.use_exact_insn (code_for_sf_vc_v_fvw (e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
 static CONSTEXPR const sf_vqmacc sf_vqmacc_obj;
 static CONSTEXPR const sf_vqmaccu sf_vqmaccu_obj;
 static CONSTEXPR const sf_vqmaccsu sf_vqmaccsu_obj;
 static CONSTEXPR const sf_vqmaccus sf_vqmaccus_obj;
 static CONSTEXPR const sf_vfnrclip_x_f_qf<UNSPEC_SF_VFNRCLIP> sf_vfnrclip_x_f_qf_obj;
 static CONSTEXPR const sf_vfnrclip_xu_f_qf<UNSPEC_SF_VFNRCLIPU> sf_vfnrclip_xu_f_qf_obj;
+static CONSTEXPR const sf_vc sf_vc_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -213,4 +290,5 @@ BASE (sf_vqmaccsu)
 BASE (sf_vqmaccus)
 BASE (sf_vfnrclip_x_f_qf)
 BASE (sf_vfnrclip_xu_f_qf)
+BASE (sf_vc)
 } // end namespace riscv_vector
