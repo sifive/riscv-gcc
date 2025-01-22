@@ -65,7 +65,7 @@
 #  endif
 #elif defined (__riscv)
 #  if defined (__riscv_32e)
-#    define SIZE 252
+#    define SIZE 248
 #  else
 #    define SIZE 240
 #  endif
