@@ -3937,11 +3937,43 @@
   [(set_attr "type" "store")]
 )
 
-(define_insn "prefetch"
-  [(prefetch (match_operand 0 "address_operand" "r")
-             (match_operand 1 "imm5_operand" "i")
-             (match_operand 2 "const_int_operand" "n"))]
+(define_expand "prefetch"
+  [(match_operand 0 "register_operand" "")
+   (match_operand 1 "imm5_operand" "")
+   (match_operand 2 "const_int_operand" "")]
   "TARGET_ZICBOP"
+{
+  if (TARGET_64BIT)
+    emit_insn (gen_prefetch64 (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_prefetch32 (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_insn "prefetch64"
+  [(prefetch (match_operand:DI 0 "register_operand" "r")
+	     (match_operand:DI 1 "imm5_operand" "i")
+	     (match_operand:DI 2 "const_int_operand" "n"))]
+  "TARGET_64BIT && TARGET_ZICBOP"
+{
+  switch (INTVAL (operands[1]))
+  {
+    case 0: return TARGET_ZIHINTNTL ? "%P2prefetch.r\t%a0" : "prefetch.r\t%a0";
+    case 1: return TARGET_ZIHINTNTL ? "%P2prefetch.w\t%a0" : "prefetch.w\t%a0";
+    default: gcc_unreachable ();
+  }
+}
+  [(set_attr "type" "store")
+   (set (attr "length") (if_then_else (and (match_test "TARGET_ZIHINTNTL")
+					   (match_test "INTVAL (operands[2]) != 3"))
+				      (const_string "8")
+				      (const_string "4")))])
+
+(define_insn "prefetch32"
+  [(prefetch (match_operand:SI 0 "register_operand" "r")
+             (match_operand:SI 1 "imm5_operand" "i")
+             (match_operand:SI 2 "const_int_operand" "n"))]
+  "!TARGET_64BIT && TARGET_ZICBOP"
 {
   switch (INTVAL (operands[1]))
   {
