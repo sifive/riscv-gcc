@@ -2144,7 +2144,8 @@ riscv_use_cfi (int argc, const char **argv)
   for (int i = 0; i < argc; ++i)
     {
       if ((strcmp (argv[i], "full") == 0)
-	  || (strcmp (argv[i], "return") == 0))
+	  || (strcmp (argv[i], "return") == 0)
+	  || (strcmp (argv[i], "branch") == 0))
 	use_cfi = true;
       if (strcmp (argv[i], "none") == 0)
 	use_cfi = false;
