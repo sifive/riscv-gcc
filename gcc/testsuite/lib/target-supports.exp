@@ -28,7 +28,7 @@
 # If ARGS is not empty, its first element is a string that
 # should be added to the command line.
 #
-# Assume by default that CONTENTS is C code.  
+# Assume by default that CONTENTS is C code.
 # Otherwise, code should contain:
 # "/* Assembly" for assembly code,
 # "// C++" for c++,
@@ -39,12 +39,12 @@
 # "// Go" for Go
 # "// Rust" for Rust
 # and "(* Modula-2" for Modula-2
-# If the tool is ObjC/ObjC++ then we overide the extension to .m/.mm to 
+# If the tool is ObjC/ObjC++ then we overide the extension to .m/.mm to
 # allow for ObjC/ObjC++ specific flags.
 
 proc check_compile {basename type contents args} {
     global tool
-    verbose "check_compile tool: $tool for $basename" 
+    verbose "check_compile tool: $tool for $basename"
 
     # Save additional_sources to avoid compiling testsuite's sources
     # against check_compile's source.
@@ -100,7 +100,7 @@ proc check_compile {basename type contents args} {
     global compiler_flags
     set save_compiler_flags $compiler_flags
     set lines [${tool}_target_compile $src $output $compile_type "$options"]
-    set compiler_flags $save_compiler_flags 
+    set compiler_flags $save_compiler_flags
     file delete $src
 
     set scan_output $output
@@ -569,7 +569,7 @@ proc check_ifunc_available { } {
 	#endif
 	extern void f_ ();
  	typedef void F (void);
-	F* g (void) { return &f_; }	
+	F* g (void) { return &f_; }
 	void f () __attribute__ ((ifunc ("g")));
 	#ifdef __cplusplus
 	}
@@ -631,7 +631,7 @@ proc check_dot_available { } {
 
 # Return 1 if according to target_info struct and explicit target list
 # target is supposed to support trampolines.
- 
+
 proc check_effective_target_trampolines { } {
     if [target_info exists gcc,no_trampolines] {
       return 0
@@ -695,7 +695,7 @@ proc check_effective_target_signal { } {
 # Return 1 if according to target_info struct and explicit target list
 # target disables -fdelete-null-pointer-checks.  Targets should return 0
 # if they simply default to -fno-delete-null-pointer-checks but obey
-# -fdelete-null-pointer-checks when passed explicitly (and tests that 
+# -fdelete-null-pointer-checks when passed explicitly (and tests that
 # depend on this option should do that).
 
 proc check_effective_target_keeps_null_pointer_checks { } {
@@ -704,7 +704,7 @@ proc check_effective_target_keeps_null_pointer_checks { } {
     }
     if { [istarget msp430-*-*]
          || [istarget avr-*-*] } {
-	return 1;   
+	return 1;
     }
     return 0
 }
@@ -716,7 +716,7 @@ proc check_effective_target_keeps_null_pointer_checks { } {
 # Each individual perf tries to grab it
 # This causes problems with parallel test suite runs. Instead
 # limit us to 8 pages (32K), which should be good enough
-# for the small test programs. With the default settings 
+# for the small test programs. With the default settings
 # this allows parallelism of 16 and higher of parallel gcc-auto-profile
 proc profopt-perf-wrapper { } {
     global srcdir
@@ -831,7 +831,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget powerpc-*-eabi*]
 	     || [istarget powerpc-*-elf]
 	     || [istarget pru-*-*]
-	     || [istarget rx-*-*]	
+	     || [istarget rx-*-*]
 	     || [istarget tic6x-*-elf]
 	     || [istarget visium-*-*]
 	     || [istarget xstormy16-*]
@@ -1021,7 +1021,7 @@ proc check_effective_target_tls_native {} {
     if { [istarget *-*-vxworks*] } {
 	return 0
     }
-    
+
     return [check_no_messages_and_pattern tls_native "!emutls" assembly {
 	__thread int i;
 	int f (void) { return i; }
@@ -1037,7 +1037,7 @@ proc check_effective_target_tls_emulated {} {
     if { [istarget *-*-vxworks*] } {
 	return 1
     }
-    
+
     return [check_no_messages_and_pattern tls_emulated "emutls" assembly {
 	__thread int i;
 	int f (void) { return i; }
@@ -1083,7 +1083,7 @@ proc check_effective_target_function_sections {} {
     if { [istarget *-*-darwin*] } {
 	return 0
     }
-    
+
     return [check_no_compiler_messages functionsections assembly {
  	void foo (void) { }
     } "-ffunction-sections"]
@@ -1105,7 +1105,7 @@ proc check_effective_target_trapping {} {
     } "-ftrapv"]
 }
 
-# Return 1 if compilation with -fgraphite is error-free for trivial 
+# Return 1 if compilation with -fgraphite is error-free for trivial
 # code, 0 otherwise.
 
 proc check_effective_target_fgraphite {} {
@@ -1744,7 +1744,7 @@ proc check_effective_target_fortran_real_10 { } {
 # 0 otherwise.  This differs from check_effective_target_fortran_real_16
 # because _Float128 has the additional requirement that it be the
 # 128-bit IEEE encoding; even if _Float128 is available in C, it may not
-# have a corresponding Fortran kind on targets (PowerPC) that use some 
+# have a corresponding Fortran kind on targets (PowerPC) that use some
 # other encoding for long double/TFmode/real(16).
 proc check_effective_target_fortran_real_c_float128 { } {
     return [check_no_compiler_messages fortran_real_c_float128 executable {
@@ -1941,6 +1941,20 @@ proc check_effective_target_riscv_zvfh { } {
     }]
 }
 
+# Return 1 if the target arch supports Zicond extension, 0 otherwise.
+# Note, this differs from the test performed by
+# /* dg-skip-if "" { *-*-* } { "*" } { "-march=rv*zicond*" } */
+# in that it takes default behaviour into account.
+# Cache the result.
+
+proc check_effective_target_riscv_zicond { } {
+    return [check_no_compiler_messages riscv_ext_zicond assembly {
+       #ifndef __riscv_zicond
+       #error "Not __riscv_zicond"
+       #endif
+    }]
+}
+
 # Return 1 if the target arch supports half float, 0 otherwise.
 # Note, this differs from the test performed by
 # /* dg-skip-if "" { *-*-* } { "*" } { "-march=rv*zfh*" } */
@@ -2029,7 +2043,7 @@ proc check_effective_target_riscv_v_ok { } {
 proc check_effective_target_riscv_zfh_ok { } {
     # If the target already supports zfh without any added options,
     # we may assume we can execute just fine.
-    # ??? Other cases we should consider: 
+    # ??? Other cases we should consider:
     # - target / simulator already supports zfh extension - test for that.
     # - target is a simulator, and dg-add-options knows how to enable zfh support in that simulator
     if { [check_effective_target_riscv_zfh] } {
@@ -2935,7 +2949,7 @@ proc check_effective_target_long_double_ieee128 { } {
 	int main()
 	{
 	  _Float128 a2;
-	  long double b2;  
+	  long double b2;
 	  if (sizeof (long double) != 16)
 	    return 1;
 	  b = one + two;
@@ -3443,7 +3457,7 @@ proc check_effective_target_ptr32plus { } {
     if { [istarget msp430-*-*] } {
         return 0
     }
- 
+
     return [check_no_compiler_messages ptr32plus object {
 	int dummy[sizeof (void *) >= 4 ? 1 : -1];
     }]
@@ -4354,7 +4368,7 @@ proc check_effective_target_int128 { } {
     }]
 }
 
-# Return 1 if the target supports unsigned int->float conversion 
+# Return 1 if the target supports unsigned int->float conversion
 #
 
 proc check_effective_target_vect_uintfloat_cvt { } {
@@ -5385,7 +5399,7 @@ proc check_effective_target_arm_neonv2_ok_nocache { } {
 	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon-vfpv4" "-mfpu=neon-vfpv4 -mfloat-abi=softfp"} {
 	    if { [check_no_compiler_messages_nocache arm_neonv2_ok object {
 		#include "arm_neon.h"
-		float32x2_t 
+		float32x2_t
 		foo (float32x2_t a, float32x2_t b, float32x2_t c)
                 {
                   return vfma_f32 (a, b, c);
@@ -7007,7 +7021,7 @@ proc check_effective_target_powerpc_p9modulo_ok { } {
 	 || [istarget rs6000-*-*] } {
 	# AltiVec is not supported on AIX before 5.3.
 	if { [istarget powerpc*-*-aix4*]
-	     || [istarget powerpc*-*-aix5.1*] 
+	     || [istarget powerpc*-*-aix5.1*]
 	     || [istarget powerpc*-*-aix5.2*] } {
 	    return 0
 	}
@@ -7143,7 +7157,7 @@ proc check_effective_target_powerpc_float128_sw_ok { } {
 	 || [istarget rs6000-*-*] } {
 	# AltiVec is not supported on AIX before 5.3.
 	if { [istarget powerpc*-*-aix4*]
-	     || [istarget powerpc*-*-aix5.1*] 
+	     || [istarget powerpc*-*-aix5.1*]
 	     || [istarget powerpc*-*-aix5.2*] } {
 	    return 0
 	}
@@ -7173,7 +7187,7 @@ proc check_effective_target_powerpc_float128_hw_ok { } {
 	 || [istarget rs6000-*-*] } {
 	# AltiVec is not supported on AIX before 5.3.
 	if { [istarget powerpc*-*-aix4*]
-	     || [istarget powerpc*-*-aix5.1*] 
+	     || [istarget powerpc*-*-aix5.1*]
 	     || [istarget powerpc*-*-aix5.2*] } {
 	    return 0
 	}
@@ -7993,7 +8007,7 @@ proc check_effective_target_vect_widen_sum_hi_to_si { } {
 # promotion (unpacking) from chars to shorts.
 #
 # This won't change for different subtargets so cache the result.
-                                                                                                
+
 proc check_effective_target_vect_widen_sum_qi_to_hi { } {
     return [check_cached_effective_target_indexed vect_widen_sum_qi_to_hi {
       expr { [check_effective_target_vect_unpack]
@@ -8007,7 +8021,7 @@ proc check_effective_target_vect_widen_sum_qi_to_hi { } {
 # widening summation of *char* args into *int* result, 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.
-                                                                                                
+
 proc check_effective_target_vect_widen_sum_qi_to_si { } {
     return [check_cached_effective_target_indexed vect_widen_sum_qi_to_si {
       expr { [istarget powerpc*-*-*]
@@ -8033,7 +8047,7 @@ proc check_effective_target_vect_widen_mult_qi_to_hi { } {
 		      && ![check_effective_target_aarch64_sve])
 		  || [is-effective-target arm_neon]
 		  || ([istarget s390*-*-*]
-		      && [check_effective_target_s390_vx])) 
+		      && [check_effective_target_s390_vx]))
 	      || [istarget amdgcn-*-*] }}]
 }
 
@@ -8198,7 +8212,7 @@ proc check_effective_target_vect_udot_hi { } {
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget riscv*-*-*]
-		 && [check_effective_target_riscv_v]) 
+		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
 		 && [check_effective_target_loongarch_sx]) }}]
 }
@@ -8252,11 +8266,11 @@ proc check_effective_target_vect_sdiv_pow2_si {} {
 }
 
 # Return 1 if the target plus current options supports a vector
-# demotion (packing) of shorts (to chars) and ints (to shorts) 
+# demotion (packing) of shorts (to chars) and ints (to shorts)
 # using modulo arithmetic, 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.
-                                                                                
+
 proc check_effective_target_vect_pack_trunc { } {
     return [check_cached_effective_target_indexed vect_pack_trunc {
       expr { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
@@ -8279,7 +8293,7 @@ proc check_effective_target_vect_pack_trunc { } {
 # promotion (unpacking) of chars (to shorts) and shorts (to ints), 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.
-                                   
+
 proc check_effective_target_vect_unpack { } {
     return [check_cached_effective_target_indexed vect_unpack {
       expr { ([istarget powerpc*-*-*] && ![istarget powerpc-*paired*])
@@ -8888,7 +8902,7 @@ proc check_effective_target_vector_alignment_reachable { } {
 
 proc check_effective_target_vector_alignment_reachable_for_64bit { } {
     set et_vector_alignment_reachable_for_64bit 0
-    if { [check_effective_target_vect_aligned_arrays] 
+    if { [check_effective_target_vect_aligned_arrays]
 	 || [check_effective_target_natural_alignment_64] } {
 	set et_vector_alignment_reachable_for_64bit 1
     }
@@ -8989,7 +9003,7 @@ proc check_effective_target_vect_cond_mixed { } {
     return [check_cached_effective_target_indexed vect_cond_mixed {
       expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget aarch64*-*-*]
-	     || [istarget powerpc*-*-*] 
+	     || [istarget powerpc*-*-*]
 	     || ([istarget arm*-*-*]
 		 && [check_effective_target_arm_neon_ok])
 	     || ([istarget mips*-*-*]
@@ -9662,14 +9676,14 @@ proc check_effective_target_sync_int_long { } {
       expr { [istarget ia64-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget aarch64*-*-*]
-	     || [istarget alpha*-*-*] 
-	     || [istarget arm*-*-linux-*] 
-	     || [istarget arm*-*-uclinuxfdpiceabi] 
+	     || [istarget alpha*-*-*]
+	     || [istarget arm*-*-linux-*]
+	     || [istarget arm*-*-uclinuxfdpiceabi]
 	     || ([istarget arm*-*-*]
 		 && [check_effective_target_arm_acq_rel])
 	     || [istarget bfin*-*linux*]
 	     || [istarget hppa*-*linux*]
-	     || [istarget s390*-*-*] 
+	     || [istarget s390*-*-*]
 	     || [istarget powerpc*-*-*]
 	     || [istarget cris-*-*]
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
@@ -9685,7 +9699,7 @@ proc check_effective_target_sync_int_long { } {
 proc check_effective_target_sync_int_long_stack { } {
     return [check_cached_effective_target sync_int_long_stack {
       expr { ![istarget nvptx*-*-*]
-	     && [check_effective_target_sync_int_long]	     
+	     && [check_effective_target_sync_int_long]
 	 }}]
 }
 
@@ -9698,13 +9712,13 @@ proc check_effective_target_sync_char_short { } {
       expr { [istarget aarch64*-*-*]
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
-	     || [istarget alpha*-*-*] 
-	     || [istarget arm*-*-linux-*] 
-	     || [istarget arm*-*-uclinuxfdpiceabi] 
+	     || [istarget alpha*-*-*]
+	     || [istarget arm*-*-linux-*]
+	     || [istarget arm*-*-uclinuxfdpiceabi]
 	     || ([istarget arm*-*-*]
 		 && [check_effective_target_arm_acq_rel])
 	     || [istarget hppa*-*linux*]
-	     || [istarget s390*-*-*] 
+	     || [istarget s390*-*-*]
 	     || [istarget powerpc*-*-*]
 	     || [istarget cris-*-*]
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
@@ -10596,7 +10610,7 @@ proc check_effective_target_sse { } {
 proc check_effective_target_sse2 { } {
     return [check_no_compiler_messages sse2 object {
 	typedef long long __m128i __attribute__ ((__vector_size__ (16)));
-	
+
 	__m128i _mm_srli_si128 (__m128i __A, int __N)
 	{
 	    return (__m128i)__builtin_ia32_psrldqi128 (__A, 8);
@@ -12664,14 +12678,14 @@ proc check_effective_target_autoincdec { } {
 #
 # This is used to restrict the stack-clash mitigation tests to
 # just those targets that have been explicitly supported.
-# 
+#
 # In addition to the prologue work on those targets, each target's
 # properties should be described in the functions below so that
 # tests do not become a mess of unreadable target conditions.
-# 
+#
 proc check_effective_target_supports_stack_clash_protection { } {
 
-    if { [istarget x86_64-*-*] || [istarget i?86-*-*] 
+    if { [istarget x86_64-*-*] || [istarget i?86-*-*]
 	  || [istarget powerpc*-*-*] || [istarget rs6000*-*-*]
 	  || [istarget aarch64*-**] || [istarget s390*-*-*]
 	  || [istarget loongarch64*-**] } {
@@ -13364,7 +13378,7 @@ main:
 	.byte 0
   } ""]
 }
- 
+
 # Return 1 if this target has prog named "$prog", 0 otherwise.
 
 proc check_is_prog_name_available { prog } {

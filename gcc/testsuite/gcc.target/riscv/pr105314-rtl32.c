@@ -1,6 +1,5 @@
 /* PR rtl-optimization/105314 */
-/* { dg-do compile } */
-/* { dg-require-effective-target rv32 } */
+/* { dg-do compile { target { ! riscv_zicond } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Og" "-Os" "-Oz" "-flto" } } */
 /* { dg-options "-fdump-rtl-ce1" } */
 
