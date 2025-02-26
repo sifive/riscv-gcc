@@ -178,8 +178,8 @@ for cmodel in cmodels:
              "e.g. rv32imafd-ilp32--" % cfg)
       sys.exit(1)
 
-    # Compact code model only support rv64.
-    if cmodel == "compact" and arch.startswith("rv32"):
+    # Compact and large code model only support rv64.
+    if cmodel in ["compact", "large"] and arch.startswith("rv32"):
       continue
     elif cmodel:
       local_extra_multlib_option_dict['mcmodel=%s' % cmodel] = cmodel
