@@ -202,14 +202,12 @@ for cmodel in cmodels:
       arches[alt] = 1
       reuse.append('march.%s/mabi.%s=march.%s/mabi.%s' % (arch, abi, alt, abi))
 
-    extra_multlib_option_str = ''
-
-    if len(local_extra_multlib_option_dict):
-      extra_multlib_option_str = '/' + extra_multlib_option_str.join(
-        local_extra_multlib_option_dict.keys())
+    extra_multlib_option_str = '/'.join(local_extra_multlib_option_dict.keys())
 
     multilib_cfg_line = 'march=%s/mabi=%s' % (arch, abi)
-    multilib_cfg_line += extra_multlib_option_str
+
+    if (len(extra_multlib_option_str) > 0):
+      multilib_cfg_line += '/' + extra_multlib_option_str
     required.append(multilib_cfg_line)
 
   arch_options = '/'.join(['march=%s' % x for x in arches.keys()])
