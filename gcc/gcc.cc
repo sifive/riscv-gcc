@@ -9745,7 +9745,6 @@ find_multilib_os_dir_by_multilib_dir (const char *multilib_dir,
       this_path_len = p - this_path;
 
       ok = 0;
-      ++p;
 
       /* Skip any arguments, we don't care at this stage.  */
       while (*++p != ';');
