@@ -489,6 +489,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zaamo",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zalrsc", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zama16b",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zalasr", ISA_SPEC_CLASS_NONE, 1, 0}, 
 
   {"zba", ISA_SPEC_CLASS_UNRATIFIED, 0, 93},
   {"zbb", ISA_SPEC_CLASS_UNRATIFIED, 0, 93},
@@ -1818,6 +1819,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zawrs", &gcc_options::x_riscv_za_subext, MASK_ZAWRS},
   /* SiFive */
   {"zacas", &gcc_options::x_riscv_za_subext, MASK_ZACAS},
+  {"zalasr", &gcc_options::x_riscv_za_subext, MASK_ZALASR},
 
   {"zba",    &gcc_options::x_riscv_zb_subext, MASK_ZBA},
   {"zbb",    &gcc_options::x_riscv_zb_subext, MASK_ZBB},
