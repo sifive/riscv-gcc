@@ -240,6 +240,8 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
 	case LPAD_FUNC_SIG:
 	  builtin_define ("__riscv_landing_pad_func_sig");
 	  break;
+	default:
+	  gcc_unreachable ();
 	}
     }
 
