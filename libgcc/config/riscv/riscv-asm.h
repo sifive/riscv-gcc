@@ -78,16 +78,35 @@ X:				\
 /* Add GNU property note with the supported features to all asm code
    where sysdep.h is included.  */
 #undef __VALUE_FOR_FEATURE_1_AND
-#if defined (__riscv_zicfilp) || defined (__riscv_zicfiss)
-#  if defined (__riscv_zicfilp)
-#    if defined (__riscv_zicfiss)
-#      define __VALUE_FOR_FEATURE_1_AND 0x3
+#undef __VALUE_FOR_FEATURE_CFI_SS
+#undef __VALUE_FOR_FEATURE_CFI_LP
+
+#ifdef __riscv_shadow_stack
+#define __VALUE_FOR_FEATURE_CFI_SS 0x2
+#endif
+
+#ifdef __riscv_landing_pad
+#  ifdef __riscv_landing_pad_unlabeled
+#    define __VALUE_FOR_FEATURE_CFI_LP 0x1
+#  elif defined(__riscv_landing_pad_func_sig)
+#    define __VALUE_FOR_FEATURE_CFI_LP 0x4
+#  elif defined(__riscv_landing_pad_fixed_one)
+#    define __VALUE_FOR_FEATURE_CFI_LP 0x4
+#  else
+#    error "What?"
+#  endif
+#endif
+
+#if defined (__VALUE_FOR_FEATURE_CFI_SS) || defined (__VALUE_FOR_FEATURE_CFI_LP)
+#  if defined (__VALUE_FOR_FEATURE_CFI_SS)
+#    if defined (__VALUE_FOR_FEATURE_CFI_LP)
+#      define __VALUE_FOR_FEATURE_1_AND (__VALUE_FOR_FEATURE_CFI_SS | __VALUE_FOR_FEATURE_CFI_LP)
 #    else
-#      define __VALUE_FOR_FEATURE_1_AND 0x1
+#      define __VALUE_FOR_FEATURE_1_AND __VALUE_FOR_FEATURE_CFI_SS
 #    endif
 #  else
-#    if defined (__riscv_zicfiss)
-#      define __VALUE_FOR_FEATURE_1_AND 0x2
+#    if defined (__VALUE_FOR_FEATURE_CFI_LP)
+#      define __VALUE_FOR_FEATURE_1_AND __VALUE_FOR_FEATURE_CFI_LP
 #    else
 #      error "What?"
 #    endif
@@ -99,9 +118,20 @@ GNU_PROPERTY (FEATURE_1_AND, __VALUE_FOR_FEATURE_1_AND)
 #endif
 #undef __VALUE_FOR_FEATURE_1_AND
 
-#ifdef __riscv_zicfilp
-# define SET_LPAD   lui  t2, 1
-# define LPAD       lpad 1
+#ifdef __riscv_landing_pad
+#  if defined (__riscv_landing_pad_unlabeled)
+#    define SET_LPAD
+#    define LPAD       lpad 0
+#  elif defined (__riscv_landing_pad_fixed_one)
+#    define SET_LPAD   lui  t2, 1
+#    define LPAD       lpad 1
+#  elif defined (__riscv_landing_pad_func_sig)
+/* FIXME: Same as fixed one for now.   */
+#    define SET_LPAD   lui  t2, 1
+#    define LPAD       lpad 1
+#  else
+#    error "Unsppoorted landing pad type"
+#  endif
 #else
 # define SET_LPAD
 # define LPAD

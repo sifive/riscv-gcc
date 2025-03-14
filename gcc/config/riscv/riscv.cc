@@ -9658,7 +9658,18 @@ riscv_file_end_indicate_exec_stack ()
   unsigned long feature_1_and = 0;
 
   if (is_zicfilp_p ())
-    feature_1_and |= 0x1 << 0;
+    switch (riscv_lpad_type)
+      {
+      case LPAD_UNLABELED:
+	feature_1_and |= 0x1 << 0;
+	break;
+      case LPAD_FIXED_ONE:
+      case LPAD_FUNC_SIG:
+	feature_1_and |= 0x1 << 2;
+	break;
+      default:
+	gcc_unreachable ();
+      }
 
   if (is_zicfiss_p ())
     feature_1_and |= 0x1 << 1;
