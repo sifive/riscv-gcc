@@ -100,6 +100,9 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zfinx", "zicsr"},
   {"zdinx", "zicsr"},
 
+  {"zclsd", "zilsd"},
+  {"zclsd", "zca"},
+
   {"zk", "zkn"},
   {"zk", "zkr"},
   {"zk", "zkt"},
@@ -359,6 +362,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 
   {"zicntr", ISA_SPEC_CLASS_NONE, 2, 0},
   {"zihpm",  ISA_SPEC_CLASS_NONE, 2, 0},
+
+  {"zilsd",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zclsd",  ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zk",    ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkn",   ISA_SPEC_CLASS_NONE, 1, 0},
@@ -1528,6 +1534,14 @@ riscv_subset_list::check_conflict_ext ()
   if (lookup ("zcf") && m_xlen == 64)
     error_at (m_loc, "%<-march=%s%>: zcf extension supports in rv32 only",
 	      m_arch);
+  
+  if (lookup ("zilsd") && m_xlen == 64)
+    error_at (m_loc, "%<-march=%s%>: zilsd extension supports in rv32 only",
+	      m_arch);
+
+  if (lookup ("zclsd") && m_xlen == 64)
+    error_at (m_loc, "%<-march=%s%>: zclsd extension supports in rv32 only",
+	      m_arch);
 
   if (lookup ("zfinx") && lookup ("f"))
     error_at (m_loc,
@@ -1863,6 +1877,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"ziccif", &gcc_options::x_riscv_zi_subext, MASK_ZICCIF},
   {"zicclsm", &gcc_options::x_riscv_zi_subext, MASK_ZICCLSM},
   {"ziccrse", &gcc_options::x_riscv_zi_subext, MASK_ZICCRSE},
+  {"zilsd", &gcc_options::x_riscv_zi_subext, MASK_ZILSD},
 
   {"zicboz", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOZ},
   {"zicbom", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOM},
@@ -1942,6 +1957,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zcd",     &gcc_options::x_riscv_zc_subext, MASK_ZCD},
   {"zcmp",    &gcc_options::x_riscv_zc_subext, MASK_ZCMP},
   {"zcmt",    &gcc_options::x_riscv_zc_subext, MASK_ZCMT},
+  {"zclsd",    &gcc_options::x_riscv_zc_subext, MASK_ZCMT},
 
   {"svinval", &gcc_options::x_riscv_sv_subext, MASK_SVINVAL},
   {"svnapot", &gcc_options::x_riscv_sv_subext, MASK_SVNAPOT},
