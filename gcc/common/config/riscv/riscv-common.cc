@@ -246,7 +246,6 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"xsfmm64t", "xsfmmbase"},
   {"xsfmm32t", "xsfmmbase"},
   {"xsfmm16t", "xsfmmbase"},
-  {"xsfmm32ea", "v"},
 
   {NULL, NULL}
 };
@@ -562,7 +561,6 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"xsfmm64t", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
   {"xsfmm32t", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
   {"xsfmm16t", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
-  {"xsfmm32ea", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
   {"xsfvfbfa", ISA_SPEC_CLASS_NONE, 0, 1},
   /* SiFive PMP-based Memory Types Extension */
   {"xsfpmpmt", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
