@@ -127,6 +127,9 @@ struct GTY(())  riscv_frame_info {
   /* Likewise for vector registers.  */
   unsigned int vmask;
 
+  /* SiFive CLIC to save CSR into S0, S1.  */
+  unsigned int clic_mask;
+
   /* How much the GPR save/restore routines adjust sp (or 0 if unused).  */
   unsigned save_libcall_adjustment;
 
@@ -759,6 +762,7 @@ void riscv_frame_info::reset(void)
   mask = 0;
   fmask = 0;
   vmask = 0;
+  clic_mask = 0;
   save_libcall_adjustment = 0;
 
   gp_sp_offset = 0;
@@ -7231,6 +7235,14 @@ riscv_stack_align (HOST_WIDE_INT value)
 	|  callee-allocated save area   |
 	|  for register varargs         |
 	|                               |
+	|-------------------------------|
+	|				|
+	|  SiFive CLIC, save S0, S1	|
+	|				|
+	|-------------------------------|
+	|				|
+	|  save FCSR area		|
+	|				|
 	+-------------------------------+ <-- hard_frame_pointer_rtx;
 	|                               |     stack_pointer_rtx + gp_sp_offset
 	|  GPR save area                |       + UNITS_PER_WORD
@@ -7316,6 +7328,14 @@ riscv_compute_frame_info (void)
 	      frame->vmask |= 1 << (regno - V_REG_FIRST);
 	      num_v_saved++;
 	    }
+
+      /* In an SiFive CLIC preemptible interrupt function, we need extra space
+	 for the initial saves of S0 and S1.  */
+      if (cfun->machine->interrupt_flags.sifive_clic_preemptible_p)
+	{
+	  frame->clic_mask = 1;
+	  num_x_saved += 2;
+	}
     }
 
   if (frame->mask)
@@ -7325,13 +7345,9 @@ riscv_compute_frame_info (void)
       /* 1 is for ra  */
       unsigned num_save_restore = 1 + riscv_save_libcall_count (frame->mask);
 
-      /* In an SiFive CLIC preemptible interrupt function, we need extra space
-	 for the initial saves of S0 and S1.  */
-      if (cfun->machine->interrupt_flags.sifive_clic_preemptible_p)
-	x_save_size = RISCV_STACK_ALIGN ((num_x_saved + 2) * UNITS_PER_WORD);
       /* Only use save/restore routines if they don't alter the stack size.  */
-      else if (riscv_stack_align (num_save_restore * UNITS_PER_WORD) == x_save_size
-          && !riscv_avoid_save_libcall ())
+      if (riscv_stack_align (num_save_restore * UNITS_PER_WORD) == x_save_size
+	  && !riscv_avoid_save_libcall ())
 	{
 	  /* Libcall saves/restores 3 registers at once, so we need to
 	     allocate 12 bytes for callee-saved register.  */
@@ -7560,6 +7576,51 @@ riscv_is_eh_return_data_register (unsigned int regno)
   return false;
 }
 
+static void
+riscv_for_clic_saved_reg (HOST_WIDE_INT offset, bool epilogue)
+{
+  if (!epilogue)
+    {
+      /* Save S0 and S1.  */
+      riscv_save_restore_reg (word_mode, S0_REGNUM,
+			      offset - UNITS_PER_WORD, riscv_save_reg);
+      riscv_save_restore_reg (word_mode, S1_REGNUM,
+			      offset - (2 * UNITS_PER_WORD), riscv_save_reg);
+
+      /* Load cause into s0.  */
+      emit_insn (gen_riscv_csr_read (gen_rtx_REG (word_mode, S0_REGNUM),
+				     GEN_INT (MCAUSE_REGNUM)));
+      /* Load epc into s1.  */
+      emit_insn (gen_riscv_csr_read (gen_rtx_REG (word_mode, S1_REGNUM),
+				     GEN_INT (MEPC_REGNUM)));
+      /* Re-enable interrupts.  */
+      emit_insn (gen_riscv_csr_read_set_bits (gen_rtx_REG (word_mode,
+							   GP_REG_FIRST),
+					      GEN_INT (MSTATUS_REGNUM),
+					      GEN_INT (MSTATUS_MIE_BIT)));
+    }
+  else
+    {
+      /* Disable interrupts.  */
+      emit_insn (gen_riscv_csr_read_clear_bits (gen_rtx_REG (word_mode,
+						GP_REG_FIRST),
+						GEN_INT (MSTATUS_REGNUM),
+						GEN_INT (MSTATUS_MIE_BIT)));
+      /* Save s1 back into mepc.  */
+      emit_insn (gen_riscv_csr_write (GEN_INT (MEPC_REGNUM),
+				      gen_rtx_REG (word_mode, S1_REGNUM)));
+      /* Save s0 back into mcause.  */
+      emit_insn (gen_riscv_csr_write (GEN_INT (MCAUSE_REGNUM),
+				      gen_rtx_REG (word_mode, S0_REGNUM)));
+
+      /* Restore S0 and S1.  */
+      riscv_save_restore_reg (word_mode, S0_REGNUM,
+			      offset - UNITS_PER_WORD, riscv_restore_reg);
+      riscv_save_restore_reg (word_mode, S1_REGNUM,
+			      offset - (2 * UNITS_PER_WORD), riscv_restore_reg);
+    }
+}
+
 /* Call FN for each register that is saved by the current function.
    SP_OFFSET is the offset of the current stack pointer from the start
    of the frame.  */
@@ -7572,10 +7633,24 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
   unsigned int regno, num_masked_fp = 0;
   unsigned int start = GP_REG_FIRST;
   unsigned int limit = GP_REG_LAST;
+  HOST_WIDE_INT clic_offset = 0;
 
   /* Save the link register and s-registers. */
   offset = (cfun->machine->frame.gp_sp_offset - sp_offset).to_constant ()
 	   + UNITS_PER_WORD;
+
+  /* Save S0 and S1 stack offset.  */
+  clic_offset = offset;
+
+  if (cfun->machine->frame.clic_mask != 0)
+    {
+      if (!epilogue)
+	riscv_for_clic_saved_reg (clic_offset, epilogue);
+
+      /* SiFive CLIC: Adjust offset for saving S0, S1.  */
+      offset -= (2 * UNITS_PER_WORD);
+    }
+
   for (regno = riscv_next_saved_reg (start, limit, &offset, false);
        regno != INVALID_REGNUM;
        regno = riscv_next_saved_reg (regno, limit, &offset))
@@ -7679,6 +7754,14 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 	  riscv_save_restore_reg (mode, regno, offset, fn);
 	num_masked_fp++;
       }
+
+  if (cfun->machine->frame.clic_mask != 0
+      && (cfun->machine->frame.mask | cfun->machine->frame.fmask) != 0
+      && epilogue)
+    {
+      /* Restore S0 and S1 stack offset.  */
+      riscv_for_clic_saved_reg (clic_offset, epilogue);
+    }
 }
 
 /* Call FN for each V register that is saved by the current function.  */
@@ -7954,7 +8037,6 @@ riscv_expand_prologue (void)
 {
   struct riscv_frame_info *frame = &cfun->machine->frame;
   poly_int64 remaining_size = frame->total_size;
-  HOST_WIDE_INT interrupt_size = 0;
   unsigned mask = frame->mask;
   unsigned fmask = frame->fmask;
   int spimm, multi_push_additional, stack_adj;
@@ -8061,7 +8143,8 @@ riscv_expand_prologue (void)
 					 stack_pointer_rtx));
 
   /* Save the GP, FP registers.  */
-  if ((frame->mask | frame->fmask) != 0)
+  if ((frame->mask | frame->fmask) != 0
+      || (frame->clic_mask != 0))
     {
       HOST_WIDE_INT step1 = riscv_first_stack_step (frame, remaining_size);
 
@@ -8073,32 +8156,7 @@ riscv_expand_prologue (void)
 	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
 	}
 
-      if (cfun->machine->interrupt_flags.sifive_clic_preemptible_p)
-	{
-	  /* Save S0 and S1.  */
-	  riscv_save_restore_reg (word_mode, S0_REGNUM,
-				  step1 - (1 * UNITS_PER_WORD),
-				  riscv_save_reg);
-	  riscv_save_restore_reg (word_mode, S1_REGNUM,
-				  step1 - (2 * UNITS_PER_WORD),
-				  riscv_save_reg);
-	  /* Account for the stack size used by interrupt register saving.  */
-	  interrupt_size = 2 * UNITS_PER_WORD;
-
-	  /* Load cause into s0.  */
-	  emit_insn (gen_riscv_csr_read (gen_rtx_REG (word_mode, S0_REGNUM),
-					 GEN_INT (MCAUSE_REGNUM)));
-	  /* Load epc into s1.  */
-	  emit_insn (gen_riscv_csr_read (gen_rtx_REG (word_mode, S1_REGNUM),
-					 GEN_INT (MEPC_REGNUM)));
-	  /* Re-enable interrupts.  */
-	  emit_insn (gen_riscv_csr_read_set_bits (gen_rtx_REG (word_mode,
-							       GP_REG_FIRST),
-						  GEN_INT (MSTATUS_REGNUM),
-						  GEN_INT (MSTATUS_MIE_BIT)));
-	}
-
-      riscv_for_each_saved_reg (remaining_size + interrupt_size, riscv_save_reg,
+      riscv_for_each_saved_reg (remaining_size, riscv_save_reg,
 				false, false, false);
     }
 
@@ -8266,7 +8324,6 @@ riscv_expand_epilogue (int style)
   unsigned fmask = frame->fmask;
   unsigned mask_fprs_push = 0;
   poly_int64 step2 = 0;
-  unsigned interrupt_size = 0;
   bool use_multi_pop_normal
     = ((style == NORMAL_RETURN) && riscv_use_multi_push (frame));
   bool use_multi_pop_sibcall
@@ -8446,8 +8503,6 @@ riscv_expand_epilogue (int style)
     }
   else if (use_restore_libcall)
     frame->mask = 0; /* Temporarily fib that we need not restore GPRs.  */
-  else if (cfun->machine->interrupt_flags.sifive_clic_preemptible_p)
-    interrupt_size = 2 * UNITS_PER_WORD;
 
   th_int_mask = th_int_get_mask (frame->mask);
   if (th_int_mask && TH_INT_INTERRUPT (cfun))
@@ -8464,7 +8519,7 @@ riscv_expand_epilogue (int style)
   /* Restore the registers.  */
   riscv_for_each_saved_v_reg (step2, riscv_restore_reg, false);
   riscv_for_each_saved_reg (frame->total_size - step2 - libcall_size
-			      - multipop_size + interrupt_size,
+			    - multipop_size,
 			    riscv_restore_reg, true, style == EXCEPTION_RETURN,
 			    style == SIBCALL_RETURN);
 
@@ -8478,30 +8533,6 @@ riscv_expand_epilogue (int style)
 
   if (use_restore_libcall)
     frame->mask = mask; /* Undo the above fib.  */
-
-  else if (cfun->machine->interrupt_flags.sifive_clic_preemptible_p
-	   && (frame->mask | frame->fmask) != 0)
-    {
-      /* Disable interrupts.  */
-      emit_insn (gen_riscv_csr_read_clear_bits (gen_rtx_REG (word_mode,
-							     GP_REG_FIRST),
-						GEN_INT (MSTATUS_REGNUM),
-						GEN_INT (MSTATUS_MIE_BIT)));
-      /* Save s1 back into mepc.  */
-      emit_insn (gen_riscv_csr_write (GEN_INT (MEPC_REGNUM),
-				      gen_rtx_REG (word_mode, S1_REGNUM)));
-      /* Save s0 back into mcause.  */
-      emit_insn (gen_riscv_csr_write (GEN_INT (MCAUSE_REGNUM),
-				      gen_rtx_REG (word_mode, S0_REGNUM)));
-
-      /* Restore S0 and S1.  */
-      riscv_save_restore_reg (word_mode, S1_REGNUM,
-			      step2.to_constant () - (2 * UNITS_PER_WORD),
-			      riscv_restore_reg);
-      riscv_save_restore_reg (word_mode, S0_REGNUM,
-			      step2.to_constant () - (1 * UNITS_PER_WORD),
-			      riscv_restore_reg);
-    }
 
   if (need_barrier_p)
     riscv_emit_stack_tie ();
