@@ -4710,7 +4710,36 @@ case "${target}" in
 		;;
 
 	riscv*-*-*)
-		supported_defaults="abi arch tune riscv_attribute isa_spec tls cmodel"
+		supported_defaults="abi arch tune riscv_attribute isa_spec tls cmodel label_scheme cf_protection"
+
+		case "${with_label_scheme}" in
+		"" | default | "fixed-one")
+			tm_defines="${tm_defines} TARGET_DEFAULT_LABEL_SCHEME=LPAD_FIXED_ONE"
+			;;
+		unlabeled)
+			tm_defines="${tm_defines} TARGET_DEFAULT_LABEL_SCHEME=LPAD_UNLABELED"
+			;;
+		"func-sig")
+			tm_defines="${tm_defines} TARGET_DEFAULT_LABEL_SCHEME=LPAD_FUNC_SIG"
+			;;
+		*)
+			echo "Unsupported label scheme" 1>&2
+			exit 1
+			;;
+		esac
+
+		case "${with_cf_protection}" in
+		full | none | branch | return)
+			# OK
+			;;
+		"" | default)
+			cf_protection=full
+			;;
+		*)
+			echo "Unsupported cf-protection" 1>&2
+			exit 1
+			;;
+		esac
 
 		case "${target}" in
 		riscv-* | riscv32*) xlen=32 ;;
@@ -6113,7 +6142,7 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 isa_spec compact-branches msa cmodel"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 isa_spec compact-branches msa cmodel label_scheme cf_protection"
 for option in $all_defaults
 do
 	eval "val=\$with_"`echo $option | sed s/-/_/g`

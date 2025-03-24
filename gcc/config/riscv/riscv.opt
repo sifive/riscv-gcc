@@ -699,7 +699,7 @@ mcfi-lp=simple
 Target Undocumented RejectNegative Alias(mcf-branch-label-scheme=, unlabeled)
 
 mcf-branch-label-scheme=
-Target RejectNegative Joined Enum(lpad_type) Var(riscv_lpad_type) Init(LPAD_FIXED_ONE)
+Target RejectNegative Joined Enum(lpad_type) Var(riscv_lpad_type) Init(TARGET_DEFAULT_LABEL_SCHEME)
 Specify if CFI landing pad hardware should be used.
 
 Enum

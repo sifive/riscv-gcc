@@ -77,6 +77,7 @@ extern const char *riscv_arch_help (int argc, const char **argv);
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}" },				\
   {"isa_spec", "%{!misa-spec=*:-misa-spec=%(VALUE)}" },			\
   {"tls", "%{!mtls-dialect=*:-mtls-dialect=%(VALUE)}"},         	\
+  {"cf_protection", "%{!fcf-protection=*:-fcf-protection=%(VALUE)}" },	\
 
 #ifdef IN_LIBGCC2
 #undef TARGET_64BIT
