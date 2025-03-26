@@ -4248,7 +4248,8 @@
 	(unspec_volatile [(match_operand 1 "csr_address" "Dcs")]
 			 UNSPECV_CSR_READ))]
   ""
-  "csrr\t%0,%x1")
+  "csrr\t%0,%x1"
+  [(set_attr "type" "move")])
 
 (define_insn "riscv_csr_read_set_bits"
   [(set (match_operand 0 "register_operand" "=r")
@@ -4256,7 +4257,8 @@
 			  (match_operand 2 "csr_operand" "rK")]
 			 UNSPECV_CSR_READ_SET_BITS))]
   ""
-  "csrrsi\t%0,%x1,%2")
+  "csrrsi\t%0,%x1,%2"
+  [(set_attr "type" "move")])
 
 (define_insn "riscv_csr_read_clear_bits"
   [(set (match_operand 0 "register_operand" "=r")
@@ -4264,7 +4266,8 @@
 			  (match_operand 2 "csr_operand" "rK")]
 			 UNSPECV_CSR_READ_CLEAR_BITS))]
   ""
-  "csrrci\t%0,%x1,%2")
+  "csrrci\t%0,%x1,%2"
+  [(set_attr "type" "move")])
 
 (define_insn "riscv_csr_read_write"
   [(set (match_operand 0 "register_operand" "=r")
@@ -4272,14 +4275,16 @@
 			  (match_operand 2 "csr_operand" "rK")]
 			 UNSPECV_CSR_READ_WRITE))]
   ""
-  "csrrw\t%0,%x1,%2")
+  "csrrw\t%0,%x1,%2"
+  [(set_attr "type" "move")])
 
 (define_insn "riscv_csr_write"
   [(unspec_volatile [(match_operand 0 "csr_address" "Dcs")
 		     (match_operand 1 "register_operand" "r")]
 		    UNSPECV_CSR_WRITE)]
   ""
-  "csrw\t%x0,%1")
+  "csrw\t%x0,%1"
+  [(set_attr "type" "move")])
 
 (define_insn "riscv_mret"
   [(return)
