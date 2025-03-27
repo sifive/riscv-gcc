@@ -5,30 +5,30 @@
 
 /*
 **software_handler:
-**	addi	sp,sp,-192
-**	sw	s0,188(sp)
-**	sw	s1,184(sp)
-**	csrr	s0,mcause
-**	csrr	s1,mepc
-**	csrrsi	zero,mstatus,8
-**	sw	ra,180(sp)
+**	addi\s+sp,sp,-192
+**	sw\s+s0,188\(sp\)
+**	sw\s+s1,184\(sp\)
+**	csrr\s+s0,mcause
+**	csrr\s+s1,mepc
+**	csrrsi\s+zero,mstatus,8
+**	sw\s+ra,180\(sp\)
 **	...
-**	fsw	ft8,12(sp)
-**	fsw	ft9,8(sp)
-**	fsw	ft10,4(sp)
-**	fsw	ft11,0(sp)
+**	fsw\s+ft8,12\(sp\)
+**	fsw\s+ft9,8\(sp\)
+**	fsw\s+ft10,4\(sp\)
+**	fsw\s+ft11,0\(sp\)
 **	...
-**	lw	ra,180(sp)
-**	lw	t0,172(sp)
+**	lw\s+ra,180\(sp\)
+**	lw\s+t0,172\(sp\)
 **	...
-**	flw	ft10,4(sp)
-**	flw	ft11,0(sp)
-**	csrrci	zero,mstatus,8
-**	csrw	mepc,s1
-**	csrw	mcause,s0
-**	lw	s0,188(sp)
-**	lw	s1,184(sp)
-**	addi	sp,sp,192
+**	flw\s+ft10,4\(sp\)
+**	flw\s+ft11,0\(sp\)
+**	csrrci\s+zero,mstatus,8
+**	csrw\s+mepc,s1
+**	csrw\s+mcause,s0
+**	lw\s+s0,188\(sp\)
+**	lw\s+s1,184\(sp\)
+**	addi\s+sp,sp,192
 **	mret
 */
 void __attribute__((interrupt("SiFive-CLIC-preemptible"))) software_handler (void) {
