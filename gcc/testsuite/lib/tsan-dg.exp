@@ -39,6 +39,18 @@ proc check_effective_target_fsanitize_thread {} {
     }
     unset individual_timeout
 
+    # SiFive: tsan doesn't work if there's a ulimit on virtual memory.
+    if ![is_remote target] {
+	if [catch {exec sh -c "ulimit -v"} ulimit_v] {
+	    # failed to get ulimit
+	} elseif [regexp {^[0-9]+$} $ulimit_v] {
+	    # ulimit -v gave a numeric limit
+	    warning "skipping asan tests due to ulimit -v"
+	    return 0;
+	}
+    }
+    # end SiFive
+
     return 1
 }
 
