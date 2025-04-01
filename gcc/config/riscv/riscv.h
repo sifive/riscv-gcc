@@ -81,7 +81,7 @@ extern const char *riscv_use_cfi (int argc, const char **argv);
   {"isa_spec", "%{!misa-spec=*:-misa-spec=%(VALUE)}" },			\
   {"tls", "%{!mtls-dialect=*:-mtls-dialect=%(VALUE)}"},         	\
   {"cmodel", "%{!mcmodel=*:-mcmodel=%(VALUE)}" }, \
-  {"cf_protection", "%{!fcf-protection=*:-fcf-protection=%(VALUE)}" }, \
+  {"cf_protection", "%{!fcf-protection=*:-fcf-protection=%(VALUE)} -mcfi-no-warning" }, \
 
 #ifdef IN_LIBGCC2
 #undef TARGET_64BIT
