@@ -4731,7 +4731,7 @@ case "${target}" in
 			# OK
 			;;
 		"" | default)
-			cf_protection=full
+			cf_protection=none
 			;;
 		*)
 			echo "Unsupported cf-protection" 1>&2
