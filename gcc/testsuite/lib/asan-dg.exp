@@ -38,6 +38,13 @@ proc check_effective_target_fsanitize_address {} {
 	}
     }
 
+    # SiFive: asan doesn't work on simulators
+    if [board_info target exists is_simulator] {
+	warning "skipping asan tests on simulator"
+	return 0;
+    }
+    # end SiFive
+
     return 1;
 }
 
