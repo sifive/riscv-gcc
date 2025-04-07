@@ -520,6 +520,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zvfbfwma", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvfbfwma", ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
   {"zvfofp8min", ISA_SPEC_CLASS_NONE, 0, 2},
+  {"zvfofp4min", ISA_SPEC_CLASS_NONE, 0, 1},
 
   {"zvkns",  ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
   {"zvknf",  ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
@@ -1915,6 +1916,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zvfhmin",   &gcc_options::x_riscv_zf_subext, MASK_ZVFHMIN},
   {"zvfh",      &gcc_options::x_riscv_zf_subext, MASK_ZVFH},
   {"zvfofp8min", &gcc_options::x_riscv_zf_subext, MASK_ZVFOFP8MIN},
+  {"zvfofp4min", &gcc_options::x_riscv_zf_subext, MASK_ZVFOFP4MIN},
 
   {"zfa",       &gcc_options::x_riscv_zfa_subext, MASK_ZFA},
 

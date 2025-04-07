@@ -412,6 +412,8 @@ Mask(ZVFBFMIN) Var(riscv_zf_subext)
 
 Mask(ZVFOFP8MIN) Var(riscv_zf_subext)
 
+Mask(ZVFOFP4MIN) Var(riscv_zf_subext)
+
 Mask(ZVFHMIN) Var(riscv_zf_subext)
 
 Mask(ZVFH)    Var(riscv_zf_subext)
