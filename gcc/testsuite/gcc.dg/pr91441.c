@@ -8,4 +8,3 @@ int *f( int a)
 {
   return bar(&a);
 }
-/* { dg-warning ".'-fsanitize=kernel-address' with stack protection is not supported without '-fasan-shadow-offset=' for this target" "" { target riscv*-*-* } 0 } */
