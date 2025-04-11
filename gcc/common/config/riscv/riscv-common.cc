@@ -233,22 +233,31 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"xsfvfnrclipxfqf", "zve32f"},
   {"zacas", "a"},
 
-  /* Mammoth */
-  {"xsfmmbase", "v"},
+  /* Mammoth 0.6.1 */
+  {"xsfmmbase", "zve32x"},
   {"xsfmm32a4i", "xsfmmbase"},
   {"xsfmm32a8i", "xsfmmbase"},
   {"xsfmm32a8f", "xsfmmbase"},
+  {"xsfmm32a8f", "zve32f"},
   {"xsfmm32a16f", "xsfmmbase"},
+  {"xsfmm32a16f", "zve32f"},
   {"xsfmm32a32f", "xsfmmbase"},
+  {"xsfmm32a32f", "zve32f"},
   {"xsfmm32a", "xsfmmbase"},
+  {"xsfmm32a", "zve32f"},
   {"xsfmm32a", "xsfmm32a8i"},
   {"xsfmm32a", "xsfmm32a16f"},
   {"xsfmm32a", "xsfmm32a32f"},
   {"xsfmm64a64f", "xsfmmbase"},
+  {"xsfmm64a64f", "zve64d"},
   {"xsfmm128t", "xsfmmbase"},
+  {"xsfmm128t", "zvl512b"},
   {"xsfmm64t", "xsfmmbase"},
+  {"xsfmm64t", "zvl256b"},
   {"xsfmm32t", "xsfmmbase"},
+  {"xsfmm32t", "zvl128b"},
   {"xsfmm16t", "xsfmmbase"},
+  {"xsfmm16t", "zvl64b"},
 
   {NULL, NULL}
 };
