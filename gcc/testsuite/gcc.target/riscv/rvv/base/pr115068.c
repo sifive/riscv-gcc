@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-add-options riscv_v } */
-/* { dg-additional-options "-std=gnu99" } */
+/* { dg-additional-options "-std=gnu99 -Wno-pedantic" } */
 
 #include <stdint.h>
 #include <riscv_vector.h>
