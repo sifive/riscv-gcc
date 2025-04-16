@@ -3,6 +3,7 @@
 /* { dg-options "" } */
 /* { dg-add-options bfloat16 } */
 /* { dg-require-effective-target bfloat16_runtime } */
+/* { dg-skip-if "known issue, see PR111876" { excess_precision_16 } } */
 
 extern void exit (int);
 extern void abort (void);
