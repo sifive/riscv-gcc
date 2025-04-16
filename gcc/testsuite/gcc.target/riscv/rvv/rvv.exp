@@ -36,13 +36,9 @@ dg-init
 # Main loop.
 set CFLAGS "$DEFAULT_CFLAGS -O3"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.\[cS\]]] \
-<<<<<<< HEAD
 	"-mcmodel=medlow" $CFLAGS
-=======
-	"" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/xtheadvector/*.\[cS\]]] \
 	"" $CFLAGS
->>>>>>> refs/rewritten/420aef66461965586293516945c6f5dcfda911ed-2
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vsetvl/*.\[cS\]]] \
 	"-mcmodel=medlow" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[cS\]]] \
