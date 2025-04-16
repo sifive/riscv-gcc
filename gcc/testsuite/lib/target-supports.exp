@@ -10079,6 +10079,16 @@ proc check_effective_target_hw { } {
     return 1
 }
 
+# Return 1 if the target's -fexcess-precision is 16.
+
+proc check_effective_target_excess_precision_16 { } {
+    return [check_no_compiler_messages excess_precision_16 assembly {
+	#if __FLT_EVAL_METHOD_TS_18661_3__ != 16
+	#error NO
+	#endif
+    }]
+}
+
 # Return 1 if the target is a VxWorks kernel.
 
 proc check_effective_target_vxworks_kernel { } {
