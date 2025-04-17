@@ -241,6 +241,7 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"xsfvfexp32e", "zve32f"},
   {"xsfvfexp16e", "zvfh"},
   {"xsfvfbfexp16e", "zve32f"},
+  {"xsfvfnrclipxfqf", "zve32f"},
   /* Mammoth */
   {"xsfmmbase", "v"},
   {"xsfmm32a4i", "xsfmmbase"},
