@@ -36,9 +36,11 @@ dg-init
 # Main loop.
 set CFLAGS "$DEFAULT_CFLAGS -O3"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.\[cS\]]] \
-	"-mcmodel=medlow" $CFLAGS
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/xtheadvector/*.\[cS\]]] \
 	"" $CFLAGS
+# SiFive Customization: disable T-head tests
+#dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/xtheadvector/*.\[cS\]]] \
+#	"" $CFLAGS
+# End of SiFive Customization
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vsetvl/*.\[cS\]]] \
 	"-mcmodel=medlow" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[cS\]]] \
