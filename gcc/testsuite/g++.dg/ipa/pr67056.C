@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-std=c++11 -O3 -fdump-ipa-cp"  } */
 /* { dg-additional-options "-fPIC" { target fpic } } */
+/* { dg-skip-if "skip for large code model on RISC-V" { riscv*-*-* }  { "-mcmodel=large" } { "" } } */
 #include <memory>
 
 class EmptyClass {
