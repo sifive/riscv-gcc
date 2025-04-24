@@ -2,6 +2,8 @@
 /* { dg-do compile } */
 /* -mlongcall will cause us to place &baz3 in the CTR register.  */
 /* { dg-skip-if "" { powerpc*-*-* } { "-mlongcall" } { "" } } */
+/* -mcmodel=large will cause us to place &baz3 in the CTR register.  */
+/* { dg-skip-if "skip for large code model on RISC-V" { riscv*-*-* }  { "-mcmodel=large" } { "" } } */
 /* { dg-require-weak "" } */
 /* { dg-require-alias "" } */
 /* { dg-options "-O2" } */
