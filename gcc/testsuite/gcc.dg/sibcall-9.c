@@ -8,6 +8,8 @@
 /* { dg-do run { xfail { { amdgcn*-*-* cris-*-* csky-*-* h8300-*-* hppa*64*-*-* m32r-*-* mcore-*-* mn10300-*-* msp430*-*-* nds32*-*-* nvptx-*-* xstormy16-*-* v850*-*-* vax-*-* xtensa*-*-* } || { arm*-*-* && { ! arm32 } } } } } */
 /* -mlongcall disables sibcall patterns.  */
 /* { dg-skip-if "" { powerpc*-*-* } { "-mlongcall" } { "" } } */
+/* -mcmodel=large disables sibcall patterns.  */
+/* { dg-skip-if "" { riscv*-*-* } { "-mcmodel=large" } { "" } } */
 /* -msave-restore disables sibcall patterns.  */
 /* { dg-skip-if "" { riscv*-*-* } { "-msave-restore" } { "" } } */
 /* { dg-options "-O2 -foptimize-sibling-calls" } */
