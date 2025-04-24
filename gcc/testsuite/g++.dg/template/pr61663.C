@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-skip-if "skip for large code model on RISC-V" { riscv*-*-* }  { "-mcmodel=large" } { "" } }
 // PR c++/61663
 // DR 976, strip ref from conv op return type before doing
 // fn and ary decay or CV qual removal
