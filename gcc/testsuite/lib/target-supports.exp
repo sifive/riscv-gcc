@@ -2017,10 +2017,9 @@ proc check_effective_target_riscv_xtheadvector { } {
 # Return 1 if we can execute code when using dg-add-options riscv_v
 
 proc check_effective_target_riscv_v_ok { } {
-    # If the target already supports v without any added options,
-    # we may assume we can execute just fine.
-    if { [check_effective_target_riscv_v] } {
-	return 1
+    # If the target is not supporting v, early out.
+    if { ![check_effective_target_riscv_v] } {
+	return 0
     }
 
     # check if we can execute vector insns with the given hardware or
