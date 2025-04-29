@@ -103,11 +103,10 @@ RISCV_CORE("sifive-u74m",      "rv64imafdc_zba_zbb", "sifive-7m-series")
 RISCV_CORE("sifive-u74n",      "rv64imafdc_zba_zbb", "sifive-7n-series")
 RISCV_CORE("sifive-u74r",      "rv64imafdc_zfh_zfhmin_zic64b_zicbop_zicboz_zicbom_ziccamoa_ziccif_ziccrse_zicsr_zifencei_zihintntl_zihintpause_zihpm" \
 			       "_za64rs_zba_zbb_zbs_zcb_zkt_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1" , "sifive-7n-series")
-RISCV_CORE("sifive-turtle",    "rv32imafc_zicbop_zicntr_zicond_zicsr_zifencei_"
-			    "zihintntl_zihintpause_zihpm_zfa_zfbfmin_zfh_"
-			    "zcb_zce_zcmop_zcmp_zcmt_zba_zbb_zbs_zkt_zvbb_"
-			    "zve32f_zvfbfmin_zvfbfwma_zvfh_zvl128b_xsfcease",
-			    "sifive-7-series")
+RISCV_CORE("sifive-turtle",    "rv32imaf_zicbom_zicbop_zicboz_zicfilp_zicntr_" \
+			    "zicond_zicsr_zifencei_zihintntl_zihintpause_zihpm_zimop_zawrs_" \
+			    "zfa_zfbfmin_zfh_zce_zcmop_zba_zbb_zbs_zkt_zvbb_zve32f_zvfbfmin_" \
+			    "zvfbfwma_zvfh_zvkt_zvl128b_xsfcease", "sifive-7-series")
 RISCV_CORE("sifive-p270",     "rv64imafdcv_zfh_zba_zbb_zvfh_zvl256b", "sifive-7-series")
 RISCV_CORE("sifive-p270n",     "rv64imafdcv_zfh_zba_zbb_zvfh_zvl256b", "sifive-7n-series")
 RISCV_CORE("sifive-x280",     "rv64imafdcv_zfh_zba_zbb_zvfh_zvl512b_xsfvfhbfmin_xsfvqmaccqoq", "sifive-7-series")
