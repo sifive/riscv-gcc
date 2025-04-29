@@ -11071,7 +11071,10 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   uint32_t trampoline_cfi[6];
   unsigned int i;
   HOST_WIDE_INT static_chain_offset, target_function_offset;
-  HOST_WIDE_INT lp_value = 0;
+  HOST_WIDE_INT lp_value = INTVAL (riscv_get_lp_value ());
+
+  if (cfun->machine->attribute_lp_value != -1)
+    lp_value = cfun->machine->attribute_lp_value;
 
   /* Work out the offsets of the pointers from the start of the
      trampoline code.  */
