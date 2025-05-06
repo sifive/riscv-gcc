@@ -748,3 +748,6 @@ Enum(lpad_type) String(func-sig) Value(LPAD_FUNC_SIG)
 
 EnumValue
 Enum(lpad_type) String(none) Value(LPAD_NONE)
+
+matomic-store-workaround
+Target Bool Var(atomic_store_workaround) Init(TARGET_RISCV_ATOMIC_WORKAROUND) Undocumented
