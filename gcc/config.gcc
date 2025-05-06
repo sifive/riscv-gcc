@@ -4683,7 +4683,7 @@ case "${target}" in
 		;;
 
 	riscv*-*-*)
-		supported_defaults="abi arch tune riscv_attribute isa_spec tls cmodel label_scheme cf_protection"
+		supported_defaults="abi arch tune riscv_attribute isa_spec tls cmodel label_scheme cf_protection atomic_workaround"
 
 		case "${with_label_scheme}" in
 		"fixed-one")
@@ -4723,6 +4723,19 @@ case "${target}" in
 		if test x$enable_multilib = xno; then
 			tm_defines="${tm_defines} TARGET_DISABLE_MULTILIB=1"
 		fi
+
+		case "${with_atomic_workaround}" in
+		yes)
+			tm_defines="${tm_defines} TARGET_RISCV_ATOMIC_WORKAROUND=1"
+			;;
+		""|default|no)
+			tm_defines="${tm_defines} TARGET_RISCV_ATOMIC_WORKAROUND=0"
+			;;
+		*)
+			echo "--with-atomic-workaround=${with_atomic_workaround} is not supported.  The argument must begin with yes, no or default." 1>&2
+			exit 1
+			;;
+		esac
 
 
 		case "${with_isa_spec}" in
@@ -6081,7 +6094,7 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 isa_spec compact-branches msa cmodel label_scheme cf_protection"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 isa_spec compact-branches msa cmodel label_scheme cf_protection atomic_workaround"
 for option in $all_defaults
 do
 	eval "val=\$with_"`echo $option | sed s/-/_/g`

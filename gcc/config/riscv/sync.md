@@ -78,6 +78,14 @@
    (match_operand:SI 2 "const_int_operand")] ;; model
   ""
   {
+    if (atomic_store_workaround)
+      {
+	rtx old_val = gen_reg_rtx (<MODE>mode);
+	operands[1] = force_reg (<MODE>mode, operands[1]);
+	emit_insn (gen_atomic_exchange<mode> (old_val, operands[0], operands[1],
+					 operands[2]));
+	DONE;
+      }
     if (TARGET_ZTSO)
       emit_insn (gen_atomic_store_ztso<mode> (operands[0], operands[1],
 					      operands[2]));
@@ -85,6 +93,19 @@
       emit_insn (gen_atomic_store_rvwmo<mode> (operands[0], operands[1],
 					       operands[2]));
     DONE;
+  })
+
+(define_expand "atomic_store<mode>"
+  [(match_operand:SHORT 0 "memory_operand")
+   (match_operand:SHORT 1 "reg_or_0_operand")
+   (match_operand:SI 2 "const_int_operand")] ;; model
+  "atomic_store_workaround"
+  {
+	rtx old_val = gen_reg_rtx (<MODE>mode);
+	operands[1] = force_reg (<MODE>mode, operands[1]);
+	emit_insn (gen_atomic_exchange<mode> (old_val, operands[0], operands[1],
+					 operands[2]));
+	DONE;
   })
 
 (define_insn "atomic_<atomic_optab><mode>"
