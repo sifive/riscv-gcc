@@ -177,4 +177,12 @@ enum riscv_tls_type {
 #define MASK_XSFSCI (1 << 0)
 #define TARGET_XSFSCI ((riscv_xsf_subext & MASK_XSFSCI) != 0)
 
+/* Extra extension flags, used for carry extra info for a RISC-V extension.  */
+enum
+{
+  EXT_FLAG_MACRO = 1 << 0,
+};
+
+#define BITMASK_NOT_YET_ALLOCATED -1
+
 #endif /* ! GCC_RISCV_OPTS_H */
