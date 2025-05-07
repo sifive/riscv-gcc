@@ -201,9 +201,6 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zvfbfmin", "zve32f"},
   {"zvfbfwma", "zvfbfmin"},
   {"zvfbfwma", "zfbfmin"},
-  {"zvfofp8min", "zve32f"},
-  {"zvfofp4min", "zve32f"},
-  {"zvqdotq", "zve32x"},
   {"zvfhmin", "zve32f"},
   {"zvfh", "zve32f"},
   {"zvfh", "zfhmin"},
@@ -228,57 +225,18 @@ static const riscv_implied_info_t riscv_implied_info[] =
    }},
 
   {"smaia", "ssaia"},
-  {"smdbltrp", "zicsr"},
   {"smstateen", "ssstateen"},
   {"smepmp", "zicsr"},
   {"ssaia", "zicsr"},
   {"sscofpmf", "zicsr"},
-  {"ssdbltrp", "zicsr"},
   {"ssstateen", "zicsr"},
   {"sstc", "zicsr"},
 
-  {"xsfvcp", "zve32x"},
+  {"ssnpm", "zicsr"},
+  {"smnpm", "zicsr"},
+  {"smmpm", "zicsr"},
 
-  /* SiFive */
-  {"smwgd", "smwg"},
-  {"xsfvfhbfmin", "zve32f"},
-  {"zvqdotq", "zve32x"},
-  {"zvqwbdota8i", "zve32x"},
-  {"zvqwbdota16i", "zve64x"},
-  {"zvfwbdota16bf", "zve32f"},
-  {"zvfqwbdota8f", "zve32f"},
-  {"zvfbdota32f", "zve32f"},
-  {"xsfvfexpa", "zve32f"},
-  {"xsfvfexpa64e", "xsfvfexpa"},
-  {"xsfvfexpa64e", "zve64d"},
-  {"xsfvfexp32e", "zve32f"},
-  {"xsfvfexp16e", "zvfh"},
-  {"xsfvfbfexp16e", "zve32f"},
-  {"xsfvfnrclipxfqf", "zve32f"},
-  /* Mammoth 0.6.4 */
-  {"xsfmmbase", "zve32x"},
-  {"xsfmm32a8i", "xsfmmbase"},
-  {"xsfmm32a8f", "xsfmmbase"},
-  {"xsfmm32a8f", "zve32f"},
-  {"xsfmm32a16f", "xsfmmbase"},
-  {"xsfmm32a16f", "zve32f"},
-  {"xsfmm32a32f", "xsfmmbase"},
-  {"xsfmm32a32f", "zve32f"},
-  {"xsfmm32a", "xsfmmbase"},
-  {"xsfmm32a", "zve32f"},
-  {"xsfmm32a", "xsfmm32a8i"},
-  {"xsfmm32a", "xsfmm32a16f"},
-  {"xsfmm32a", "xsfmm32a32f"},
-  {"xsfmm64a64f", "xsfmmbase"},
-  {"xsfmm64a64f", "zve64d"},
-  {"xsfmm128t", "xsfmmbase"},
-  {"xsfmm128t", "zvl512b"},
-  {"xsfmm64t", "xsfmmbase"},
-  {"xsfmm64t", "zvl256b"},
-  {"xsfmm32t", "xsfmmbase"},
-  {"xsfmm32t", "zvl128b"},
-  {"xsfmm16t", "xsfmmbase"},
-  {"xsfmm16t", "zvl64b"},
+  {"xsfvcp", "zve32x"},
 
   {NULL, NULL}
 };
@@ -297,7 +255,6 @@ struct riscv_ext_version
 static const struct riscv_ext_version riscv_ext_version_table[] =
 {
   /* name, ISA spec, major version, minor_version.  */
-  {"g", ISA_SPEC_CLASS_NONE, 0, 0},
   {"e", ISA_SPEC_CLASS_20191213, 2, 0},
   {"e", ISA_SPEC_CLASS_20190608, 2, 0},
   {"e", ISA_SPEC_CLASS_2P2,      2, 0},
@@ -332,10 +289,6 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 
   {"v",       ISA_SPEC_CLASS_NONE, 1, 0},
 
-  {"p",       ISA_SPEC_CLASS_NONE, 0, 15},
-
-  {"sspmp",   ISA_SPEC_CLASS_NONE, 0, 9},
-
   {"zicsr", ISA_SPEC_CLASS_20191213, 2, 0},
   {"zicsr", ISA_SPEC_CLASS_20190608, 2, 0},
 
@@ -351,6 +304,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zalrsc", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zabha", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zacas", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zama16b", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zba", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbb", ISA_SPEC_CLASS_NONE, 1, 0},
@@ -396,7 +350,6 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 
   {"zilsd",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zclsd",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zibi",   ISA_SPEC_CLASS_NONE, 0, 1},
 
   {"zk",    ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkn",   ISA_SPEC_CLASS_NONE, 1, 0},
@@ -460,20 +413,26 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zcmp", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zcmt", ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"sdtrig",  ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"smaia",     ISA_SPEC_CLASS_NONE, 1, 0},
-  {"smdbltrp",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"smepmp",    ISA_SPEC_CLASS_NONE, 1, 0},
   {"smstateen", ISA_SPEC_CLASS_NONE, 1, 0},
 
-  {"smctr", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"ssctr", ISA_SPEC_CLASS_NONE, 1, 0},
-
   {"ssaia",     ISA_SPEC_CLASS_NONE, 1, 0},
   {"sscofpmf",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"ssdbltrp",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"ssstateen", ISA_SPEC_CLASS_NONE, 1, 0},
   {"sstc",      ISA_SPEC_CLASS_NONE, 1, 0},
+  {"ssstrict",  ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"ssnpm",     ISA_SPEC_CLASS_NONE, 1, 0},
+  {"smnpm",     ISA_SPEC_CLASS_NONE, 1, 0},
+  {"smmpm",     ISA_SPEC_CLASS_NONE, 1, 0},
+  {"sspm",      ISA_SPEC_CLASS_NONE, 1, 0},
+  {"supm",      ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"svade",   ISA_SPEC_CLASS_NONE, 1, 0},
+  {"svadu",   ISA_SPEC_CLASS_NONE, 1, 0},
   {"svinval", ISA_SPEC_CLASS_NONE, 1, 0},
   {"svnapot", ISA_SPEC_CLASS_NONE, 1, 0},
   {"svpbmt",  ISA_SPEC_CLASS_NONE, 1, 0},
@@ -507,128 +466,6 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"xsfvqmaccdod",    ISA_SPEC_CLASS_NONE, 1, 0},
   {"xsfvfnrclipxfqf", ISA_SPEC_CLASS_NONE, 1, 0},
 
-  /* SiFive */
-  {"p", ISA_SPEC_CLASS_NONE,     0, 15},
-  {"e", ISA_SPEC_CLASS_NONE,     1, 9},
-
-  {"sdext", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"sdtrig", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"shcounterenw", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"shvstvala", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"shtvala", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"shvstvecd", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"shvsatpa", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"shgatpa", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"ss", ISA_SPEC_CLASS_NONE, 1, 13},
-  {"ss", ISA_SPEC_CLASS_NONE, 1, 12},
-  {"svbare", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"svptead", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"ssccptr", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"sstvecd", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"sstvala", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"sscounterenw", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"ssu64xl", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"svade", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"svadu", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"sv39", ISA_SPEC_CLASS_NONE, 1, 12},
-  {"sv48", ISA_SPEC_CLASS_NONE, 1, 12},
-  {"sv57", ISA_SPEC_CLASS_NONE, 1, 12},
-
-  {"smrnmi", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"smwgd", ISA_SPEC_CLASS_UNRATIFIED, 0, 3},
-  {"smwg",  ISA_SPEC_CLASS_UNRATIFIED, 0, 3},
-  {"sswg",  ISA_SPEC_CLASS_UNRATIFIED, 0, 3},
-  {"ssqosid",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"ssstrict", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"svukte",   ISA_SPEC_CLASS_NONE, 0, 4},
-
-  {"v",       ISA_SPEC_CLASS_UNRATIFIED, 0, 10},
-  {"zvlsseg", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvlsseg", ISA_SPEC_CLASS_UNRATIFIED, 0, 10},
-
-  {"zama16b",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zalasr", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zba", ISA_SPEC_CLASS_UNRATIFIED, 0, 93},
-  {"zbb", ISA_SPEC_CLASS_UNRATIFIED, 0, 93},
-
-  {"zfa",      ISA_SPEC_CLASS_UNRATIFIED, 0, 2},
-  {"zfbfmin",  ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
-
-  {"zicsr", ISA_SPEC_CLASS_NONE, 2, 0},
-  {"zifencei", ISA_SPEC_CLASS_NONE, 2, 0},
-
-  {"zjid", ISA_SPEC_CLASS_UNRATIFIED, 0, 0},
-  /* Zjpm */
-  {"smnpm", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"smmpm", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"ssnpm", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"sspm",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"supm",  ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zvfbfmin", ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
-  {"zvfbfwma", ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
-  {"zvfofp8min", ISA_SPEC_CLASS_NONE, 0, 2},
-  {"zvfofp4min", ISA_SPEC_CLASS_NONE, 0, 1},
-  {"zvqdotq", ISA_SPEC_CLASS_NONE, 0, 0},
-  {"zvqwbdota8i", ISA_SPEC_CLASS_NONE, 0, 2},
-  {"zvqwbdota16i", ISA_SPEC_CLASS_NONE, 0, 2},
-  {"zvfwbdota16bf", ISA_SPEC_CLASS_NONE, 0, 2},
-  {"zvfqwbdota8f", ISA_SPEC_CLASS_NONE, 0, 2},
-  {"zvfbdota32f", ISA_SPEC_CLASS_NONE, 0, 2},
-
-  {"zvkns",  ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"zvknf",  ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"zvknha", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"zvknhb", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"zvkb",   ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"zvkg",   ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"zvksed", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"zvksh",  ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-
-  {"xsifivecdiscarddlone", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"xsifivecflushdlone", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-
-  {"xsfvqmaccdod", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"xsfvqmaccqoq", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"xsfvfwmaccqqq", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xsfvfwmaccqqq", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"xsfvfnrclipxfqf", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"xsfvcp", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"xsfvfhbfmin", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"xsfvqdotq", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"xsfpgflushdlone", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"xsfvfexpa",    ISA_SPEC_CLASS_UNRATIFIED, 0, 2},
-  {"xsfvfexpa64e", ISA_SPEC_CLASS_UNRATIFIED, 0, 2},
-  {"xsfvfexp32e", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"xsfvfexp16e", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  {"xsfvfbfexp16e", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  /* Mammoth */
-  {"xsfmmbase",	ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
-  {"xsfmm32a8i", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
-  {"xsfmm32a8f", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
-  {"xsfmm32a16f", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
-  {"xsfmm32a32f", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
-  {"xsfmm32a", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
-  {"xsfmm64a64f", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
-  {"xsfmm128t", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
-  {"xsfmm64t", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
-  {"xsfmm32t", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
-  {"xsfmm16t", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
-  {"xsfvfbfa", ISA_SPEC_CLASS_NONE, 0, 1},
-  /* SiFive PMP-based Memory Types Extension */
-  {"xsfpmpmt", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-  /* Xsfcease */
-  {"xsfcease", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xsfcease", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
-
-  {"smcsrind", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"sscsrind", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"xsfsci",  ISA_SPEC_CLASS_NONE, 1, 0},
-
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
@@ -647,9 +484,6 @@ static const struct riscv_ext_version riscv_combine_info[] =
   {"zvks", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvksc", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvksg", ISA_SPEC_CLASS_NONE, 1, 0},
-  /* SiFive */
-  {"a",  ISA_SPEC_CLASS_NONE, 1, 0},
-
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
@@ -728,7 +562,7 @@ riscv_subset_list::riscv_subset_list (const char *arch, location_t loc,
       m_warn_implicit_version_for_unratifed_ext = warn_drv_require_ext_version;
       m_allow_unratifed_ext = riscv_enable_exp_ext;
     }
- }
+}
 
 riscv_subset_list::~riscv_subset_list ()
 {
@@ -1594,6 +1428,26 @@ riscv_subset_list::check_conflict_ext ()
     error_at (m_loc, "%<-march=%s%>: zclsd extension supports in rv32 only",
 	      m_arch);
 
+  if (lookup ("ssnpm") && m_xlen == 32)
+    error_at (m_loc, "%<-march=%s%>: ssnpm extension supports in rv64 only",
+	      m_arch);
+
+  if (lookup ("smnpm") && m_xlen == 32)
+    error_at (m_loc, "%<-march=%s%>: smnpm extension supports in rv64 only",
+	      m_arch);
+
+  if (lookup ("smmpm") && m_xlen == 32)
+    error_at (m_loc, "%<-march=%s%>: smmpm extension supports in rv64 only",
+	      m_arch);
+
+  if (lookup ("sspm") && m_xlen == 32)
+    error_at (m_loc, "%<-march=%s%>: sspm extension supports in rv64 only",
+	      m_arch);
+
+  if (lookup ("supm") && m_xlen == 32)
+    error_at (m_loc, "%<-march=%s%>: supm extension supports in rv64 only",
+	      m_arch);
+
   if (lookup ("zfinx") && lookup ("f"))
     error_at (m_loc,
 	      "%<-march=%s%>: z*inx conflicts with floating-point "
@@ -1886,15 +1740,14 @@ struct riscv_ext_flag_table_t {
 /* Mapping table between extension to internal flag.  */
 static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 {
-  RISCV_EXT_FLAG_ENTRY ("e", x_target_flags, MASK_RVE),
-  RISCV_EXT_FLAG_ENTRY ("m", x_target_flags, MASK_MUL),
-  RISCV_EXT_FLAG_ENTRY ("a", x_target_flags, MASK_ATOMIC),
-  RISCV_EXT_FLAG_ENTRY ("f", x_target_flags, MASK_HARD_FLOAT),
-  RISCV_EXT_FLAG_ENTRY ("d", x_target_flags, MASK_DOUBLE_FLOAT),
-  RISCV_EXT_FLAG_ENTRY ("c", x_target_flags, MASK_RVC),
-  RISCV_EXT_FLAG_ENTRY ("p", x_target_flags, MASK_RVP),
-  RISCV_EXT_FLAG_ENTRY ("v", x_target_flags, MASK_FULL_V),
-  RISCV_EXT_FLAG_ENTRY ("v", x_target_flags, MASK_VECTOR),
+  RISCV_EXT_FLAG_ENTRY ("e", x_riscv_base_subext, MASK_RVE),
+  RISCV_EXT_FLAG_ENTRY ("m", x_riscv_base_subext, MASK_MUL),
+  RISCV_EXT_FLAG_ENTRY ("a", x_riscv_base_subext, MASK_ATOMIC),
+  RISCV_EXT_FLAG_ENTRY ("f", x_riscv_base_subext, MASK_HARD_FLOAT),
+  RISCV_EXT_FLAG_ENTRY ("d", x_riscv_base_subext, MASK_DOUBLE_FLOAT),
+  RISCV_EXT_FLAG_ENTRY ("c", x_riscv_base_subext, MASK_RVC),
+  RISCV_EXT_FLAG_ENTRY ("v", x_riscv_isa_flags, MASK_FULL_V),
+  RISCV_EXT_FLAG_ENTRY ("v", x_riscv_isa_flags, MASK_VECTOR),
 
   RISCV_EXT_FLAG_ENTRY ("zicsr",    x_riscv_zi_subext, MASK_ZICSR),
   RISCV_EXT_FLAG_ENTRY ("zifencei", x_riscv_zi_subext, MASK_ZIFENCEI),
@@ -1907,7 +1760,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   RISCV_EXT_FLAG_ENTRY ("zalrsc",  x_riscv_za_subext, MASK_ZALRSC),
   RISCV_EXT_FLAG_ENTRY ("zabha",   x_riscv_za_subext, MASK_ZABHA),
   RISCV_EXT_FLAG_ENTRY ("zacas",   x_riscv_za_subext, MASK_ZACAS),
-  RISCV_EXT_FLAG_ENTRY ("zalasr",  x_riscv_za_subext, MASK_ZALASR),
+  RISCV_EXT_FLAG_ENTRY ("zama16b", x_riscv_za_subext, MASK_ZAMA16B),
 
   RISCV_EXT_FLAG_ENTRY ("zba", x_riscv_zb_subext, MASK_ZBA),
   RISCV_EXT_FLAG_ENTRY ("zbb", x_riscv_zb_subext, MASK_ZBB),
@@ -1937,24 +1790,23 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   RISCV_EXT_FLAG_ENTRY ("zicclsm",     x_riscv_zi_subext, MASK_ZICCLSM),
   RISCV_EXT_FLAG_ENTRY ("ziccrse",     x_riscv_zi_subext, MASK_ZICCRSE),
   RISCV_EXT_FLAG_ENTRY ("zilsd",       x_riscv_zi_subext, MASK_ZILSD),
-  RISCV_EXT_FLAG_ENTRY ("zibi",        x_riscv_zi_subext, MASK_ZIBI),
 
-  RISCV_EXT_FLAG_ENTRY ("zicboz", x_riscv_zicmo_subext, MASK_ZICBOZ),
-  RISCV_EXT_FLAG_ENTRY ("zicbom", x_riscv_zicmo_subext, MASK_ZICBOM),
-  RISCV_EXT_FLAG_ENTRY ("zicbop", x_riscv_zicmo_subext, MASK_ZICBOP),
-  RISCV_EXT_FLAG_ENTRY ("zic64b", x_riscv_zicmo_subext, MASK_ZIC64B),
+  RISCV_EXT_FLAG_ENTRY ("zicboz", x_riscv_zi_subext, MASK_ZICBOZ),
+  RISCV_EXT_FLAG_ENTRY ("zicbom", x_riscv_zi_subext, MASK_ZICBOM),
+  RISCV_EXT_FLAG_ENTRY ("zicbop", x_riscv_zi_subext, MASK_ZICBOP),
+  RISCV_EXT_FLAG_ENTRY ("zic64b", x_riscv_zi_subext, MASK_ZIC64B),
 
   RISCV_EXT_FLAG_ENTRY ("zicfiss", x_riscv_zi_subext, MASK_ZICFISS),
   RISCV_EXT_FLAG_ENTRY ("zicfilp", x_riscv_zi_subext, MASK_ZICFILP),
 
-  RISCV_EXT_FLAG_ENTRY ("zimop", x_riscv_mop_subext, MASK_ZIMOP),
-  RISCV_EXT_FLAG_ENTRY ("zcmop", x_riscv_mop_subext, MASK_ZCMOP),
+  RISCV_EXT_FLAG_ENTRY ("zimop", x_riscv_zi_subext, MASK_ZIMOP),
+  RISCV_EXT_FLAG_ENTRY ("zcmop", x_riscv_zc_subext, MASK_ZCMOP),
 
-  RISCV_EXT_FLAG_ENTRY ("zve32x", x_target_flags, MASK_VECTOR),
-  RISCV_EXT_FLAG_ENTRY ("zve32f", x_target_flags, MASK_VECTOR),
-  RISCV_EXT_FLAG_ENTRY ("zve64x", x_target_flags, MASK_VECTOR),
-  RISCV_EXT_FLAG_ENTRY ("zve64f", x_target_flags, MASK_VECTOR),
-  RISCV_EXT_FLAG_ENTRY ("zve64d", x_target_flags, MASK_VECTOR),
+  RISCV_EXT_FLAG_ENTRY ("zve32x", x_riscv_isa_flags, MASK_VECTOR),
+  RISCV_EXT_FLAG_ENTRY ("zve32f", x_riscv_isa_flags, MASK_VECTOR),
+  RISCV_EXT_FLAG_ENTRY ("zve64x", x_riscv_isa_flags, MASK_VECTOR),
+  RISCV_EXT_FLAG_ENTRY ("zve64f", x_riscv_isa_flags, MASK_VECTOR),
+  RISCV_EXT_FLAG_ENTRY ("zve64d", x_riscv_isa_flags, MASK_VECTOR),
 
   /* We don't need to put complete ELEN/ELEN_FP info here, due to the
      implication relation of vector extension.
@@ -1988,36 +1840,28 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   RISCV_EXT_FLAG_ENTRY ("zvksg",  x_riscv_zvk_subext, MASK_ZVKSG),
   RISCV_EXT_FLAG_ENTRY ("zvkt",   x_riscv_zvk_subext, MASK_ZVKT),
 
-  RISCV_EXT_FLAG_ENTRY ("zvl32b",    x_riscv_zvl_flags, MASK_ZVL32B),
-  RISCV_EXT_FLAG_ENTRY ("zvl64b",    x_riscv_zvl_flags, MASK_ZVL64B),
-  RISCV_EXT_FLAG_ENTRY ("zvl128b",   x_riscv_zvl_flags, MASK_ZVL128B),
-  RISCV_EXT_FLAG_ENTRY ("zvl256b",   x_riscv_zvl_flags, MASK_ZVL256B),
-  RISCV_EXT_FLAG_ENTRY ("zvl512b",   x_riscv_zvl_flags, MASK_ZVL512B),
-  RISCV_EXT_FLAG_ENTRY ("zvl1024b",  x_riscv_zvl_flags, MASK_ZVL1024B),
-  RISCV_EXT_FLAG_ENTRY ("zvl2048b",  x_riscv_zvl_flags, MASK_ZVL2048B),
-  RISCV_EXT_FLAG_ENTRY ("zvl4096b",  x_riscv_zvl_flags, MASK_ZVL4096B),
-  RISCV_EXT_FLAG_ENTRY ("zvl8192b",  x_riscv_zvl_flags, MASK_ZVL8192B),
-  RISCV_EXT_FLAG_ENTRY ("zvl16384b", x_riscv_zvl_flags, MASK_ZVL16384B),
-  RISCV_EXT_FLAG_ENTRY ("zvl32768b", x_riscv_zvl_flags, MASK_ZVL32768B),
-  RISCV_EXT_FLAG_ENTRY ("zvl65536b", x_riscv_zvl_flags, MASK_ZVL65536B),
+  RISCV_EXT_FLAG_ENTRY ("zvl32b",    x_riscv_zvl_subext, MASK_ZVL32B),
+  RISCV_EXT_FLAG_ENTRY ("zvl64b",    x_riscv_zvl_subext, MASK_ZVL64B),
+  RISCV_EXT_FLAG_ENTRY ("zvl128b",   x_riscv_zvl_subext, MASK_ZVL128B),
+  RISCV_EXT_FLAG_ENTRY ("zvl256b",   x_riscv_zvl_subext, MASK_ZVL256B),
+  RISCV_EXT_FLAG_ENTRY ("zvl512b",   x_riscv_zvl_subext, MASK_ZVL512B),
+  RISCV_EXT_FLAG_ENTRY ("zvl1024b",  x_riscv_zvl_subext, MASK_ZVL1024B),
+  RISCV_EXT_FLAG_ENTRY ("zvl2048b",  x_riscv_zvl_subext, MASK_ZVL2048B),
+  RISCV_EXT_FLAG_ENTRY ("zvl4096b",  x_riscv_zvl_subext, MASK_ZVL4096B),
+  RISCV_EXT_FLAG_ENTRY ("zvl8192b",  x_riscv_zvl_subext, MASK_ZVL8192B),
+  RISCV_EXT_FLAG_ENTRY ("zvl16384b", x_riscv_zvl_subext, MASK_ZVL16384B),
+  RISCV_EXT_FLAG_ENTRY ("zvl32768b", x_riscv_zvl_subext, MASK_ZVL32768B),
+  RISCV_EXT_FLAG_ENTRY ("zvl65536b", x_riscv_zvl_subext, MASK_ZVL65536B),
 
   RISCV_EXT_FLAG_ENTRY ("zfbfmin",  x_riscv_zf_subext, MASK_ZFBFMIN),
   RISCV_EXT_FLAG_ENTRY ("zfhmin",   x_riscv_zf_subext, MASK_ZFHMIN),
   RISCV_EXT_FLAG_ENTRY ("zfh",      x_riscv_zf_subext, MASK_ZFH),
-  RISCV_EXT_FLAG_ENTRY ("zvfbfmin", x_riscv_zf_subext, MASK_ZVFBFMIN),
-  RISCV_EXT_FLAG_ENTRY ("zvfbfwma", x_riscv_zf_subext, MASK_ZVFBFWMA),
-  RISCV_EXT_FLAG_ENTRY ("zvfhmin",  x_riscv_zf_subext, MASK_ZVFHMIN),
-  RISCV_EXT_FLAG_ENTRY ("zvfh",     x_riscv_zf_subext, MASK_ZVFH),
-  RISCV_EXT_FLAG_ENTRY ("zvfofp8min", x_riscv_zf_subext, MASK_ZVFOFP8MIN),
-  RISCV_EXT_FLAG_ENTRY ("zvfofp4min", x_riscv_zf_subext, MASK_ZVFOFP4MIN),
-  RISCV_EXT_FLAG_ENTRY ("zvqdotq",    x_riscv_zf_subext, MASK_ZVQDOTQ),
-  RISCV_EXT_FLAG_ENTRY ("zvqwbdota8i", x_riscv_zf_subext, MASK_ZVQWBDOTA8I),
-  RISCV_EXT_FLAG_ENTRY ("zvqwbdota16i", x_riscv_zf_subext, MASK_ZVQWBDOTA16I),
-  RISCV_EXT_FLAG_ENTRY ("zvfwbdota16bf", x_riscv_zf_subext, MASK_ZVFWBDOTA16BF),
-  RISCV_EXT_FLAG_ENTRY ("zvfqwbdota8f", x_riscv_zf_subext, MASK_ZVFQWBDOTA8F),
-  RISCV_EXT_FLAG_ENTRY ("zvfbdota32f", x_riscv_zf_subext, MASK_ZVFBDOTA32F),
+  RISCV_EXT_FLAG_ENTRY ("zvfbfmin", x_riscv_zvf_subext, MASK_ZVFBFMIN),
+  RISCV_EXT_FLAG_ENTRY ("zvfbfwma", x_riscv_zvf_subext, MASK_ZVFBFWMA),
+  RISCV_EXT_FLAG_ENTRY ("zvfhmin",  x_riscv_zvf_subext, MASK_ZVFHMIN),
+  RISCV_EXT_FLAG_ENTRY ("zvfh",     x_riscv_zvf_subext, MASK_ZVFH),
 
-  RISCV_EXT_FLAG_ENTRY ("zfa", x_riscv_zfa_subext, MASK_ZFA),
+  RISCV_EXT_FLAG_ENTRY ("zfa", x_riscv_zf_subext, MASK_ZFA),
 
   RISCV_EXT_FLAG_ENTRY ("zmmul", x_riscv_zm_subext, MASK_ZMMUL),
 
@@ -2031,11 +1875,19 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   RISCV_EXT_FLAG_ENTRY ("zcmt", x_riscv_zc_subext, MASK_ZCMT),
   RISCV_EXT_FLAG_ENTRY ("zclsd", x_riscv_zc_subext, MASK_ZCLSD),
 
-  RISCV_EXT_FLAG_ENTRY ("svinval", x_riscv_sv_subext, MASK_SVINVAL),
-  RISCV_EXT_FLAG_ENTRY ("svnapot", x_riscv_sv_subext, MASK_SVNAPOT),
-  RISCV_EXT_FLAG_ENTRY ("svvptc", x_riscv_sv_subext, MASK_SVVPTC),
+  RISCV_EXT_FLAG_ENTRY ("svade",       x_riscv_sv_subext, MASK_SVADE),
+  RISCV_EXT_FLAG_ENTRY ("svadu",       x_riscv_sv_subext, MASK_SVADU),
+  RISCV_EXT_FLAG_ENTRY ("svinval",     x_riscv_sv_subext, MASK_SVINVAL),
+  RISCV_EXT_FLAG_ENTRY ("svnapot",     x_riscv_sv_subext, MASK_SVNAPOT),
+  RISCV_EXT_FLAG_ENTRY ("svvptc",      x_riscv_sv_subext, MASK_SVVPTC),
 
-  RISCV_EXT_FLAG_ENTRY ("ztso", x_riscv_ztso_subext, MASK_ZTSO),
+  RISCV_EXT_FLAG_ENTRY ("ssnpm", x_riscv_ss_subext, MASK_SSNPM),
+  RISCV_EXT_FLAG_ENTRY ("smnpm", x_riscv_sm_subext, MASK_SMNPM),
+  RISCV_EXT_FLAG_ENTRY ("smmpm", x_riscv_sm_subext, MASK_SMMPM),
+  RISCV_EXT_FLAG_ENTRY ("sspm", x_riscv_ss_subext, MASK_SSPM),
+  RISCV_EXT_FLAG_ENTRY ("supm", x_riscv_su_subext, MASK_SUPM),
+
+  RISCV_EXT_FLAG_ENTRY ("ztso", x_riscv_zt_subext, MASK_ZTSO),
 
   RISCV_EXT_FLAG_ENTRY ("xcvmac",  x_riscv_xcv_subext, MASK_XCVMAC),
   RISCV_EXT_FLAG_ENTRY ("xcvalu",  x_riscv_xcv_subext, MASK_XCVALU),
@@ -2061,22 +1913,21 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32),
   RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_64),
   RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_16),
-  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zvl_flags, MASK_ZVL32B),
-  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zvl_flags, MASK_ZVL64B),
-  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zvl_flags, MASK_ZVL128B),
-  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zf_subext, MASK_ZVFHMIN),
-  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zf_subext, MASK_ZVFH),
-  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_target_flags, MASK_FULL_V),
-  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_target_flags, MASK_VECTOR),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zvl_subext, MASK_ZVL32B),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zvl_subext, MASK_ZVL64B),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zvl_subext, MASK_ZVL128B),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zvf_subext, MASK_ZVFHMIN),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zvf_subext, MASK_ZVFH),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_isa_flags, MASK_FULL_V),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_isa_flags, MASK_VECTOR),
 
   RISCV_EXT_FLAG_ENTRY ("xventanacondops", x_riscv_xventana_subext, MASK_XVENTANACONDOPS),
 
-  RISCV_EXT_FLAG_ENTRY ("xsfvcp",   x_riscv_sifive_subext, MASK_XSFVCP),
-  RISCV_EXT_FLAG_ENTRY ("xsfcease", x_riscv_sifive_subext, MASK_XSFCEASE),
-  RISCV_EXT_FLAG_ENTRY ("xsfvqmaccqoq",    x_riscv_sifive_subext, MASK_XSFVQMACCQOQ),
-  RISCV_EXT_FLAG_ENTRY ("xsfvqmaccdod",    x_riscv_sifive_subext, MASK_XSFVQMACCDOD),
-  RISCV_EXT_FLAG_ENTRY ("xsfvfnrclipxfqf", x_riscv_sifive_subext, MASK_XSFVFNRCLIPXFQF),
-  RISCV_EXT_FLAG_ENTRY ("xsfsci", x_riscv_xsf_subext, MASK_XSFSCI),
+  RISCV_EXT_FLAG_ENTRY ("xsfvcp",   x_riscv_xsf_subext, MASK_XSFVCP),
+  RISCV_EXT_FLAG_ENTRY ("xsfcease", x_riscv_xsf_subext, MASK_XSFCEASE),
+  RISCV_EXT_FLAG_ENTRY ("xsfvqmaccqoq",    x_riscv_xsf_subext, MASK_XSFVQMACCQOQ),
+  RISCV_EXT_FLAG_ENTRY ("xsfvqmaccdod",    x_riscv_xsf_subext, MASK_XSFVQMACCDOD),
+  RISCV_EXT_FLAG_ENTRY ("xsfvfnrclipxfqf", x_riscv_xsf_subext, MASK_XSFVFNRCLIPXFQF),
 
   {NULL, NULL, NULL, 0}
 };
@@ -2114,9 +1965,9 @@ riscv_set_arch_by_subset_list (riscv_subset_list *subset_list,
 	opts->*arch_ext_flag_tab->var_ref &= ~arch_ext_flag_tab->mask;
 
       if (subset_list->xlen () == 32)
-	opts->x_target_flags &= ~MASK_64BIT;
+	opts->x_riscv_isa_flags &= ~MASK_64BIT;
       else if (subset_list->xlen () == 64)
-	opts->x_target_flags |= MASK_64BIT;
+	opts->x_riscv_isa_flags |= MASK_64BIT;
 
       for (arch_ext_flag_tab = &riscv_ext_flag_table[0];
 	   arch_ext_flag_tab->ext;
@@ -2763,8 +2614,8 @@ riscv_compute_multilib (
     {
     case select_by_abi:
       return riscv_select_multilib_by_abi (riscv_current_arch_str,
-                                           riscv_current_abi_str,
-                                           multilib_infos);
+					   riscv_current_abi_str,
+					   multilib_infos);
     case select_by_abi_arch_cmodel:
       return riscv_select_multilib (riscv_current_abi_str, subset_list,
 				    switches, n_switches, multilib_infos);
