@@ -66,6 +66,20 @@ extern ElfW(Dyn) _DYNAMIC[];
 #    define ucontext_t xucontext_t
 #  endif
 
+// SIFIVE
+// Workaround for mingw cross build.
+// limits.h is provided by linux/limits.h rather than limits.h
+// In generally it should be provided after define _POSIX_C_SOURCE.
+// but it not work because we only have stage1 cross riscv gcc
+// those fixed include file are generated at stage2...
+//
+// We can resolve this issue by build full 2 stage cross riscv compiler,
+// but it will cost more time, so simplest way is just add few line here.
+#  if SANITIZER_LINUX and !defined(PATH_MAX)
+#    include <linux/limits.h>
+#  endif
+// end SIFIVE
+
 typedef enum {
   ASAN_RT_VERSION_UNDEFINED = 0,
   ASAN_RT_VERSION_DYNAMIC,
