@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=rv64i_zve32x -mabi=lp64 -mcmodel=medlow -misa-spec=2.2" } */
+/* { dg-options "-O2 -march=rv64im_zve32x -mabi=lp64 -mcmodel=medlow -misa-spec=2.2" } */
 
 int main () {
 
