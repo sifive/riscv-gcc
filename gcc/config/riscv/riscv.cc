@@ -6736,14 +6736,17 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	}
       break;
     case 'Y':
-<<<<<<< HEAD
-      {
-	unsigned int imm = (UINTVAL (op) & 63);
-	gcc_assert (imm <= 63);
-	rtx newop = GEN_INT (imm);
-	output_addr_const (file, newop);
-	break;
-      }
+      if (!CONST_INT_P (op))
+        output_operand_lossage ("invalid operand for '%%%c'", letter);
+      else
+        {
+          unsigned int imm = (UINTVAL (op) & 63);
+          gcc_assert (imm <= 63);
+          rtx newop = GEN_INT (imm);
+          output_addr_const (file, newop);
+        }
+      break;
+      // SiFive Customization
     case 'P':
       {
 	const char *ntl_hint = NULL;
@@ -6764,7 +6767,6 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	asm_fprintf (file, "%s\n\t", ntl_hint);
       break;
       }
-=======
       if (!CONST_INT_P (op))
 	output_operand_lossage ("invalid operand for '%%%c'", letter);
       else
@@ -6775,7 +6777,7 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	  output_addr_const (file, newop);
 	}
       break;
->>>>>>> refs/rewritten/420aef66461965586293516945c6f5dcfda911ed-2
+      // End of SiFive customization
     default:
       switch (code)
 	{
