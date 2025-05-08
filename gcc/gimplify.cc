@@ -227,6 +227,7 @@ struct gimplify_ctx
   unsigned keep_stack : 1;
   unsigned save_stack : 1;
   unsigned in_switch_expr : 1;
+  unsigned in_handler_expr : 1;
 };
 
 enum gimplify_defaultmap_kind
@@ -575,7 +576,7 @@ is_gimple_mem_rhs_or_call (tree t)
   else
     return (is_gimple_val (t)
 	    || is_gimple_lvalue (t)
-	    || TREE_CLOBBER_P (t)
+	    || (TREE_CODE (t) == CONSTRUCTOR && CONSTRUCTOR_NELTS (t) == 0)
 	    || TREE_CODE (t) == CALL_EXPR);
 }
 
@@ -2359,7 +2360,7 @@ warn_switch_unreachable_and_auto_init_r (gimple_stmt_iterator *gsi_p,
 	  const char *var_name_str = TREE_STRING_POINTER (var_name);
 
 	  warning_at (gimple_location (stmt), OPT_Wtrivial_auto_var_init,
-		      "%qs cannot be initialized with"
+		      "%qs cannot be initialized with "
 		      "%<-ftrivial-auto-var_init%>",
 		      var_name_str);
 	  break;
@@ -5598,7 +5599,7 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	    DECL_INITIAL (object) = ctor;
 	    TREE_STATIC (object) = 1;
-	    if (!DECL_NAME (object))
+	    if (!DECL_NAME (object) || DECL_NAMELESS (object))
 	      DECL_NAME (object) = create_tmp_var_name ("C");
 	    walk_tree (&DECL_INITIAL (object), force_labels_r, NULL, NULL);
 
@@ -6936,7 +6937,8 @@ gimplify_addr_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	*expr_p = build_fold_addr_expr (op0);
 
       /* Make sure TREE_CONSTANT and TREE_SIDE_EFFECTS are set properly.  */
-      recompute_tree_invariant_for_addr_expr (*expr_p);
+      if (TREE_CODE (*expr_p) == ADDR_EXPR)
+	recompute_tree_invariant_for_addr_expr (*expr_p);
 
       /* If we re-built the ADDR_EXPR add a conversion to the original type
          if required.  */
@@ -7035,6 +7037,14 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  ret = tret;
 	}
 
+      /* If the gimplified operand is a register we do not allow memory.  */
+      if (allows_reg
+	  && allows_mem
+	  && (is_gimple_reg (TREE_VALUE (link))
+	      || (handled_component_p (TREE_VALUE (link))
+		  && is_gimple_reg (TREE_OPERAND (TREE_VALUE (link), 0)))))
+	allows_mem = 0;
+
       /* If the constraint does not allow memory make sure we gimplify
          it to a register if it is not already but its base is.  This
 	 happens for complex and vector components.  */
@@ -7076,6 +7086,7 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  /* Turn the in/out constraint into an output constraint.  */
 	  char *p = xstrdup (constraint);
 	  p[0] = '=';
+	  TREE_PURPOSE (link) = unshare_expr (TREE_PURPOSE (link));
 	  TREE_VALUE (TREE_PURPOSE (link)) = build_string (constraint_len, p);
 
 	  /* And add a matching input constraint.  */
@@ -18234,22 +18245,28 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    input_location = UNKNOWN_LOCATION;
 	    eval = cleanup = NULL;
 	    gimplify_and_add (TREE_OPERAND (*expr_p, 0), &eval);
+	    bool save_in_handler_expr = gimplify_ctxp->in_handler_expr;
 	    if (TREE_CODE (*expr_p) == TRY_FINALLY_EXPR
 		&& TREE_CODE (TREE_OPERAND (*expr_p, 1)) == EH_ELSE_EXPR)
 	      {
 		gimple_seq n = NULL, e = NULL;
+		gimplify_ctxp->in_handler_expr = true;
 		gimplify_and_add (TREE_OPERAND (TREE_OPERAND (*expr_p, 1),
 						0), &n);
 		gimplify_and_add (TREE_OPERAND (TREE_OPERAND (*expr_p, 1),
 						1), &e);
-		if (!gimple_seq_empty_p (n) && !gimple_seq_empty_p (e))
+		if (!gimple_seq_empty_p (n) || !gimple_seq_empty_p (e))
 		  {
 		    geh_else *stmt = gimple_build_eh_else (n, e);
 		    gimple_seq_add_stmt (&cleanup, stmt);
 		  }
 	      }
 	    else
-	      gimplify_and_add (TREE_OPERAND (*expr_p, 1), &cleanup);
+	      {
+		gimplify_ctxp->in_handler_expr = true;
+		gimplify_and_add (TREE_OPERAND (*expr_p, 1), &cleanup);
+	      }
+	    gimplify_ctxp->in_handler_expr = save_in_handler_expr;
 	    /* Don't create bogus GIMPLE_TRY with empty cleanup.  */
 	    if (gimple_seq_empty_p (cleanup))
 	      {
@@ -18349,6 +18366,10 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  /* When within an OMP context, notice uses of variables.  */
 	  if (gimplify_omp_ctxp)
 	    omp_notice_variable (gimplify_omp_ctxp, *expr_p, true);
+	  /* Handlers can refer to the function result; if that has been
+	     moved, we need to track it.  */
+	  if (gimplify_ctxp->in_handler_expr && gimplify_ctxp->return_temp)
+	    *expr_p = gimplify_ctxp->return_temp;
 	  ret = GS_ALL_DONE;
 	  break;
 

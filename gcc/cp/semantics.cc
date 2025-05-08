@@ -2497,9 +2497,14 @@ check_accessibility_of_qualified_id (tree decl,
 	 OBJECT_TYPE.  */
       && CLASS_TYPE_P (object_type)
       && DERIVED_FROM_P (scope, object_type))
-    /* If we are processing a `->' or `.' expression, use the type of the
-       left-hand side.  */
-    qualifying_type = object_type;
+    {
+      /* If we are processing a `->' or `.' expression, use the type of the
+	 left-hand side.  */
+      if (tree open = currently_open_class (object_type))
+	qualifying_type = open;
+      else
+	qualifying_type = object_type;
+    }
   else if (nested_name_specifier)
     {
       /* If the reference is to a non-static member of the
@@ -4381,6 +4386,7 @@ finish_id_expression_1 (tree id_expression,
 	 body, except inside an unevaluated context (i.e. decltype).  */
       if (TREE_CODE (decl) == PARM_DECL
 	  && DECL_CONTEXT (decl) == NULL_TREE
+	  && !CONSTRAINT_VAR_P (decl)
 	  && !cp_unevaluated_operand
 	  && !processing_contract_condition)
 	{
@@ -5014,7 +5020,10 @@ emit_associated_thunks (tree fn)
      enabling you to output all the thunks with the function itself.  */
   if (DECL_VIRTUAL_P (fn)
       /* Do not emit thunks for extern template instantiations.  */
-      && ! DECL_REALLY_EXTERN (fn))
+      && ! DECL_REALLY_EXTERN (fn)
+      /* Do not emit thunks for tentative decls, those will be processed
+	 again at_eof if really needed.  */
+      && (DECL_INTERFACE_KNOWN (fn) || !DECL_DEFER_OUTPUT (fn)))
     {
       tree thunk;
 
@@ -12519,7 +12528,14 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 		  || DERIVED_FROM_P (type1, type2)));
 
     case CPTK_IS_BOUNDED_ARRAY:
-      return type_code1 == ARRAY_TYPE && TYPE_DOMAIN (type1);
+      return (type_code1 == ARRAY_TYPE
+	      && TYPE_DOMAIN (type1)
+	      /* We don't want to report T[0] as being a bounded array type.
+		 This is for compatibility with an implementation of
+		 std::is_bounded_array by template argument deduction, because
+		 compute_array_index_type_loc rejects a zero-size array
+		 in SFINAE context.  */
+	      && !(TYPE_SIZE (type1) && integer_zerop (TYPE_SIZE (type1))));
 
     case CPTK_IS_CLASS:
       return NON_UNION_CLASS_TYPE_P (type1);

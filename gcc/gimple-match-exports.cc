@@ -323,23 +323,29 @@ maybe_resimplify_conditional_op (gimple_seq *seq, gimple_match_op *res_op,
     }
 
   /* If the "then" value is a gimple value and the "else" value matters,
-     create a VEC_COND_EXPR between them, then see if it can be further
+     create a (VEC_)COND_EXPR between them, then see if it can be further
      simplified.  */
   gimple_match_op new_op;
   if (res_op->cond.else_value
-      && VECTOR_TYPE_P (res_op->type)
       && gimple_simplified_result_is_gimple_val (res_op))
     {
-      tree len = res_op->cond.len;
-      if (!len)
-	new_op.set_op (VEC_COND_EXPR, res_op->type,
+      if (VECTOR_TYPE_P (res_op->type))
+	{
+	  tree len = res_op->cond.len;
+	  if (!len)
+	    new_op.set_op (VEC_COND_EXPR, res_op->type,
+			   res_op->cond.cond, res_op->ops[0],
+			   res_op->cond.else_value);
+	  else
+	    new_op.set_op (IFN_VCOND_MASK_LEN, res_op->type,
+			   res_op->cond.cond, res_op->ops[0],
+			   res_op->cond.else_value,
+			   res_op->cond.len, res_op->cond.bias);
+	}
+      else
+	new_op.set_op (COND_EXPR, res_op->type,
 		       res_op->cond.cond, res_op->ops[0],
 		       res_op->cond.else_value);
-      else
-	new_op.set_op (IFN_VCOND_MASK_LEN, res_op->type,
-		       res_op->cond.cond, res_op->ops[0],
-		       res_op->cond.else_value,
-		       res_op->cond.len, res_op->cond.bias);
       *res_op = new_op;
       return gimple_resimplify3 (seq, res_op, valueize);
     }
@@ -726,6 +732,9 @@ gimple_extract (gimple *stmt, gimple_match_op *res_op,
 		|| code == VIEW_CONVERT_EXPR)
 	      {
 		tree op0 = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
+		/* op0 needs to be a SSA name or an min invariant. */
+		if (TREE_CODE (op0) != SSA_NAME && !is_gimple_min_invariant (op0))
+		  return false;
 		res_op->set_op (code, type, valueize_op (op0));
 		return true;
 	      }
@@ -733,6 +742,9 @@ gimple_extract (gimple *stmt, gimple_match_op *res_op,
 	      {
 		tree rhs1 = gimple_assign_rhs1 (stmt);
 		tree op0 = valueize_op (TREE_OPERAND (rhs1, 0));
+		/* op0 needs to be a SSA name or an min invariant. */
+		if (TREE_CODE (op0) != SSA_NAME && !is_gimple_min_invariant (op0))
+		  return false;
 		res_op->set_op (code, type, op0,
 				TREE_OPERAND (rhs1, 1),
 				TREE_OPERAND (rhs1, 2),

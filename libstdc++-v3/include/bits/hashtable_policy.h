@@ -113,40 +113,6 @@ namespace __detail
       { return std::forward<_Tp>(__x).first; }
   };
 
-  template<typename _ExKey, typename _Value>
-    struct _ConvertToValueType;
-
-  template<typename _Value>
-    struct _ConvertToValueType<_Identity, _Value>
-    {
-      template<typename _Kt>
-	constexpr _Kt&&
-	operator()(_Kt&& __k) const noexcept
-	{ return std::forward<_Kt>(__k); }
-    };
-
-  template<typename _Value>
-    struct _ConvertToValueType<_Select1st, _Value>
-    {
-      constexpr _Value&&
-      operator()(_Value&& __x) const noexcept
-      { return std::move(__x); }
-
-      constexpr const _Value&
-      operator()(const _Value& __x) const noexcept
-      { return __x; }
-
-      template<typename _Kt, typename _Val>
-	constexpr std::pair<_Kt, _Val>&&
-	operator()(std::pair<_Kt, _Val>&& __x) const noexcept
-	{ return std::move(__x); }
-
-      template<typename _Kt, typename _Val>
-	constexpr const std::pair<_Kt, _Val>&
-	operator()(const std::pair<_Kt, _Val>& __x) const noexcept
-	{ return __x; }
-    };
-
   template<typename _ExKey>
     struct _NodeBuilder;
 
@@ -464,6 +430,23 @@ namespace __detail
 	this->_M_incr();
 	return __tmp;
       }
+
+#if __cpp_impl_three_way_comparison >= 201907L
+      friend bool
+      operator==(const _Node_iterator&, const _Node_iterator&) = default;
+#else
+      friend bool
+      operator==(const _Node_iterator& __x, const _Node_iterator& __y) noexcept
+      {
+	const __base_type& __bx = __x;
+	const __base_type& __by = __y;
+	return __bx == __by;
+      }
+
+      friend bool
+      operator!=(const _Node_iterator& __x, const _Node_iterator& __y) noexcept
+      { return !(__x == __y); }
+#endif
     };
 
   /// Node const_iterators, used to iterate through all the hashtable.
@@ -474,6 +457,10 @@ namespace __detail
     private:
       using __base_type = _Node_iterator_base<_Value, __cache>;
       using __node_type = typename __base_type::__node_type;
+
+      // The corresponding non-const iterator.
+      using __iterator
+	= _Node_iterator<_Value, __constant_iterators, __cache>;
 
     public:
       typedef _Value					value_type;
@@ -489,8 +476,7 @@ namespace __detail
       _Node_const_iterator(__node_type* __p) noexcept
       : __base_type(__p) { }
 
-      _Node_const_iterator(const _Node_iterator<_Value, __constant_iterators,
-			   __cache>& __x) noexcept
+      _Node_const_iterator(const __iterator& __x) noexcept
       : __base_type(__x._M_cur) { }
 
       reference
@@ -515,6 +501,62 @@ namespace __detail
 	this->_M_incr();
 	return __tmp;
       }
+
+#if __cpp_impl_three_way_comparison >= 201907L
+      friend bool
+      operator==(const _Node_const_iterator&,
+		 const _Node_const_iterator&) = default;
+
+      friend bool
+      operator==(const _Node_const_iterator& __x, const __iterator& __y)
+      {
+	const __base_type& __bx = __x;
+	const __base_type& __by = __y;
+	return __bx == __by;
+      }
+#else
+      friend bool
+      operator==(const _Node_const_iterator& __x,
+		 const _Node_const_iterator& __y) noexcept
+      {
+	const __base_type& __bx = __x;
+	const __base_type& __by = __y;
+	return __bx == __by;
+      }
+
+      friend bool
+      operator!=(const _Node_const_iterator& __x,
+		 const _Node_const_iterator& __y) noexcept
+      { return !(__x == __y); }
+
+      friend bool
+      operator==(const _Node_const_iterator& __x,
+		 const __iterator& __y) noexcept
+      {
+	const __base_type& __bx = __x;
+	const __base_type& __by = __y;
+	return __bx == __by;
+      }
+
+      friend bool
+      operator!=(const _Node_const_iterator& __x,
+		 const __iterator& __y) noexcept
+      { return !(__x == __y); }
+
+      friend bool
+      operator==(const __iterator& __x,
+		 const _Node_const_iterator& __y) noexcept
+      {
+	const __base_type& __bx = __x;
+	const __base_type& __by = __y;
+	return __bx == __by;
+      }
+
+      friend bool
+      operator!=(const __iterator& __x,
+		 const _Node_const_iterator& __y) noexcept
+      { return !(__x == __y); }
+#endif
     };
 
   // Many of class template _Hashtable's template parameters are policy
@@ -966,6 +1008,7 @@ namespace __detail
 	return __h._M_insert(__hint, __v, __node_gen, __unique_keys{});
       }
 
+#ifdef __glibcxx_unordered_map_try_emplace // C++ >= 17 && HOSTED
       template<typename _KType, typename... _Args>
 	std::pair<iterator, bool>
 	try_emplace(const_iterator, _KType&& __k, _Args&&... __args)
@@ -987,6 +1030,7 @@ namespace __detail
 	  __node._M_node = nullptr;
 	  return { __it, true };
 	}
+#endif
 
       void
       insert(initializer_list<value_type> __l)
@@ -1394,7 +1438,10 @@ namespace __detail
 
       void
       _M_swap(_Hash_code_base& __x)
-      { std::swap(__ebo_hash::_M_get(), __x.__ebo_hash::_M_get()); }
+      {
+	using std::swap;
+	swap(__ebo_hash::_M_get(), __x.__ebo_hash::_M_get());
+      }
 
       const _Hash&
       _M_hash() const { return __ebo_hash::_M_cget(); }
@@ -1778,7 +1825,8 @@ namespace __detail
       _M_swap(_Hashtable_base& __x)
       {
 	__hash_code_base::_M_swap(__x);
-	std::swap(_EqualEBO::_M_get(), __x._EqualEBO::_M_get());
+	using std::swap;
+	swap(_EqualEBO::_M_get(), __x._EqualEBO::_M_get());
       }
 
       const _Equal&

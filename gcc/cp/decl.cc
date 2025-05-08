@@ -9271,8 +9271,9 @@ static GTY((cache)) decl_tree_cache_map *decomp_type_table;
 tree
 lookup_decomp_type (tree v)
 {
-  if (tree *slot = decomp_type_table->get (v))
-    return *slot;
+  if (decomp_type_table)
+    if (tree *slot = decomp_type_table->get (v))
+      return *slot;
   return NULL_TREE;
 }
 
@@ -11501,6 +11502,7 @@ fold_sizeof_expr (tree t)
 				    false, false);
   if (r == error_mark_node)
     r = size_one_node;
+  r = cp_fold_convert (size_type_node, r);
   return r;
 }
 
@@ -14791,7 +14793,8 @@ grokdeclarator (const cp_declarator *declarator,
 	  }
 	else if (!staticp
 		 && ((current_class_type
-		      && same_type_p (type, current_class_type))
+		      && same_type_p (TYPE_MAIN_VARIANT (type),
+				      current_class_type))
 		     || (!dependent_type_p (type)
 			 && !COMPLETE_TYPE_P (complete_type (type))
 			 && (!complete_or_array_type_p (type)
@@ -17383,9 +17386,15 @@ build_enumerator (tree name, tree value, tree enumtype, tree attributes,
   tree type;
 
   /* scalar_constant_value will pull out this expression, so make sure
-     it's folded as appropriate.  */
+     it's folded as appropriate.
+
+     Creating a TARGET_EXPR in a template breaks when substituting, and
+     here we would create it for instance when using a class prvalue with
+     a user-defined conversion function.  So don't use such a tree.  We
+     instantiate VALUE here to get errors about bad enumerators even in
+     a template that does not get instantiated.  */
   if (processing_template_decl)
-    value = fold_non_dependent_expr (value);
+    value = maybe_fold_non_dependent_expr (value);
 
   /* If the VALUE was erroneous, pretend it wasn't there; that will
      result in the enum being assigned the next value in sequence.  */
@@ -18555,15 +18564,18 @@ finish_function (bool inline_p)
   tree fndecl = current_function_decl;
   tree fntype, ctype = NULL_TREE;
   tree resumer = NULL_TREE, destroyer = NULL_TREE;
-  bool coro_p = flag_coroutines
-		&& !processing_template_decl
-		&& DECL_COROUTINE_P (fndecl);
-  bool coro_emit_helpers = false;
 
   /* When we get some parse errors, we can end up without a
      current_function_decl, so cope.  */
-  if (fndecl == NULL_TREE)
+  if (fndecl == NULL_TREE || fndecl == error_mark_node)
     return error_mark_node;
+
+  bool coro_p = (flag_coroutines
+		 && !processing_template_decl
+		 && DECL_COROUTINE_P (fndecl));
+  bool coro_emit_helpers = false;
+  bool do_contracts = (DECL_HAS_CONTRACTS_P (fndecl)
+		       && !processing_template_decl);
 
   if (!DECL_OMP_DECLARE_REDUCTION_P (fndecl))
     finish_lambda_scope ();
@@ -18600,6 +18612,10 @@ finish_function (bool inline_p)
 	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS
 			      (TREE_TYPE (fndecl)),
 			      current_eh_spec_block);
+
+     /* If outlining succeeded, then add contracts handling if needed.  */
+     if (coro_emit_helpers && do_contracts)
+	maybe_apply_function_contracts (fndecl);
     }
   else
   /* For a cloned function, we've already got all the code we need;
@@ -18615,6 +18631,10 @@ finish_function (bool inline_p)
 	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS
 			      (TREE_TYPE (current_function_decl)),
 			      current_eh_spec_block);
+
+     if (do_contracts)
+	maybe_apply_function_contracts (current_function_decl);
+
     }
 
   /* If we're saving up tree structure, tie off the function now.  */
@@ -18867,10 +18887,10 @@ finish_function (bool inline_p)
   --function_depth;
 
   /* Clean up.  */
-  current_function_decl = NULL_TREE;
-
   invoke_plugin_callbacks (PLUGIN_FINISH_PARSE_FUNCTION, fndecl);
 
+  /* If we have used outlined contracts checking functions, build and emit
+     them here.  */
   finish_function_contracts (fndecl);
 
   return fndecl;
@@ -19062,7 +19082,7 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
   /* Assume no cleanup is required.  */
   cleanup = NULL_TREE;
 
-  if (error_operand_p (decl))
+  if (!decl || error_operand_p (decl))
     return cleanup;
 
   /* Handle "__attribute__((cleanup))".  We run the cleanup function
@@ -19260,6 +19280,13 @@ cxx_comdat_group (tree decl)
 	  else
 	    break;
 	}
+      /* If a ctor/dtor has already set the comdat group by
+	 maybe_clone_body, don't override it.  */
+      if (SUPPORTS_ONE_ONLY
+	  && TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_CLONED_FUNCTION_P (decl))
+	if (tree comdat = DECL_COMDAT_GROUP (decl))
+	  return comdat;
     }
 
   return decl;

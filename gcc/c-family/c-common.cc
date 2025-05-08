@@ -6160,6 +6160,9 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
 {
   bool warned_p = false;
 
+  if (c_inhibit_evaluation_warnings)
+    return warned_p;
+
   /* Check for null being passed in a pointer argument that must be
      non-null.  In C++, this includes the this pointer.  We also need
      to do this if format checking is enabled.  */
@@ -7383,11 +7386,13 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch,
 
   size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
   if (size == 16
-      && fetch
-      && !orig_format
       && TREE_CODE (type) == BITINT_TYPE
       && !targetm.scalar_mode_supported_p (TImode))
-    return -1;
+    {
+      if (fetch && !orig_format)
+	return -1;
+      goto incompatible;
+    }
 
   if (size == 1 || size == 2 || size == 4 || size == 8 || size == 16)
     return size;

@@ -1049,6 +1049,12 @@ decl_mangling_context (tree decl)
       tree extra = LAMBDA_TYPE_EXTRA_SCOPE (TREE_TYPE (decl));
       if (extra)
 	return extra;
+      tcontext = CP_DECL_CONTEXT (decl);
+      if (LAMBDA_TYPE_P (tcontext))
+	/* Lambda type context means this lambda appears between the
+	   lambda-introducer and the open brace of another lambda (c++/119175).
+	   That isn't a real scope; look further into the enclosing scope.  */
+	return decl_mangling_context (TYPE_NAME (tcontext));
     }
   else if (template_type_parameter_p (decl))
      /* template type parms have no mangling context.  */
@@ -3629,10 +3635,15 @@ write_expression (tree expr)
 
       if (nelts)
 	{
-	  tree domain;
 	  ++processing_template_decl;
-	  domain = compute_array_index_type (NULL_TREE, nelts,
-					     tf_warning_or_error);
+	  /* Avoid compute_array_index_type complaints about
+	     non-constant nelts.  */
+	  tree max = cp_build_binary_op (input_location, MINUS_EXPR,
+					 fold_convert (sizetype, nelts),
+					 size_one_node,
+					 tf_warning_or_error);
+	  max = maybe_constant_value (max);
+	  tree domain = build_index_type (max);
 	  type = build_cplus_array_type (type, domain);
 	  --processing_template_decl;
 	}
@@ -4196,6 +4207,8 @@ write_array_type (const tree type)
 	    }
 	  else
 	    {
+	      gcc_checking_assert (TREE_CODE (max) == MINUS_EXPR
+				   && integer_onep (TREE_OPERAND (max, 1)));
 	      max = TREE_OPERAND (max, 0);
 	      write_expression (max);
 	    }

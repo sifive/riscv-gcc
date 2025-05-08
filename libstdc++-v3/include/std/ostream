@@ -205,6 +205,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
       __ostream_type&
       operator<<(long long __n)
       { return _M_insert(__n); }
@@ -212,6 +214,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ostream_type&
       operator<<(unsigned long long __n)
       { return _M_insert(__n); }
+#pragma GCC diagnostic pop
 #endif
       ///@}
 
@@ -768,7 +771,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 1203. More useful rvalue stream insertion
 
-#if __cpp_concepts >= 201907L
+#if __cpp_concepts >= 201907L && __glibcxx_type_trait_variable_templates
   // Use concepts if possible because they're cheaper to evaluate.
   template<typename _Tp>
     concept __derived_from_ios_base = is_class_v<_Tp>
@@ -992,8 +995,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     println(ostream& __os, format_string<_Args...> __fmt, _Args&&... __args)
     {
-      std::print(__os, "{}\n",
-		 std::format(__fmt, std::forward<_Args>(__args)...));
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4088. println ignores the locale imbued in std::ostream
+      std::print(__os, "{}\n", std::format(__os.getloc(), __fmt,
+					   std::forward<_Args>(__args)...));
     }
 
   // Defined for C++26, supported as an extension to C++23.

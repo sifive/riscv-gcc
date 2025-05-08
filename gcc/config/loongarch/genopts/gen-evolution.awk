@@ -1,4 +1,4 @@
-#!/usr/bin/gawk
+#!/usr/bin/awk -f
 #
 # A simple script that generates loongarch-evolution.h
 # from genopts/isa-evolution.in
@@ -33,10 +33,12 @@ BEGIN {
 {
     cpucfg_word[NR] = $1
     cpucfg_bit_in_word[NR] = $2
-    name[NR] = gensub(/-/, "_", "g", $3)
+    name[NR] = $3
+    gsub("-", "_", name[NR])
     name_capitalized[NR] = toupper(name[NR])
-    isa_version_major[NR] = gensub(/^([1-9][0-9]*)\.([0-9]+)$/, "\\1", 1, $4)
-    isa_version_minor[NR] = gensub(/^([1-9][0-9]*)\.([0-9]+)$/, "\\2", 1, $4)
+    split($4, isa_ver, "\\.")
+    isa_version_major[NR] = isa_ver[1]
+    isa_version_minor[NR] = isa_ver[2]
 
     $1 = $2 = $3 = $4 = ""
     sub (/^\s*/, "")
@@ -94,21 +96,30 @@ function gen_cpucfg_useful_idx()
         idx_bucket[cpucfg_word[i]] = 1
 
     delete idx_list
+    j = 1
     for (i in idx_bucket)
-        idx_list[length(idx_list)-1] = i+0
+        idx_list[j++] = i+0
     delete idx_bucket
 
-    asort (idx_list)
+    for (i = 1; i < j; i++) {
+        t = i
+        for (k = i + 1; k < j; k++)
+            t = idx_list[k] < idx_list[t] ? k : t
+
+        k = idx_list[t]
+        idx_list[t] = idx_list[i]
+        idx_list[i] = k
+    }
 
     print "static constexpr int cpucfg_useful_idx[] = {"
-    for (i in idx_list)
+    for (i = 1; i < j; i++)
         printf("  %d,\n", idx_list[i])
     print "};"
 
     print ""
 
     printf ("static constexpr int N_CPUCFG_WORDS = %d;\n",
-            idx_list[length(idx_list)] + 1)
+            idx_list[j - 1] + 1)
 
     delete idx_list
 }

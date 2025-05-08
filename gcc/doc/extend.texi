@@ -7407,20 +7407,23 @@ Enable/disable the generation of the USER_MSR instructions.
 Enable/disable the generation of the APX features, including
 EGPR, PUSH2POP2, NDD and PPX.
 
-@cindex @code{target("avx10.1")} function attribute, x86
-@item avx10.1
-@itemx no-avx10.1
-Enable/disable the generation of the AVX10.1 instructions.
-
 @cindex @code{target("avx10.1-256")} function attribute, x86
 @item avx10.1-256
 @itemx no-avx10.1-256
-Enable/disable the generation of the AVX10.1 instructions.
+Enable the generation of the AVX10.1 instructions with 256 bit support.
+Disable the generation of the AVX10.1 instructions.
 
 @cindex @code{target("avx10.1-512")} function attribute, x86
 @item avx10.1-512
 @itemx no-avx10.1-512
-Enable/disable the generation of the AVX10.1 512 bit instructions.
+Enable the generation of the AVX10.1 instructions with 512 bit support.
+Disable the generation of the AVX10.1 instructions.
+
+@cindex @code{target("avx10.1")} function attribute, x86
+@item avx10.1
+@itemx no-avx10.1
+Enable the generation of the AVX10.1 instructions with 512 bit support.
+Disable the generation of the AVX10.1 instructions.
 
 @cindex @code{target("cld")} function attribute, x86
 @item cld
@@ -8179,7 +8182,7 @@ to be excluded from such automatical initialization in order to reduce runtime
 overhead.
 
 This attribute has no effect when the option @code{-ftrivial-auto-var-init}
-does not present.
+is not present.
 
 @cindex @code{vector_size} variable attribute
 @item vector_size (@var{bytes})
@@ -13243,15 +13246,10 @@ builtins (@pxref{__atomic Builtins}).  They should not be used for new
 code which should use the @samp{__atomic} builtins instead.
 
 Not all operations are supported by all target processors.  If a particular
-operation cannot be implemented on the target processor, a warning is
-generated and a call to an external function is generated.  The external
-function carries the same name as the built-in version,
-with an additional suffix
+operation cannot be implemented on the target processor, a call to an
+external function is generated.  The external function carries the same name
+as the built-in version, with an additional suffix
 @samp{_@var{n}} where @var{n} is the size of the data type.
-
-@c ??? Should we have a mechanism to suppress this warning?  This is almost
-@c useful for implementing the operation under the control of an external
-@c mutex.
 
 In most cases, these built-in functions are considered a @dfn{full barrier}.
 That is,

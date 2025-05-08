@@ -264,6 +264,8 @@ extern GTY(()) int darwin_ms_struct;
   "%{weak_reference_mismatches*:\
     -Xlinker -weak_reference_mismatches -Xlinker %*} \
     %<weak_reference_mismatches*",					\
+  "%{weak_framework*: -Xlinker -weak_framework -Xlinker %*} \
+    %<weak_framework*",							\
   "%{whyload:-Xlinker -whyload} %<whyload",				\
   "%{whatsloaded:-Xlinker -whatsloaded} %<whatsloaded",			\
   "%{w:-Xlinker -w}",							\
@@ -282,12 +284,17 @@ extern GTY(()) int darwin_ms_struct;
 #define DARWIN_RDYNAMIC "%{rdynamic:%nrdynamic is not supported}"
 #endif
 
-#if LD64_HAS_PLATFORM_VERSION
-#define DARWIN_PLATFORM_ID \
-  "%{mmacosx-version-min=*: -platform_version macos %* 0.0} "
+#if LD64_HAS_MACOS_VERSION_MIN
+# define DARWIN_PLATFORM_ID \
+  "%{mmacosx-version-min=*:-macos_version_min %*} "
 #else
-#define DARWIN_PLATFORM_ID \
+# if LD64_HAS_PLATFORM_VERSION
+#  define DARWIN_PLATFORM_ID \
+  "%{mmacosx-version-min=*: -platform_version macos %* 0.0} "
+# else
+#  define DARWIN_PLATFORM_ID \
   "%{mmacosx-version-min=*:-macosx_version_min %*} "
+# endif
 #endif
 
 /* Code built with mdynamic-no-pic does not support PIE/PIC, so  we disallow
@@ -645,6 +652,8 @@ extern GTY(()) int darwin_ms_struct;
    additional options.  Actually, currently these are the same as GAS.  */
 #define ASM_OPTIONS "%{v} %{w:-W} %{I*}"
 #endif
+
+#define AS_NEEDS_DASH_FOR_PIPED_INPUT
 
 /* Default Darwin ASM_SPEC, very simple. */
 #define ASM_SPEC \

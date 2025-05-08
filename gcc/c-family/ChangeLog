@@ -1,3 +1,73 @@
+2025-03-22  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2024-10-31  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117145
+	PR c/117245
+	PR c/100420
+	* c-pretty-print.cc (c_pretty_printer::direct_abstract_declarator):
+	Detect arrays of unspecified size.
+
+2025-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/119265
+	* c-ada-spec.cc (dump_ada_node) <INTEGER_TYPE>: Deal with typedefs
+	of unsigned __int128.
+
+2025-03-05  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115580
+	* c-common.cc (check_function_arguments): Return early if
+	c_inhibit_evaluation_warnings.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43374
+	* c-cppbuiltin.cc (builtin_define_decimal_float_constants): Use
+	get_max_float.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117641
+	* c-common.cc (sync_resolve_size): For size 16 with _BitInt
+	on targets where TImode isn't supported, use goto incompatible if
+	!fetch.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117641
+	* c-common.cc (sync_resolve_size): For size == 16 fetch of
+	BITINT_TYPE if TImode isn't supported scalar mode diagnose
+	and return 0 if orig_format instead of returning 16.
+
+2024-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117230
+	* c-warn.cc (sizeof_pointer_memaccess_warning): Only compare
+	TYPE_PRECISION of TREE_TYPE (type) to precision of char if
+	TREE_TYPE (type) is integral type.
+
+2024-10-01  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Don't define __cpp_concepts
+	before C++17.
+
 2024-08-01  Release Manager
 
 	* GCC 14.2.0 released.

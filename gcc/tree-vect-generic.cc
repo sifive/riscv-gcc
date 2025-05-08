@@ -165,7 +165,15 @@ do_unop (gimple_stmt_iterator *gsi, tree inner_type, tree a,
 	 tree b ATTRIBUTE_UNUSED, tree bitpos, tree bitsize,
 	 enum tree_code code, tree type ATTRIBUTE_UNUSED)
 {
-  a = tree_vec_extract (gsi, inner_type, a, bitsize, bitpos);
+  tree rhs_type = inner_type;
+
+  /* For ABSU_EXPR, use the signed type for the rhs if the rhs was signed. */
+  if (code == ABSU_EXPR
+      && ANY_INTEGRAL_TYPE_P (TREE_TYPE (a))
+      && !TYPE_UNSIGNED (TREE_TYPE (a)))
+    rhs_type = signed_type_for (rhs_type);
+
+  a = tree_vec_extract (gsi, rhs_type, a, bitsize, bitpos);
   return gimplify_build1 (gsi, code, inner_type, a);
 }
 
@@ -2190,10 +2198,15 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi,
 	}
     }
 
+  /* Plain moves do not need lowering.  */
+  if (code == SSA_NAME
+      || code == VIEW_CONVERT_EXPR
+      || code == PAREN_EXPR)
+    return;
+
   if (CONVERT_EXPR_CODE_P (code)
       || code == FLOAT_EXPR
-      || code == FIX_TRUNC_EXPR
-      || code == VIEW_CONVERT_EXPR)
+      || code == FIX_TRUNC_EXPR)
     return;
 
   /* The signedness is determined from input argument.  */

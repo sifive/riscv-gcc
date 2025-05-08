@@ -6130,7 +6130,8 @@
       return "ins\t%0.<bits_etype>[%1], %2.<bits_etype>[0]";
     return "ins\t%0.<bits_etype>[%1], %w2";
   }
-  [(set_attr "type" "bfm,neon_ins_q,neon_ins_q")]
+  [(set_attr "type" "bfm,neon_ins_q,neon_ins_q")
+   (set_attr "arch" "*,simd,simd")]
 )
 
 (define_insn "*insv_reg<mode>"
@@ -6160,10 +6161,11 @@
 			  (match_dup 1))
 	(match_dup 2))]
   {
-    operands[2] = lowpart_subreg (<GPI:MODE>mode, operands[2],
-				  <ALLX:MODE>mode);
+    operands[2] = force_lowpart_subreg (<GPI:MODE>mode, operands[2],
+					<ALLX:MODE>mode);
   }
-  [(set_attr "type" "bfm,neon_ins_q,neon_ins_q")]
+  [(set_attr "type" "bfm,neon_ins_q,neon_ins_q")
+   (set_attr "arch" "*,simd,simd")]
 )
 
 (define_insn "*aarch64_bfi<GPI:mode><ALLX:mode>4"
@@ -6195,7 +6197,8 @@
   {
     operands[2] = lowpart_subreg (DImode, operands[3], <ALLX:MODE>mode);
   }
-  [(set_attr "type" "bfm,neon_ins_q,neon_ins_q")]
+  [(set_attr "type" "bfm,neon_ins_q,neon_ins_q")
+   (set_attr "arch" "*,simd,simd")]
 )
 
 ;;  Match a bfi instruction where the shift of OP3 means that we are
@@ -7207,7 +7210,7 @@
 
       emit_insn (gen_iorv2<v_int_equiv>3 (
 	lowpart_subreg (V2<V_INT_EQUIV>mode, operands[0], <MODE>mode),
-	lowpart_subreg (V2<V_INT_EQUIV>mode, operands[1], <MODE>mode),
+	force_lowpart_subreg (V2<V_INT_EQUIV>mode, operands[1], <MODE>mode),
 	v_bitmask));
       DONE;
     }
@@ -7252,8 +7255,8 @@
   "TARGET_SIMD"
 {
   rtx tmp = gen_reg_rtx (<VCONQ>mode);
-  rtx op1 = lowpart_subreg (<VCONQ>mode, operands[1], <MODE>mode);
-  rtx op2 = lowpart_subreg (<VCONQ>mode, operands[2], <MODE>mode);
+  rtx op1 = force_lowpart_subreg (<VCONQ>mode, operands[1], <MODE>mode);
+  rtx op2 = force_lowpart_subreg (<VCONQ>mode, operands[2], <MODE>mode);
   emit_insn (gen_xorsign3 (<VCONQ>mode, tmp, op1, op2));
   emit_move_insn (operands[0],
 		  lowpart_subreg (<MODE>mode, tmp, <VCONQ>mode));
@@ -7624,11 +7627,11 @@
   [(set_attr "type" "f_cvtf2i")]
 )
 
-;; Pointer authentication patterns are always provided.  In architecture
-;; revisions prior to ARMv8.3-A these HINT instructions operate as NOPs.
+;; Pointer authentication patterns are always provided.  On targets that
+;; don't implement FEAT_PAuth these HINT instructions operate as NOPs.
 ;; This lets the user write portable software which authenticates pointers
-;; when run on something which implements ARMv8.3-A, and which runs
-;; correctly, but does not authenticate pointers, where ARMv8.3-A is not
+;; when run on something which implements FEAT_PAuth, and which runs
+;; correctly, but does not authenticate pointers, where FEAT_PAuth is not
 ;; implemented.
 
 ;; Signing/Authenticating R30 using SP as the salt.

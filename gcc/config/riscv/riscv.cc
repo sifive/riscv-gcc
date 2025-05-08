@@ -2475,14 +2475,12 @@ riscv_legitimize_tls_address (rtx loc)
     case TLS_MODEL_GLOBAL_DYNAMIC:
       if (TARGET_TLSDESC)
 	{
-	  static unsigned seqno;
 	  tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
 	  a0 = gen_rtx_REG (Pmode, GP_ARG_FIRST);
 	  dest = gen_reg_rtx (Pmode);
 
-	  emit_insn (gen_tlsdesc (Pmode, loc, GEN_INT (seqno)));
+	  emit_insn (gen_tlsdesc (Pmode, loc));
 	  emit_insn (gen_add3_insn (dest, a0, tp));
-	  seqno++;
 	}
       else
 	{
@@ -2665,7 +2663,7 @@ riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value,
   struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS];
   machine_mode mode;
   int i, num_ops;
-  rtx x;
+  rtx x = NULL_RTX;
 
   mode = GET_MODE (dest);
   /* We use the original mode for the riscv_build_integer call, because HImode
@@ -3450,7 +3448,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       if (outer_code == INSN
 	  && register_operand (SET_DEST (x), GET_MODE (SET_DEST (x))))
 	{
-	  riscv_rtx_costs (SET_SRC (x), mode, outer_code, opno, total, speed);
+	  riscv_rtx_costs (SET_SRC (x), mode, SET, opno, total, speed);
 	  return true;
 	}
 
@@ -3529,9 +3527,11 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 		    && XEXP (x, 2) == CONST0_RTX (GET_MODE (XEXP (x, 1))))
 		   || (GET_CODE (XEXP (x, 2)) == REG
 		       && XEXP (x, 1) == CONST0_RTX (GET_MODE (XEXP (x, 2))))
-		   || (GET_CODE (XEXP (x, 1)) == REG
+		   || (COMPARISON_P (XEXP (x, 0))
+		       && GET_CODE (XEXP (x, 1)) == REG
 		       && rtx_equal_p (XEXP (x, 1), XEXP (XEXP (x, 0), 0)))
-		   || (GET_CODE (XEXP (x, 1)) == REG
+		   || (COMPARISON_P (XEXP (x, 0))
+		       && GET_CODE (XEXP (x, 1)) == REG
 		       && rtx_equal_p (XEXP (x, 2), XEXP (XEXP (x, 0), 0)))))
 	{
 	  *total = COSTS_N_INSNS (1);
@@ -6629,41 +6629,74 @@ riscv_print_operand (FILE *file, rtx op, int letter)
       fputs (GET_RTX_NAME (reverse_condition (code)), file);
       break;
 
-    case 'A': {
-      const enum memmodel model = memmodel_base (INTVAL (op));
-      if (riscv_memmodel_needs_amo_acquire (model)
-	  && riscv_memmodel_needs_amo_release (model))
-	fputs (".aqrl", file);
-      else if (riscv_memmodel_needs_amo_acquire (model))
-	fputs (".aq", file);
-      else if (riscv_memmodel_needs_amo_release (model))
-	fputs (".rl", file);
+    case 'A':
+      if (!CONST_INT_P (op))
+	output_operand_lossage ("invalid operand for '%%%c'", letter);
+      else
+	{
+	  const enum memmodel model = memmodel_base (INTVAL (op));
+	  if (riscv_memmodel_needs_amo_acquire (model)
+	      && riscv_memmodel_needs_amo_release (model))
+	    fputs (".aqrl", file);
+	  else if (riscv_memmodel_needs_amo_acquire (model))
+	    fputs (".aq", file);
+	  else if (riscv_memmodel_needs_amo_release (model))
+	    fputs (".rl", file);
+	}
       break;
-    }
 
-    case 'I': {
-      const enum memmodel model = memmodel_base (INTVAL (op));
-      if (TARGET_ZTSO && model != MEMMODEL_SEQ_CST)
-	/* LR ops only have an annotation for SEQ_CST in the Ztso mapping.  */
-	break;
-      else if (model == MEMMODEL_SEQ_CST)
-	fputs (".aqrl", file);
-      else if (riscv_memmodel_needs_amo_acquire (model))
-	fputs (".aq", file);
+    case 'I':
+      if (!CONST_INT_P (op))
+	output_operand_lossage ("invalid operand for '%%%c'", letter);
+      else
+	{
+	  const enum memmodel model = memmodel_base (INTVAL (op));
+	  if (TARGET_ZTSO && model != MEMMODEL_SEQ_CST)
+	    /* LR ops only have an annotation for SEQ_CST in the Ztso mapping.  */
+	    break;
+	  else if (model == MEMMODEL_SEQ_CST)
+	    fputs (".aqrl", file);
+	  else if (riscv_memmodel_needs_amo_acquire (model))
+	    fputs (".aq", file);
+	}
       break;
-    }
 
-    case 'J': {
-      const enum memmodel model = memmodel_base (INTVAL (op));
-      if (TARGET_ZTSO && model == MEMMODEL_SEQ_CST)
-	/* SC ops only have an annotation for SEQ_CST in the Ztso mapping.  */
-	fputs (".rl", file);
-      else if (TARGET_ZTSO)
-	break;
-      else if (riscv_memmodel_needs_amo_release (model))
-	fputs (".rl", file);
+    case 'J':
+      if (!CONST_INT_P (op))
+	output_operand_lossage ("invalid operand for '%%%c'", letter);
+      else
+	{
+	  const enum memmodel model = memmodel_base (INTVAL (op));
+	  if (TARGET_ZTSO && model == MEMMODEL_SEQ_CST)
+	    /* SC ops only have an annotation for SEQ_CST in the Ztso mapping.  */
+	    fputs (".rl", file);
+	  else if (TARGET_ZTSO)
+	    break;
+	  else if (riscv_memmodel_needs_amo_release (model))
+	    fputs (".rl", file);
+	}
       break;
-    }
+
+    case 'L':
+      {
+	const char *ntl_hint = NULL;
+	switch (INTVAL (op))
+	  {
+	  case 0:
+	    ntl_hint = "ntl.all";
+	    break;
+	  case 1:
+	    ntl_hint = "ntl.pall";
+	    break;
+	  case 2:
+	    ntl_hint = "ntl.p1";
+	    break;
+	  }
+
+      if (ntl_hint)
+	asm_fprintf (file, "%s\n\t", ntl_hint);
+      break;
+      }
 
     case 'i':
       if (code != REG)
@@ -6675,25 +6708,35 @@ riscv_print_operand (FILE *file, rtx op, int letter)
       break;
 
     case 'S':
-      {
-	rtx newop = GEN_INT (ctz_hwi (INTVAL (op)));
-	output_addr_const (file, newop);
-	break;
-      }
+      if (!CONST_INT_P (op))
+	output_operand_lossage ("invalid operand for '%%%c'", letter);
+      else
+	{
+	  rtx newop = GEN_INT (ctz_hwi (INTVAL (op)));
+	  output_addr_const (file, newop);
+	}
+      break;
     case 'T':
-      {
-	rtx newop = GEN_INT (ctz_hwi (~INTVAL (op)));
-	output_addr_const (file, newop);
-	break;
-      }
+      if (!CONST_INT_P (op))
+	output_operand_lossage ("invalid operand for '%%%c'", letter);
+      else
+	{
+	  rtx newop = GEN_INT (ctz_hwi (~INTVAL (op)));
+	  output_addr_const (file, newop);
+	}
+      break;
     case 'X':
-      {
-	int ival = INTVAL (op) + 1;
-	rtx newop = GEN_INT (ctz_hwi (ival) + 1);
-	output_addr_const (file, newop);
-	break;
-      }
+      if (!CONST_INT_P (op))
+	output_operand_lossage ("invalid operand for '%%%c'", letter);
+      else
+	{
+	  int ival = INTVAL (op) + 1;
+	  rtx newop = GEN_INT (ctz_hwi (ival) + 1);
+	  output_addr_const (file, newop);
+	}
+      break;
     case 'Y':
+<<<<<<< HEAD
       {
 	unsigned int imm = (UINTVAL (op) & 63);
 	gcc_assert (imm <= 63);
@@ -6721,6 +6764,18 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	asm_fprintf (file, "%s\n\t", ntl_hint);
       break;
       }
+=======
+      if (!CONST_INT_P (op))
+	output_operand_lossage ("invalid operand for '%%%c'", letter);
+      else
+	{
+	  unsigned int imm = (UINTVAL (op) & 63);
+	  gcc_assert (imm <= 63);
+	  rtx newop = GEN_INT (imm);
+	  output_addr_const (file, newop);
+	}
+      break;
+>>>>>>> refs/rewritten/420aef66461965586293516945c6f5dcfda911ed-2
     default:
       switch (code)
 	{
@@ -9907,6 +9962,11 @@ riscv_override_options_internal (struct gcc_options *opts)
   else if (!TARGET_MUL_OPTS_P (opts) && TARGET_DIV_OPTS_P (opts))
     error ("%<-mdiv%> requires %<-march%> to subsume the %<M%> extension");
 
+  /* We might use a multiplication to calculate the scalable vector length at
+     runtime.  Therefore, require the M extension.  */
+  if (TARGET_VECTOR && !TARGET_MUL)
+    sorry ("GCC's current %<V%> implementation requires the %<M%> extension");
+
   /* Likewise floating-point division and square root.  */
   if ((TARGET_HARD_FLOAT_OPTS_P (opts) || TARGET_ZFINX_OPTS_P (opts))
       && ((target_flags_explicit & MASK_FDIV) == 0))
@@ -10068,6 +10128,11 @@ riscv_option_override (void)
       else if (TARGET_64BIT && riscv_abi != ABI_LP64E)
 	error ("rv64e requires lp64e ABI");
     }
+
+  /* ILP32E does not support the 'd' extension.  */
+  if (riscv_abi == ABI_ILP32E && UNITS_PER_FP_REG > 4)
+    error ("ILP32E ABI does not support the %qc extension",
+	   UNITS_PER_FP_REG > 8 ? 'Q' : 'D');
 
   /* Zfinx require abi ilp32, ilp32e, lp64 or lp64e.  */
   if (TARGET_ZFINX
@@ -10704,6 +10769,17 @@ riscv_can_change_mode_class (machine_mode from, machine_mode to,
   if (reg_classes_intersect_p (V_REGS, rclass)
       && !ordered_p (GET_MODE_PRECISION (from), GET_MODE_PRECISION (to)))
     return false;
+
+  /* Subregs of modes larger than one vector are ambiguous.
+     A V4DImode with rv64gcv_zvl128b could, for example, span two registers/one
+     register group of two at VLEN = 128 or one register at VLEN >= 256 and
+     we cannot, statically, determine which part of it to extract.
+     Therefore prevent that.  */
+  if (reg_classes_intersect_p (V_REGS, rclass)
+      && riscv_v_ext_vls_mode_p (from)
+      && !ordered_p (BITS_PER_RISCV_VECTOR, GET_MODE_PRECISION (from)))
+      return false;
+
   return !reg_classes_intersect_p (FP_REGS, rclass);
 }
 
@@ -11125,12 +11201,12 @@ static unsigned int
 riscv_dwarf_poly_indeterminate_value (unsigned int i, unsigned int *factor,
 				      int *offset)
 {
-  /* Polynomial invariant 1 == (VLENB / riscv_bytes_per_vector_chunk) - 1.
+  /* Polynomial invariant 1 == (VLENB / BYTES_PER_RISCV_VECTOR) - 1.
      1. TARGET_MIN_VLEN == 32, polynomial invariant 1 == (VLENB / 4) - 1.
      2. TARGET_MIN_VLEN > 32, polynomial invariant 1 == (VLENB / 8) - 1.
   */
   gcc_assert (i == 1);
-  *factor = riscv_bytes_per_vector_chunk;
+  *factor = BYTES_PER_RISCV_VECTOR.coeffs[1];
   *offset = 1;
   return RISCV_DWARF_VLENB;
 }
@@ -11313,9 +11389,7 @@ riscv_lshift_subword (machine_mode mode, rtx value, rtx shift,
 		      rtx *shifted_value)
 {
   rtx value_reg = gen_reg_rtx (SImode);
-  emit_move_insn (value_reg, simplify_gen_subreg (SImode, value,
-						  mode, 0));
-
+  emit_move_insn (value_reg, gen_lowpart (SImode, value));
   emit_move_insn (*shifted_value, gen_rtx_ASHIFT (SImode, value_reg,
 						  gen_lowpart (QImode, shift)));
 }

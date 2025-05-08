@@ -561,9 +561,12 @@ namespace ranges
 
 	for (auto __scan = __first1; __scan != __last1; ++__scan)
 	  {
-	    auto&& __proj_scan = std::__invoke(__proj1, *__scan);
+	    auto&& __scan_deref = *__scan;
+	    auto&& __proj_scan =
+	      std::__invoke(__proj1, std::forward<decltype(__scan_deref)>(__scan_deref));
 	    auto __comp_scan = [&] <typename _Tp> (_Tp&& __arg) -> bool {
-	      return std::__invoke(__pred, __proj_scan,
+	      return std::__invoke(__pred,
+				   std::forward<decltype(__proj_scan)>(__proj_scan),
 				   std::forward<_Tp>(__arg));
 	    };
 	    if (__scan != ranges::find_if(__first1, __scan,
@@ -589,6 +592,13 @@ namespace ranges
       operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 3560. ranges::is_permutation should short-circuit for sized_ranges
+	if constexpr (sized_range<_Range1>)
+	  if constexpr (sized_range<_Range2>)
+	    if (ranges::distance(__r1) != ranges::distance(__r2))
+	      return false;
+
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
 		       ranges::begin(__r2), ranges::end(__r2),
 		       std::move(__pred),
@@ -2902,11 +2912,11 @@ namespace ranges
 	auto __result = *__first;
 	while (++__first != __last)
 	  {
-	    auto __tmp = *__first;
+	    auto&& __tmp = *__first;
 	    if (std::__invoke(__comp,
 			      std::__invoke(__proj, __result),
 			      std::__invoke(__proj, __tmp)))
-	      __result = std::move(__tmp);
+	      __result = std::forward<decltype(__tmp)>(__tmp);
 	  }
 	return __result;
       }
@@ -2938,9 +2948,13 @@ namespace ranges
 					 std::__invoke(__proj, __hi),
 					 std::__invoke(__proj, __lo))));
 	auto&& __proj_val = std::__invoke(__proj, __val);
-	if (std::__invoke(__comp, __proj_val, std::__invoke(__proj, __lo)))
+	if (std::__invoke(__comp,
+			  std::forward<decltype(__proj_val)>(__proj_val),
+			  std::__invoke(__proj, __lo)))
 	  return __lo;
-	else if (std::__invoke(__comp, std::__invoke(__proj, __hi), __proj_val))
+	else if (std::__invoke(__comp,
+			       std::__invoke(__proj, __hi),
+			       std::forward<decltype(__proj_val)>(__proj_val)))
 	  return __hi;
 	else
 	  return __val;
@@ -3520,58 +3534,6 @@ namespace ranges
   inline constexpr __contains_subrange_fn contains_subrange{};
 
 #endif // __glibcxx_ranges_contains
-
-#if __glibcxx_ranges_iota >= 202202L // C++ >= 23
-
-  template<typename _Out, typename _Tp>
-    struct out_value_result
-    {
-      [[no_unique_address]] _Out out;
-      [[no_unique_address]] _Tp value;
-
-      template<typename _Out2, typename _Tp2>
-	requires convertible_to<const _Out&, _Out2>
-	  && convertible_to<const _Tp&, _Tp2>
-	constexpr
-	operator out_value_result<_Out2, _Tp2>() const &
-	{ return {out, value}; }
-
-      template<typename _Out2, typename _Tp2>
-	requires convertible_to<_Out, _Out2>
-	  && convertible_to<_Tp, _Tp2>
-	constexpr
-	operator out_value_result<_Out2, _Tp2>() &&
-	{ return {std::move(out), std::move(value)}; }
-    };
-
-  template<typename _Out, typename _Tp>
-    using iota_result = out_value_result<_Out, _Tp>;
-
-  struct __iota_fn
-  {
-    template<input_or_output_iterator _Out, sentinel_for<_Out> _Sent, weakly_incrementable _Tp>
-      requires indirectly_writable<_Out, const _Tp&>
-      constexpr iota_result<_Out, _Tp>
-      operator()(_Out __first, _Sent __last, _Tp __value) const
-      {
-	while (__first != __last)
-	  {
-	    *__first = static_cast<const _Tp&>(__value);
-	    ++__first;
-	    ++__value;
-	  }
-	return {std::move(__first), std::move(__value)};
-      }
-
-    template<weakly_incrementable _Tp, output_range<const _Tp&> _Range>
-      constexpr iota_result<borrowed_iterator_t<_Range>, _Tp>
-      operator()(_Range&& __r, _Tp __value) const
-      { return (*this)(ranges::begin(__r), ranges::end(__r), std::move(__value)); }
-  };
-
-  inline constexpr __iota_fn iota{};
-
-#endif // __glibcxx_ranges_iota
 
 #if __glibcxx_ranges_find_last >= 202207L // C++ >= 23
 

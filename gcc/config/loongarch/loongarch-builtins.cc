@@ -1568,7 +1568,7 @@ static const struct loongarch_builtin_description loongarch_builtins[] = {
   LSX_BUILTIN (vssrln_b_h, LARCH_V16QI_FTYPE_V8HI_V8HI),
   LSX_BUILTIN (vssrln_h_w, LARCH_V8HI_FTYPE_V4SI_V4SI),
   LSX_BUILTIN (vssrln_w_d, LARCH_V4SI_FTYPE_V2DI_V2DI),
-  LSX_BUILTIN (vorn_v, LARCH_V16QI_FTYPE_V16QI_V16QI),
+  LSX_BUILTIN (vorn_v, LARCH_UV16QI_FTYPE_UV16QI_UV16QI),
   LSX_BUILTIN (vldi, LARCH_V2DI_FTYPE_HI),
   LSX_BUILTIN (vshuf_b, LARCH_V16QI_FTYPE_V16QI_V16QI_V16QI),
   LSX_BUILTIN (vldx, LARCH_V16QI_FTYPE_CVPOINTER_DI),
@@ -2118,7 +2118,7 @@ static const struct loongarch_builtin_description loongarch_builtins[] = {
   LASX_BUILTIN (xvssrln_b_h, LARCH_V32QI_FTYPE_V16HI_V16HI),
   LASX_BUILTIN (xvssrln_h_w, LARCH_V16HI_FTYPE_V8SI_V8SI),
   LASX_BUILTIN (xvssrln_w_d, LARCH_V8SI_FTYPE_V4DI_V4DI),
-  LASX_BUILTIN (xvorn_v, LARCH_V32QI_FTYPE_V32QI_V32QI),
+  LASX_BUILTIN (xvorn_v, LARCH_UV32QI_FTYPE_UV32QI_UV32QI),
   LASX_BUILTIN (xvldi, LARCH_V4DI_FTYPE_HI),
   LASX_BUILTIN (xvldx, LARCH_V32QI_FTYPE_CVPOINTER_DI),
   LASX_NO_TARGET_BUILTIN (xvstx, LARCH_VOID_FTYPE_V32QI_CVPOINTER_DI),
@@ -3074,7 +3074,10 @@ loongarch_expand_builtin_lsx_test_branch (enum insn_code icode, tree exp)
     ops[1].value = force_reg (ops[1].mode, ops[1].value);
 
   if ((cbranch = maybe_gen_insn (icode, 3, ops)) == NULL_RTX)
-    error ("failed to expand built-in function");
+    {
+      error ("failed to expand built-in function");
+      return const0_rtx;
+    }
 
   cmp_result = gen_reg_rtx (SImode);
 
@@ -3114,7 +3117,7 @@ loongarch_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     {
       error_at (EXPR_LOCATION (exp),
 		"built-in function %qD is not enabled", fndecl);
-      return target;
+      return target ? target : const0_rtx;
     }
 
   switch (d->builtin_type)

@@ -1537,10 +1537,10 @@ massage_init_elt (tree type, tree init, int nested, int flags,
     new_flags |= LOOKUP_AGGREGATE_PAREN_INIT;
   init = digest_init_r (type, init, nested ? 2 : 1, new_flags, complain);
   /* When we defer constant folding within a statement, we may want to
-     defer this folding as well.  Don't call this on CONSTRUCTORs because
-     their elements have already been folded, and we must avoid folding
-     the result of get_nsdmi.  */
-  if (TREE_CODE (init) != CONSTRUCTOR)
+     defer this folding as well.  Don't call this on CONSTRUCTORs in
+     a template because their elements have already been folded, and
+     we must avoid folding the result of get_nsdmi.  */
+  if (!(processing_template_decl && TREE_CODE (init) == CONSTRUCTOR))
     {
       tree t = fold_non_dependent_init (init, complain);
       if (TREE_CONSTANT (t))
@@ -1774,13 +1774,6 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	    {
 	      gcc_assert (ce->value);
 	      next = massage_init_elt (fldtype, next, nested, flags, complain);
-	      /* We can't actually elide the temporary when initializing a
-		 potentially-overlapping field from a function that returns by
-		 value.  */
-	      if (ce->index
-		  && TREE_CODE (next) == TARGET_EXPR
-		  && unsafe_copy_elision_p (ce->index, next))
-		TARGET_EXPR_ELIDING_P (next) = false;
 	      ++idx;
 	    }
 	}
@@ -1872,6 +1865,13 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	      continue;
 	    }
 	}
+
+      /* We can't actually elide the temporary when initializing a
+	 potentially-overlapping field from a function that returns by
+	 value.  */
+      if (TREE_CODE (next) == TARGET_EXPR
+	  && unsafe_copy_elision_p (field, next))
+	TARGET_EXPR_ELIDING_P (next) = false;
 
       if (is_empty_field (field)
 	  && !TREE_SIDE_EFFECTS (next))
@@ -2347,7 +2347,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 				      (cp_type_quals (type)
 				       | cp_type_quals (TREE_TYPE (datum))));
 
-      datum = build_address (datum);
+      datum = cp_build_addr_expr (datum, complain);
 
       /* Convert object to the correct base.  */
       if (binfo)

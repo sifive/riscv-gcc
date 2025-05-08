@@ -1303,25 +1303,61 @@ expand_const_vector (rtx target, rtx src)
 	      /* Generate the variable-length vector following this rule:
 		 { a, a, a + step, a + step, a + step * 2, a + step * 2, ...}
 		   E.g. { 0, 0, 8, 8, 16, 16, ... } */
-	      /* We want to create a pattern where value[ix] = floor (ix /
+
+	      /* We want to create a pattern where value[idx] = floor (idx /
 		 NPATTERNS). As NPATTERNS is always a power of two we can
-		 rewrite this as = ix & -NPATTERNS.  */
+		 rewrite this as = idx & -NPATTERNS.  */
 	      /* Step 2: VID AND -NPATTERNS:
 		 { 0&-4, 1&-4, 2&-4, 3 &-4, 4 &-4, 5 &-4, 6 &-4, 7 &-4, ... }
 	      */
 	      rtx imm
 		= gen_int_mode (-builder.npatterns (), builder.inner_mode ());
-	      rtx tmp = gen_reg_rtx (builder.mode ());
-	      rtx and_ops[] = {tmp, vid, imm};
+	      rtx tmp1 = gen_reg_rtx (builder.mode ());
+	      rtx and_ops[] = {tmp1, vid, imm};
 	      icode = code_for_pred_scalar (AND, builder.mode ());
 	      emit_vlmax_insn (icode, BINARY_OP, and_ops);
+
+	      /* Step 3: Convert to step size 1.  */
+	      rtx tmp2 = gen_reg_rtx (builder.mode ());
+	      /* log2 (npatterns) to get the shift amount to convert
+		 Eg.  { 0, 0, 0, 0, 4, 4, ... }
+		 into { 0, 0, 0, 0, 1, 1, ... }.  */
+	      HOST_WIDE_INT shift_amt = exact_log2 (builder.npatterns ()) ;
+	      rtx shift = gen_int_mode (shift_amt, builder.inner_mode ());
+	      rtx shift_ops[] = {tmp2, tmp1, shift};
+	      icode = code_for_pred_scalar (ASHIFTRT, builder.mode ());
+	      emit_vlmax_insn (icode, BINARY_OP, shift_ops);
+
+	      /* Step 4: Multiply to step size n.  */
+	      HOST_WIDE_INT step_size =
+		INTVAL (builder.elt (builder.npatterns ()))
+		- INTVAL (builder.elt (0));
+	      rtx tmp3 = gen_reg_rtx (builder.mode ());
+	      if (pow2p_hwi (step_size))
+		{
+		  /* Power of 2 can be handled with a left shift.  */
+		  HOST_WIDE_INT shift = exact_log2 (step_size);
+		  rtx shift_amount = gen_int_mode (shift, Pmode);
+		  insn_code icode = code_for_pred_scalar (ASHIFT, mode);
+		  rtx ops[] = {tmp3, tmp2, shift_amount};
+		  emit_vlmax_insn (icode, BINARY_OP, ops);
+		}
+	      else
+		{
+		  rtx mult_amt = gen_int_mode (step_size, builder.inner_mode ());
+		  insn_code icode = code_for_pred_scalar (MULT, builder.mode ());
+		  rtx ops[] = {tmp3, tmp2, mult_amt};
+		  emit_vlmax_insn (icode, BINARY_OP, ops);
+		}
+
+	      /* Step 5: Add starting value to all elements.  */
 	      HOST_WIDE_INT init_val = INTVAL (builder.elt (0));
 	      if (init_val == 0)
-		emit_move_insn (target, tmp);
+		emit_move_insn (target, tmp3);
 	      else
 		{
 		  rtx dup = gen_const_vector_dup (builder.mode (), init_val);
-		  rtx add_ops[] = {target, tmp, dup};
+		  rtx add_ops[] = {target, tmp3, dup};
 		  icode = code_for_pred (PLUS, builder.mode ());
 		  emit_vlmax_insn (icode, BINARY_OP, add_ops);
 		}
@@ -1408,13 +1444,20 @@ expand_const_vector (rtx target, rtx src)
 
 	     can be interpreted into:
 
-		  EEW = 32, { 2, 4, ... }  */
+		  EEW = 32, { 2, 4, ... }.
+
+	     This only works as long as the larger type does not overflow
+	     as we can't guarantee a zero value for each second element
+	     of the sequence with smaller EEW.
+	     ??? For now we assume that no overflow happens with positive
+	     steps and forbid negative steps altogether.  */
 	  unsigned int new_smode_bitsize = builder.inner_bits_size () * 2;
 	  scalar_int_mode new_smode;
 	  machine_mode new_mode;
 	  poly_uint64 new_nunits
 	    = exact_div (GET_MODE_NUNITS (builder.mode ()), 2);
-	  if (int_mode_for_size (new_smode_bitsize, 0).exists (&new_smode)
+	  if (known_ge (step1, 0) && known_ge (step2, 0)
+	      && int_mode_for_size (new_smode_bitsize, 0).exists (&new_smode)
 	      && get_vector_mode (new_smode, new_nunits).exists (&new_mode))
 	    {
 	      rtx tmp = gen_reg_rtx (new_mode);
@@ -2034,7 +2077,7 @@ get_unknown_min_value (machine_mode mode)
 static rtx
 force_vector_length_operand (rtx vl)
 {
-  if (CONST_INT_P (vl) && !satisfies_constraint_K (vl))
+  if (CONST_INT_P (vl) && !satisfies_constraint_vl (vl))
     return force_reg (Pmode, vl);
   return vl;
 }
@@ -3834,7 +3877,7 @@ expand_load_store (rtx *ops, bool is_load)
     }
   else
     {
-      if (!satisfies_constraint_K (len))
+      if (!satisfies_constraint_vl (len))
 	len = force_reg (Pmode, len);
       if (is_load)
 	{
@@ -4162,30 +4205,47 @@ expand_cond_ternop (unsigned icode, rtx *ops)
      Case 2: ops = {scalar_dest, vector_src, mask, vl}
 */
 void
-expand_reduction (unsigned unspec, unsigned insn_flags, rtx *ops, rtx init)
+expand_reduction (unsigned unspec, unsigned unspec_for_vl0_safe,
+		  unsigned insn_flags, rtx *ops, rtx init)
 {
   rtx scalar_dest = ops[0];
   rtx vector_src = ops[1];
   machine_mode vmode = GET_MODE (vector_src);
   machine_mode vel_mode = GET_MODE (scalar_dest);
   machine_mode m1_mode = get_m1_mode (vel_mode).require ();
+  rtx vl_op = NULL_RTX;
+  bool need_vl0_safe = false;
+  if (need_mask_operand_p (insn_flags))
+    {
+      vl_op = ops[3];
+      need_vl0_safe = !CONST_INT_P (vl_op) && !CONST_POLY_INT_P (vl_op);
+    }
 
   rtx m1_tmp = gen_reg_rtx (m1_mode);
   rtx scalar_move_ops[] = {m1_tmp, init};
   insn_code icode = code_for_pred_broadcast (m1_mode);
   if (need_mask_operand_p (insn_flags))
-    emit_nonvlmax_insn (icode, SCALAR_MOVE_OP, scalar_move_ops, ops[3]);
+    {
+      if (need_vl0_safe)
+	emit_nonvlmax_insn (icode, SCALAR_MOVE_OP, scalar_move_ops, const1_rtx);
+      else
+	emit_nonvlmax_insn (icode, SCALAR_MOVE_OP, scalar_move_ops, vl_op);
+    }
   else
     emit_vlmax_insn (icode, SCALAR_MOVE_OP, scalar_move_ops);
 
   rtx m1_tmp2 = gen_reg_rtx (m1_mode);
   rtx reduc_ops[] = {m1_tmp2, vector_src, m1_tmp};
-  icode = code_for_pred (unspec, vmode);
+
+  if (need_vl0_safe)
+    icode = code_for_pred (unspec_for_vl0_safe, vmode);
+  else
+    icode = code_for_pred (unspec, vmode);
 
   if (need_mask_operand_p (insn_flags))
     {
       rtx mask_len_reduc_ops[] = {m1_tmp2, ops[2], vector_src, m1_tmp};
-      emit_nonvlmax_insn (icode, insn_flags, mask_len_reduc_ops, ops[3]);
+      emit_nonvlmax_insn (icode, insn_flags, mask_len_reduc_ops, vl_op);
     }
   else
     emit_vlmax_insn (icode, insn_flags, reduc_ops);
@@ -4262,7 +4322,7 @@ expand_lanes_load_store (rtx *ops, bool is_load)
     }
   else
     {
-      if (!satisfies_constraint_K (len))
+      if (!satisfies_constraint_vl (len))
 	len = force_reg (Pmode, len);
       if (is_load)
 	{
@@ -4955,6 +5015,9 @@ vlmax_avl_type_p (rtx_insn *rinsn)
   int index = get_attr_avl_type_idx (rinsn);
   if (index == INVALID_ATTRIBUTE)
     return false;
+
+  gcc_assert (index < recog_data.n_operands);
+
   rtx avl_type = recog_data.operand[index];
   return INTVAL (avl_type) == VLMAX;
 }
@@ -5003,6 +5066,9 @@ nonvlmax_avl_type_p (rtx_insn *rinsn)
   int index = get_attr_avl_type_idx (rinsn);
   if (index == INVALID_ATTRIBUTE)
     return false;
+
+  gcc_assert (index < recog_data.n_operands);
+
   rtx avl_type = recog_data.operand[index];
   return INTVAL (avl_type) == NONVLMAX;
 }
@@ -5055,7 +5121,7 @@ can_be_broadcasted_p (rtx op)
       && !satisfies_constraint_Wdm (op))
     return false;
 
-  if (satisfies_constraint_K (op) || register_operand (op, mode)
+  if (satisfies_constraint_vl (op) || register_operand (op, mode)
       || satisfies_constraint_Wdm (op) || rtx_equal_p (op, CONST0_RTX (mode)))
     return true;
 

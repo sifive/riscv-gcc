@@ -1692,7 +1692,8 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   gcc_assert (sym || c);
 
   /* Build the namelist object name.  */
-  if (sym && !sym->attr.use_only && sym->attr.use_rename)
+  if (sym && !sym->attr.use_only && sym->attr.use_rename
+      && sym->ns->use_stmts->rename)
     string = gfc_build_cstring_const (sym->ns->use_stmts->rename->local_name);
   else
     string = gfc_build_cstring_const (var_name);
@@ -2631,6 +2632,28 @@ gfc_trans_transfer (gfc_code * code)
 		 && expr->symtree->n.sym->assoc->variable)
 	     || gfc_expr_attr (expr).pointer))
 	goto scalarize;
+
+      /* With array-bounds checking enabled, force scalarization in some
+	 situations, e.g., when an array index depends on a function
+	 evaluation or an expression and possibly has side-effects.  */
+      if ((gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
+	  && ref
+	  && ref->u.ar.type == AR_SECTION)
+	{
+	  for (n = 0; n < ref->u.ar.dimen; n++)
+	    if (ref->u.ar.dimen_type[n] == DIMEN_ELEMENT
+		&& ref->u.ar.start[n])
+	      {
+		switch (ref->u.ar.start[n]->expr_type)
+		  {
+		  case EXPR_FUNCTION:
+		  case EXPR_OP:
+		    goto scalarize;
+		  default:
+		    break;
+		  }
+	      }
+	}
 
       if (!(gfc_bt_struct (expr->ts.type)
 	      || expr->ts.type == BT_CLASS)

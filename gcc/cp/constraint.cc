@@ -970,11 +970,19 @@ get_normalized_constraints_from_decl (tree d, bool diag = false)
      accepting the latter causes the template parameter level of U
      to be reduced in a way that makes it overly difficult substitute
      concrete arguments (i.e., eventually {int, int} during satisfaction.  */
-  if (tmpl)
-  {
-    if (DECL_LANG_SPECIFIC(tmpl) && !DECL_TEMPLATE_SPECIALIZATION (tmpl))
-      tmpl = most_general_template (tmpl);
-  }
+  if (tmpl && DECL_LANG_SPECIFIC (tmpl)
+      && (!DECL_TEMPLATE_SPECIALIZATION (tmpl)
+	  /* DECL_TEMPLATE_SPECIALIZATION means TMPL is either a partial
+	     specialization, or an explicit specialization of a member
+	     template.  In the former case all is well: TMPL's constraints
+	     are in terms of its parameters.  But in the latter case TMPL's
+	     parameters are partially instantiated whereas its constraints
+	     aren't, so we need to instead use (the parameters of) the most
+	     general template.  The following test distinguishes between a
+	     partial specialization and such an explicit specialization.  */
+	  || (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (tmpl))
+	      < TMPL_ARGS_DEPTH (DECL_TI_ARGS (tmpl)))))
+    tmpl = most_general_template (tmpl);
 
   d = tmpl ? tmpl : decl;
 
@@ -1993,7 +2001,9 @@ tsubst_valid_expression_requirement (tree t, tree args, sat_info info)
 {
   tsubst_flags_t quiet = info.complain & ~tf_warning_or_error;
   tree r = tsubst_expr (t, args, quiet, info.in_decl);
-  if (convert_to_void (r, ICV_STATEMENT, quiet) != error_mark_node)
+  if (r != error_mark_node
+      && (processing_template_decl
+	  || convert_to_void (r, ICV_STATEMENT, quiet) != error_mark_node))
     return r;
 
   if (info.diagnose_unsatisfaction_p ())
@@ -3349,6 +3359,8 @@ satisfy_declaration_constraints (tree t, sat_info info)
 static tree
 satisfy_declaration_constraints (tree t, tree args, sat_info info)
 {
+  tree orig_args = args;
+
   /* Update the declaration for diagnostics.  */
   info.in_decl = t;
 
@@ -3377,7 +3389,7 @@ satisfy_declaration_constraints (tree t, tree args, sat_info info)
   tree result = boolean_true_node;
   if (tree norm = get_normalized_constraints_from_decl (t, info.noisy ()))
     {
-      if (!push_tinst_level (t, args))
+      if (!push_tinst_level (t, orig_args))
 	return result;
       tree pattern = DECL_TEMPLATE_RESULT (t);
       push_to_top_level ();
@@ -3610,13 +3622,14 @@ strictly_subsumes (tree ci, tree tmpl)
   return subsumes (n1, n2) && !subsumes (n2, n1);
 }
 
-/* Returns true when the constraints in CI subsume the
-   associated constraints of TMPL.  */
+/* Returns true when the template template parameter constraints in CI
+   subsume the associated constraints of the template template argument
+   TMPL.  */
 
 bool
-weakly_subsumes (tree ci, tree tmpl)
+ttp_subsumes (tree ci, tree tmpl)
 {
-  tree n1 = get_normalized_constraints_from_info (ci, NULL_TREE);
+  tree n1 = get_normalized_constraints_from_info (ci, tmpl);
   tree n2 = get_normalized_constraints_from_decl (tmpl);
 
   return subsumes (n1, n2);

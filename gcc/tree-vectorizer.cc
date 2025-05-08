@@ -1063,7 +1063,8 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 		 LOCATION_LINE (vect_location.get_location_t ()));
 
   /* Try to analyze the loop, retaining an opt_problem if dump_enabled_p.  */
-  opt_loop_vec_info loop_vinfo = vect_analyze_loop (loop, &shared);
+  opt_loop_vec_info loop_vinfo = vect_analyze_loop (loop, loop_vectorized_call,
+						    &shared);
   loop->aux = loop_vinfo;
 
   if (!loop_vinfo)
@@ -1102,7 +1103,9 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 	      if (call && gimple_call_internal_p (call))
 		{
 		  internal_fn ifn = gimple_call_internal_fn (call);
-		  if (ifn == IFN_MASK_LOAD || ifn == IFN_MASK_STORE
+		  if (ifn == IFN_MASK_LOAD
+		      || ifn == IFN_MASK_STORE
+		      || ifn == IFN_MASK_CALL
 		      /* Don't keep the if-converted parts when the ifn with
 			 specifc type is not supported by the backend.  */
 		      || (direct_internal_fn_p (ifn)

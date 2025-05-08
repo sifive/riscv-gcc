@@ -862,8 +862,13 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
 #define ASM_OUTPUT_OPCODE(STREAM, PTR)	\
   (PTR) = riscv_asm_output_opcode(STREAM, PTR)
 
+<<<<<<< HEAD
 #define JUMP_TABLES_IN_TEXT_SECTION 0
 #define CASE_VECTOR_MODE (COMPACT_CMODEL_P ? DImode : SImode)
+=======
+#define JUMP_TABLES_IN_TEXT_SECTION (riscv_cmodel == CM_LARGE)
+#define CASE_VECTOR_MODE SImode
+>>>>>>> refs/rewritten/420aef66461965586293516945c6f5dcfda911ed-2
 #define CASE_VECTOR_PC_RELATIVE (riscv_cmodel != CM_MEDLOW)
 
 #define LOCAL_SYM_P(sym)						\
@@ -1238,8 +1243,6 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 #define REGISTER_TARGET_PRAGMAS() riscv_register_pragmas ()
 
 #define REGMODE_NATURAL_SIZE(MODE) riscv_regmode_natural_size (MODE)
-
-#define RISCV_DWARF_VLENB (4096 + 0xc22)
 
 #define DWARF_FRAME_REGISTERS (FIRST_PSEUDO_REGISTER + 1 /* VLENB */)
 

@@ -1497,7 +1497,7 @@ public:
   void visit (PtrExp *e) final override
   {
     Type *tnext = NULL;
-    size_t offset;
+    dinteger_t offset;
     tree result;
 
     if (e->e1->op == EXP::add)
@@ -2072,7 +2072,7 @@ public:
   void visit (SymOffExp *e) final override
   {
     /* Build the address and offset of the symbol.  */
-    size_t soffset = e->isSymOffExp ()->offset;
+    dinteger_t soffset = e->isSymOffExp ()->offset;
     tree result = get_decl_tree (e->var);
     TREE_USED (result) = 1;
 
@@ -2241,6 +2241,8 @@ public:
 	       storage class, then the instance is allocated on the stack
 	       rather than the heap or using the class specific allocator.  */
 	    tree var = build_local_temp (TREE_TYPE (type));
+	    SET_DECL_ALIGN (var, cd->alignsize * BITS_PER_UNIT);
+	    DECL_USER_ALIGN (var) = 1;
 	    new_call = build_nop (type, build_address (var));
 	    setup_exp = modify_expr (var, aggregate_initializer_decl (cd));
 	  }

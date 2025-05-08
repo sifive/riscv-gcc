@@ -5335,7 +5335,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 lowering = new DotIdExp(exp.loc, lowering, Id.object);
 
                 auto tbn = exp.type.nextOf();
-                while (tbn.ty == Tarray)
+                size_t i = nargs;
+                while (tbn.ty == Tarray && --i)
                     tbn = tbn.nextOf();
                 auto unqualTbn = tbn.unqualify(MODFlags.wild | MODFlags.const_ |
                     MODFlags.immutable_ | MODFlags.shared_);
@@ -15331,8 +15332,10 @@ Expression resolveLoc(Expression exp, const ref Loc loc, Scope* sc)
     Expression visitSlice(SliceExp exp)
     {
         exp.e1 = exp.e1.resolveLoc(loc, sc);
-        exp.lwr = exp.lwr.resolveLoc(loc, sc);
-        exp.upr = exp.upr.resolveLoc(loc, sc);
+        if (exp.lwr)
+            exp.lwr = exp.lwr.resolveLoc(loc, sc);
+        if (exp.upr)
+            exp.upr = exp.upr.resolveLoc(loc, sc);
 
         return exp;
     }

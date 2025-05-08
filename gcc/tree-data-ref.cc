@@ -765,6 +765,14 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
   if (INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_TRAPS (type))
     return false;
 
+  if (TREE_CODE (op0) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0))
+    return false;
+  if (op1
+      && TREE_CODE (op1) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op1))
+    return false;
+
   switch (code)
     {
     case INTEGER_CST:
@@ -860,9 +868,6 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 
     case SSA_NAME:
       {
-	if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0))
-	  return false;
-
 	gimple *def_stmt = SSA_NAME_DEF_STMT (op0);
 	enum tree_code subcode;
 
@@ -2493,9 +2498,10 @@ create_waw_or_war_checks (tree *cond_expr,
   limit = fold_build2 (PLUS_EXPR, sizetype, limit,
 		       size_int (last_chunk_a + last_chunk_b));
 
-  tree subject = fold_build2 (POINTER_DIFF_EXPR, ssizetype, addr_b, addr_a);
-  subject = fold_build2 (PLUS_EXPR, sizetype,
-			 fold_convert (sizetype, subject), bias);
+  tree subject = fold_build2 (MINUS_EXPR, sizetype,
+			      fold_convert (sizetype, addr_b),
+			      fold_convert (sizetype, addr_a));
+  subject = fold_build2 (PLUS_EXPR, sizetype, subject, bias);
 
   *cond_expr = fold_build2 (GT_EXPR, boolean_type_node, subject, limit);
   if (dump_enabled_p ())
@@ -2996,6 +3002,8 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
 	  && DR_BASE_ADDRESS (b)
 	  && operand_equal_p (DR_BASE_ADDRESS (a), DR_BASE_ADDRESS (b))
 	  && operand_equal_p (DR_OFFSET (a), DR_OFFSET (b))
+	  && tree_size_a
+	  && tree_size_b
 	  && poly_int_tree_p (tree_size_a)
 	  && poly_int_tree_p (tree_size_b)
 	  && !ranges_maybe_overlap_p (wi::to_poly_widest (DR_INIT (a)),
@@ -4057,7 +4065,7 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
       }
 
     case INTEGER_CST:
-      return chrec;
+      return cst_and_fits_in_hwi (chrec) ? chrec : chrec_dont_know;
 
     default:
       gcc_unreachable ();
@@ -5193,8 +5201,6 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
 	  non_affine_dependence_relation (ddr);
 	  return false;
 	}
-      else
-	*init_b = true;
     }
 
   return true;

@@ -336,7 +336,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct __hash_code_base_access : __hash_code_base
       { using __hash_code_base::_M_bucket_index; };
 
-      // To get bucket index we need _RangeHash not to throw.
+      // To get bucket index we need _RangeHash to be non-throwing.
       static_assert(is_nothrow_default_constructible<_RangeHash>::value,
 		    "Functor used to map hash code to bucket index"
 		    " must be nothrow default constructible");
@@ -345,7 +345,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "Functor used to map hash code to bucket index must be"
 		    " noexcept");
 
-      // To compute bucket index we also need _ExtratKey not to throw.
+      // To compute bucket index we also need _ExtractKey to be non-throwing.
       static_assert(is_nothrow_default_constructible<_ExtractKey>::value,
 		    "_ExtractKey must be nothrow default constructible");
       static_assert(noexcept(
@@ -885,9 +885,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       pair<__node_ptr, __hash_code>
       _M_compute_hash_code(__node_ptr __hint, const key_type& __k) const;
 
-      // Insert node __n with hash code __code, in bucket __bkt if no
-      // rehash (assumes no element with same key already present).
+      // Insert node __n with hash code __code, in bucket __bkt (or another
+      // bucket if rehashing is needed).
+      // Assumes no element with equivalent key is already present.
       // Takes ownership of __n if insertion succeeds, throws otherwise.
+      // __n_elt is an estimated number of elements we expect to insert,
+      // used as a hint for rehashing when inserting a range.
       iterator
       _M_insert_unique_node(size_type __bkt, __hash_code,
 			    __node_ptr __n, size_type __n_elt = 1);
@@ -921,28 +924,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::pair<iterator, bool>
 	_M_insert_unique(_Kt&&, _Arg&&, const _NodeGenerator&);
 
-      template<typename _Kt>
-	static __conditional_t<
-	  __and_<__is_nothrow_invocable<_Hash&, const key_type&>,
-		 __not_<__is_nothrow_invocable<_Hash&, _Kt>>>::value,
-	  key_type, _Kt&&>
-	_S_forward_key(_Kt&& __k)
-	{ return std::forward<_Kt>(__k); }
-
-      static const key_type&
-      _S_forward_key(const key_type& __k)
-      { return __k; }
-
-      static key_type&&
-      _S_forward_key(key_type&& __k)
-      { return std::move(__k); }
-
       template<typename _Arg, typename _NodeGenerator>
 	std::pair<iterator, bool>
 	_M_insert_unique_aux(_Arg&& __arg, const _NodeGenerator& __node_gen)
 	{
+	  using _Kt = decltype(_ExtractKey{}(std::forward<_Arg>(__arg)));
+	  constexpr bool __is_key_type
+	    = is_same<__remove_cvref_t<_Kt>, key_type>::value;
+	  using _Fwd_key = __conditional_t<__is_key_type, _Kt&&, key_type>;
 	  return _M_insert_unique(
-	    _S_forward_key(_ExtractKey{}(std::forward<_Arg>(__arg))),
+	    static_cast<_Fwd_key>(_ExtractKey{}(std::forward<_Arg>(__arg))),
 	    std::forward<_Arg>(__arg), __node_gen);
 	}
 
@@ -951,10 +942,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_insert(_Arg&& __arg, const _NodeGenerator& __node_gen,
 		  true_type /* __uks */)
 	{
-	  using __to_value
-	    = __detail::_ConvertToValueType<_ExtractKey, value_type>;
+	  using __detail::_Identity;
+	  using _Vt = __conditional_t<is_same<_ExtractKey, _Identity>::value
+					|| __is_pair<__remove_cvref_t<_Arg>>,
+				      _Arg&&, value_type>;
 	  return _M_insert_unique_aux(
-	    __to_value{}(std::forward<_Arg>(__arg)), __node_gen);
+		   static_cast<_Vt>(std::forward<_Arg>(__arg)), __node_gen);
 	}
 
       template<typename _Arg, typename _NodeGenerator>
@@ -962,10 +955,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_insert(_Arg&& __arg, const _NodeGenerator& __node_gen,
 		  false_type __uks)
 	{
-	  using __to_value
-	    = __detail::_ConvertToValueType<_ExtractKey, value_type>;
-	  return _M_insert(cend(),
-	    __to_value{}(std::forward<_Arg>(__arg)), __node_gen, __uks);
+	  return _M_insert(cend(), std::forward<_Arg>(__arg),
+			   __node_gen, __uks);
 	}
 
       // Insert with hint, not used when keys are unique.
@@ -1014,7 +1005,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       iterator
       erase(const_iterator);
 
-      // LWG 2059.
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2059. C++0x ambiguity problem with map::erase
       iterator
       erase(iterator __it)
       { return erase(const_iterator(__it)); }
@@ -1036,7 +1028,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // DR 1189.
       // reserve, if present, comes from _Rehash_base.
 
-#if __glibcxx_node_extract // >= C++17
+#if __glibcxx_node_extract // >= C++17 && HOSTED
       /// Re-insert an extracted node into a container with unique keys.
       insert_return_type
       _M_reinsert_node(node_type&& __nh)
@@ -1719,7 +1711,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
-    auto
+    auto inline
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
     find(const key_type& __k)
@@ -1742,7 +1734,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
-    auto
+    auto inline
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
     find(const key_type& __k) const

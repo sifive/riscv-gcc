@@ -3235,15 +3235,14 @@ gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args,
 
 	  vec_safe_push (hidden_typelist, type);
 	}
-      /* For scalar intrinsic types, VALUE passes the value,
+      /* For scalar intrinsic types or derived types, VALUE passes the value,
 	 hence, the optional status cannot be transferred via a NULL pointer.
 	 Thus, we will use a hidden argument in that case.  */
       if (arg
 	  && arg->attr.optional
 	  && arg->attr.value
 	  && !arg->attr.dimension
-	  && arg->ts.type != BT_CLASS
-	  && !gfc_bt_struct (arg->ts.type))
+	  && arg->ts.type != BT_CLASS)
 	vec_safe_push (typelist, boolean_type_node);
       /* Coarrays which are descriptorless or assumed-shape pass with
 	 -fcoarray=lib the token and the offset as hidden arguments.  */
@@ -3527,14 +3526,11 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
     {
       rank = 1;
       info->ndimensions = 1;
-      t = base_decl;
-      if (!integer_zerop (dtype_off))
-	t = fold_build_pointer_plus (t, dtype_off);
+      t = fold_build_pointer_plus (base_decl, dtype_off);
       dtype = TYPE_MAIN_VARIANT (get_dtype_type_node ());
       field = gfc_advance_chain (TYPE_FIELDS (dtype), GFC_DTYPE_RANK);
       rank_off = byte_position (field);
-      if (!integer_zerop (dtype_off))
-	t = fold_build_pointer_plus (t, rank_off);
+      t = fold_build_pointer_plus (t, rank_off);
 
       t = build1 (NOP_EXPR, build_pointer_type (TREE_TYPE (field)), t);
       t = build1 (INDIRECT_REF, TREE_TYPE (field), t);

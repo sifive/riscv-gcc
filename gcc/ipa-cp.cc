@@ -4608,7 +4608,8 @@ adjust_clone_incoming_counts (cgraph_node *node,
 	cs->count = cs->count.combine_with_ipa_count (sum);
       }
     else if (!desc->processed_edges->contains (cs)
-	     && cs->caller->clone_of == desc->orig)
+	     && cs->caller->clone_of == desc->orig
+	     && cs->count.compatible_p (desc->count))
       {
 	cs->count += desc->count;
 	if (dump_file)
@@ -6354,6 +6355,11 @@ ipcp_store_vr_results (void)
 						     TYPE_PRECISION (type),
 						     TYPE_SIGN (type)));
 		  r.update_bitmask (bm);
+		  // Reflecting the bitmask on the ranges can sometime
+		  // produce an UNDEFINED value if the the bitmask update
+		  // was previously deferred.  See PR 120048.
+		  if (tmp.undefined_p ())
+		    tmp.set_varying (type);
 		  ipa_vr vr (tmp);
 		  ts->m_vr->quick_push (vr);
 		}
@@ -6376,6 +6382,11 @@ ipcp_store_vr_results (void)
 						 TYPE_PRECISION (type),
 						 TYPE_SIGN (type)));
 	      r.update_bitmask (bm);
+	      // Reflecting the bitmask on the ranges can sometime
+	      // produce an UNDEFINED value if the the bitmask update
+	      // was previously deferred.  See PR 120048.
+	      if (tmp.undefined_p ())
+		tmp.set_varying (type);
 	      ipa_vr vr (tmp);
 	      ts->m_vr->quick_push (vr);
 	    }

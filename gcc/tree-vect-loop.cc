@@ -1734,7 +1734,8 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
      niter could be analyzed under some assumptions.  */
 
 opt_result
-vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
+vect_analyze_loop_form (class loop *loop, gimple *loop_vectorized_call,
+			vect_loop_form_info *info)
 {
   DUMP_VECT_SCOPE ("vect_analyze_loop_form");
 
@@ -1744,6 +1745,18 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
 				   "not vectorized:"
 				   " could not determine main exit from"
 				   " loop with multiple exits.\n");
+  if (loop_vectorized_call)
+    {
+      tree arg = gimple_call_arg (loop_vectorized_call, 1);
+      class loop *scalar_loop = get_loop (cfun, tree_to_shwi (arg));
+      edge scalar_exit_e = vec_init_loop_exit_info (scalar_loop);
+      if (!scalar_exit_e)
+	return opt_result::failure_at (vect_location,
+				       "not vectorized:"
+				       " could not determine main exit from"
+				       " loop with multiple exits.\n");
+    }
+
   info->loop_exit = exit_e;
   if (dump_enabled_p ())
       dump_printf_loc (MSG_NOTE, vect_location,
@@ -1751,9 +1764,8 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
 		       exit_e->src->index, exit_e->dest->index, exit_e->aux);
 
   /* Check if we have any control flow that doesn't leave the loop.  */
-  class loop *v_loop = loop->inner ? loop->inner : loop;
-  basic_block *bbs = get_loop_body (v_loop);
-  for (unsigned i = 0; i < v_loop->num_nodes; i++)
+  basic_block *bbs = get_loop_body (loop);
+  for (unsigned i = 0; i < loop->num_nodes; i++)
     if (EDGE_COUNT (bbs[i]->succs) != 1
 	&& (EDGE_COUNT (bbs[i]->succs) != 2
 	    || !loop_exits_from_bb_p (bbs[i]->loop_father, bbs[i])))
@@ -1816,7 +1828,7 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
 
       /* Analyze the inner-loop.  */
       vect_loop_form_info inner;
-      opt_result res = vect_analyze_loop_form (loop->inner, &inner);
+      opt_result res = vect_analyze_loop_form (loop->inner, NULL, &inner);
       if (!res)
 	{
 	  if (dump_enabled_p ())
@@ -1848,10 +1860,17 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
 				   " too many incoming edges.\n");
 
   /* We assume that the latch is empty.  */
-  if (!empty_block_p (loop->latch)
-      || !gimple_seq_empty_p (phi_nodes (loop->latch)))
-    return opt_result::failure_at (vect_location,
-				   "not vectorized: latch block not empty.\n");
+  basic_block latch = loop->latch;
+  do
+    {
+      if (!empty_block_p (latch)
+	  || !gimple_seq_empty_p (phi_nodes (latch)))
+	return opt_result::failure_at (vect_location,
+				       "not vectorized: latch block not "
+				       "empty.\n");
+      latch = single_pred (latch);
+    }
+  while (single_succ_p (latch));
 
   /* Make sure there is no abnormal exit.  */
   auto_vec<edge> exits = get_loop_exit_edges (loop);
@@ -3564,7 +3583,8 @@ vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
    for it.  The different analyses will record information in the
    loop_vec_info struct.  */
 opt_loop_vec_info
-vect_analyze_loop (class loop *loop, vec_info_shared *shared)
+vect_analyze_loop (class loop *loop, gimple *loop_vectorized_call,
+		   vec_info_shared *shared)
 {
   DUMP_VECT_SCOPE ("analyze_loop_nest");
 
@@ -3582,7 +3602,8 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 
   /* Analyze the loop form.  */
   vect_loop_form_info loop_form_info;
-  opt_result res = vect_analyze_loop_form (loop, &loop_form_info);
+  opt_result res = vect_analyze_loop_form (loop, loop_vectorized_call,
+					   &loop_form_info);
   if (!res)
     {
       if (dump_enabled_p ())
@@ -4011,7 +4032,8 @@ needs_fold_left_reduction_p (tree type, code_helper code)
 static bool
 check_reduction_path (dump_user_location_t loc, loop_p loop, gphi *phi,
 		      tree loop_arg, code_helper *code,
-		      vec<std::pair<ssa_op_iter, use_operand_p> > &path)
+		      vec<std::pair<ssa_op_iter, use_operand_p> > &path,
+		      bool inner_loop_of_double_reduc)
 {
   auto_bitmap visited;
   tree lookfor = PHI_RESULT (phi);
@@ -4148,7 +4170,8 @@ pop:
 	  break;
 	}
       /* Check there's only a single stmt the op is used on.  For the
-	 not value-changing tail and the last stmt allow out-of-loop uses.
+	 not value-changing tail and the last stmt allow out-of-loop uses,
+	 but not when this is the inner loop of a double reduction.
 	 ???  We could relax this and handle arbitrary live stmts by
 	 forcing a scalar epilogue for example.  */
       imm_use_iterator imm_iter;
@@ -4183,7 +4206,7 @@ pop:
 		}
 	    }
 	  else if (!is_gimple_debug (op_use_stmt)
-		   && (*code != ERROR_MARK
+		   && ((*code != ERROR_MARK || inner_loop_of_double_reduc)
 		       || flow_bb_inside_loop_p (loop,
 						 gimple_bb (op_use_stmt))))
 	    FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
@@ -4205,7 +4228,7 @@ check_reduction_path (dump_user_location_t loc, loop_p loop, gphi *phi,
 {
   auto_vec<std::pair<ssa_op_iter, use_operand_p> > path;
   code_helper code_;
-  return (check_reduction_path (loc, loop, phi, loop_arg, &code_, path)
+  return (check_reduction_path (loc, loop, phi, loop_arg, &code_, path, false)
 	  && code_ == code);
 }
 
@@ -4415,7 +4438,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
   auto_vec<std::pair<ssa_op_iter, use_operand_p> > path;
   code_helper code;
   if (check_reduction_path (vect_location, loop, phi, latch_def, &code,
-			    path))
+			    path, inner_loop_of_double_reduc))
     {
       STMT_VINFO_REDUC_CODE (phi_info) = code;
       if (code == COND_EXPR && !nested_in_vect_loop)
@@ -8637,7 +8660,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	    new_stmt = gimple_build_call_internal (internal_fn (code),
 						   op.num_ops,
 						   vop[0], vop[1], vop[2],
-						   vop[1]);
+						   vop[reduc_index]);
 	  else
 	    new_stmt = gimple_build_assign (vec_dest, tree_code (op.code),
 					    vop[0], vop[1], vop[2]);
@@ -10228,7 +10251,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	  vec_steps.safe_push (vec_step);
 	  tree step_mul = gimple_build_vector (&init_stmts, &mul_elts);
 	  if (peel_mul)
-	    step_mul = gimple_build (&init_stmts, PLUS_EXPR, step_vectype,
+	    step_mul = gimple_build (&init_stmts, MINUS_EXPR, step_vectype,
 				     step_mul, peel_mul);
 	  if (!init_node)
 	    vec_init = gimple_build_vector (&init_stmts, &init_elts);
@@ -10651,7 +10674,8 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
       gimple_stmt_iterator gsi = gsi_last (tem);
       tree len = vect_get_loop_len (loop_vinfo, &gsi,
 				    &LOOP_VINFO_LENS (loop_vinfo),
-				    1, vectype, 0, 0);
+				    1, vectype, 0, 1);
+      gimple_seq_add_seq (&stmts, tem);
 
       /* BIAS - 1.  */
       signed char biasval = LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
@@ -10988,7 +11012,8 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 
       /* There a no further out-of-loop uses of lhs by LC-SSA construction.  */
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, lhs)
-	gcc_assert (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)));
+	gcc_assert (is_gimple_debug (use_stmt)
+		    || flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)));
     }
   else
     {

@@ -376,6 +376,7 @@ match_data_constant (gfc_expr **result)
   gfc_expr *expr;
   match m;
   locus old_loc;
+  gfc_symtree *symtree;
 
   m = gfc_match_literal_constant (&expr, 1);
   if (m == MATCH_YES)
@@ -436,8 +437,10 @@ match_data_constant (gfc_expr **result)
   if (m != MATCH_YES)
     return m;
 
-  if (gfc_find_symbol (name, NULL, 1, &sym))
+  if (gfc_find_sym_tree (name, NULL, 1, &symtree))
     return MATCH_ERROR;
+
+  sym = symtree->n.sym;
 
   if (sym && sym->attr.generic)
     dt_sym = gfc_find_dt_in_generic (sym);
@@ -452,7 +455,7 @@ match_data_constant (gfc_expr **result)
       return MATCH_ERROR;
     }
   else if (dt_sym && gfc_fl_struct (dt_sym->attr.flavor))
-    return gfc_match_structure_constructor (dt_sym, result);
+    return gfc_match_structure_constructor (dt_sym, symtree, result);
 
   /* Check to see if the value is an initialization array expression.  */
   if (sym->value->expr_type == EXPR_ARRAY)
@@ -2417,11 +2420,24 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
     }
   else if (c->attr.allocatable)
     {
+      const char *err = G_("Allocatable component of structure at %C must have "
+			   "a deferred shape");
       if (c->as->type != AS_DEFERRED)
 	{
-	  gfc_error ("Allocatable component of structure at %C must have a "
-		     "deferred shape");
-	  return false;
+	  if (c->ts.type == BT_CLASS || c->ts.type == BT_DERIVED)
+	    {
+	      /* Issue an immediate error and allow this component to pass for
+		 the sake of clean error recovery.  Set the error flag for the
+		 containing derived type so that finalizers are not built.  */
+	      gfc_error_now (err);
+	      s->sym->error = 1;
+	      c->as->type = AS_DEFERRED;
+	    }
+	  else
+	    {
+	      gfc_error (err);
+	      return false;
+	    }
 	}
     }
   else

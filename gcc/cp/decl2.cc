@@ -1951,7 +1951,7 @@ build_anon_union_vars (tree type, tree object)
 
       if (processing_template_decl)
 	ref = build_min_nt_loc (UNKNOWN_LOCATION, COMPONENT_REF, object,
-				DECL_NAME (field), NULL_TREE);
+				field, NULL_TREE);
       else
 	ref = build_class_member_access_expr (object, field, NULL_TREE,
 					      false, tf_warning_or_error);
@@ -2172,7 +2172,8 @@ static void
 mark_vtable_entries (tree decl, vec<tree> &consteval_vtables)
 {
   /* It's OK for the vtable to refer to deprecated virtual functions.  */
-  warning_sentinel w(warn_deprecated_decl);
+  auto du = make_temp_override (deprecated_state,
+				UNAVAILABLE_DEPRECATED_SUPPRESS);
 
   bool consteval_seen = false;
 
@@ -2709,6 +2710,14 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
       tpvis = type_visibility (TREE_TYPE (t));
       break;
 
+    case ADDR_EXPR:
+      t = TREE_OPERAND (t, 0);
+      if (VAR_P (t))
+	/* If a variable has its address taken, the lvalue-rvalue conversion is
+	   not applied, so skip that case.  */
+	goto addressable;
+      break;
+
     case TEMPLATE_DECL:
       if (DECL_ALIAS_TEMPLATE_P (t) || standard_concept_p (t))
 	/* FIXME: We don't maintain TREE_PUBLIC / DECL_VISIBILITY for
@@ -2722,9 +2731,15 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
       if (decl_constant_var_p (t))
 	/* The ODR allows definitions in different TUs to refer to distinct
 	   constant variables with internal or no linkage, so such a reference
-	   shouldn't affect visibility (PR110323).  FIXME but only if the
-	   lvalue-rvalue conversion is applied.  */;
-      else if (! TREE_PUBLIC (t))
+	   shouldn't affect visibility if the lvalue-rvalue conversion is
+	   applied (PR110323).  We still want to restrict visibility according
+	   to the type of the declaration however.  */
+	{
+	  tpvis = type_visibility (TREE_TYPE (t));
+	  break;
+	}
+    addressable:
+      if (! TREE_PUBLIC (t))
 	tpvis = VISIBILITY_ANON;
       else
 	tpvis = DECL_VISIBILITY (t);
@@ -3313,16 +3328,23 @@ tentative_decl_linkage (tree decl)
 	     linkage of all functions, and as that causes writes to
 	     the data mapped in from the PCH file, it's advantageous
 	     to mark the functions at this point.  */
-	  if (DECL_DECLARED_INLINE_P (decl)
-	      && (!DECL_IMPLICIT_INSTANTIATION (decl)
-		  || DECL_DEFAULTED_FN (decl)))
+	  if (DECL_DECLARED_INLINE_P (decl))
 	    {
-	      /* This function must have external linkage, as
-		 otherwise DECL_INTERFACE_KNOWN would have been
-		 set.  */
-	      gcc_assert (TREE_PUBLIC (decl));
-	      comdat_linkage (decl);
-	      DECL_INTERFACE_KNOWN (decl) = 1;
+	      if (!DECL_IMPLICIT_INSTANTIATION (decl)
+		  || DECL_DEFAULTED_FN (decl))
+		{
+		  /* This function must have external linkage, as
+		     otherwise DECL_INTERFACE_KNOWN would have been
+		     set.  */
+		  gcc_assert (TREE_PUBLIC (decl));
+		  comdat_linkage (decl);
+		  DECL_INTERFACE_KNOWN (decl) = 1;
+		}
+	      else if (DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
+		/* For implicit instantiations of cdtors try to make
+		   it comdat, so that maybe_clone_body can use aliases.
+		   See PR113208.  */
+		maybe_make_one_only (decl);
 	    }
 	}
       else if (VAR_P (decl))
@@ -3569,9 +3591,6 @@ import_export_decl (tree decl)
     }
 
   DECL_INTERFACE_KNOWN (decl) = 1;
-
-  if (DECL_CLONED_FUNCTION_P (decl))
-    maybe_optimize_cdtor (decl);
 }
 
 /* Return an expression that performs the destruction of DECL, which
@@ -4649,7 +4668,8 @@ decl_maybe_constant_var_p (tree decl)
   tree type = TREE_TYPE (decl);
   if (!VAR_P (decl))
     return false;
-  if (DECL_DECLARED_CONSTEXPR_P (decl) && !TREE_THIS_VOLATILE (decl))
+  if (DECL_DECLARED_CONSTEXPR_P (decl)
+      && (!TREE_THIS_VOLATILE (decl) || NULLPTR_TYPE_P (type)))
     return true;
   if (DECL_HAS_VALUE_EXPR_P (decl))
     /* A proxy isn't constant.  */
@@ -5296,7 +5316,7 @@ c_parse_final_cleanups (void)
 		node = node->get_alias_target ();
 
 	      node->call_for_symbol_thunks_and_aliases (clear_decl_external,
-						      NULL, true);
+							NULL, true);
 	      /* If we mark !DECL_EXTERNAL one of the symbols in some comdat
 		 group, we need to mark all symbols in the same comdat group
 		 that way.  */
@@ -5306,7 +5326,7 @@ c_parse_final_cleanups (void)
 		     next != node;
 		     next = dyn_cast<cgraph_node *> (next->same_comdat_group))
 		  next->call_for_symbol_thunks_and_aliases (clear_decl_external,
-							  NULL, true);
+							    NULL, true);
 	    }
 
 	  /* If we're going to need to write this function out, and

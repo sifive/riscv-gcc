@@ -1325,7 +1325,7 @@ get_symbol_decl (Declaration *decl)
       /* `const` applies to data that cannot be changed by the const reference
 	 to that data. It may, however, be changed by another reference to that
 	 same data.  */
-      if (vd->isConst () && !vd->isDataseg ())
+      if (vd->isConst () && !vd->isResult () && !vd->isDataseg ())
 	TREE_READONLY (decl->csym) = 1;
     }
 
@@ -2392,6 +2392,12 @@ aggregate_initializer_decl (AggregateDeclaration *decl)
   if (sd && !sd->alignment.isDefault ())
     {
       SET_DECL_ALIGN (sinit, sd->alignment.get () * BITS_PER_UNIT);
+      DECL_USER_ALIGN (sinit) = true;
+    }
+  else if (sd == NULL)
+    {
+      /* Alignment of class is determined its biggest field alignment.  */
+      SET_DECL_ALIGN (sinit, decl->alignsize * BITS_PER_UNIT);
       DECL_USER_ALIGN (sinit) = true;
     }
 

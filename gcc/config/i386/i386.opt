@@ -1382,6 +1382,6 @@ Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
 and AVX10.1-512 built-in functions and code generation.
 
 mavx10.1
-Target Alias(mavx10.1-256)
+Target Alias(mavx10.1-512) Warn(%<-mavx10.1%> is aliased to 512 bit since GCC14.3)
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
-and AVX10.1 built-in functions and code generation.
+and AVX10.1-512 built-in functions and code generation.

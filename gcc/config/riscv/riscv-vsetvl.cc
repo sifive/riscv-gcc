@@ -222,6 +222,8 @@ enum emit_type
   EMIT_AFTER,
 };
 
+static const int MAX_LMUL = 8;
+
 /* dump helper functions */
 static const char *
 vlmul_to_str (vlmul_type vlmul)
@@ -682,7 +684,7 @@ invalid_opt_bb_p (basic_block cfg_bb)
   /* We only do LCM optimizations on blocks that are post dominated by
      EXIT block, that is, we don't do LCM optimizations on infinite loop.  */
   FOR_EACH_EDGE (e, ei, cfg_bb->succs)
-    if (e->flags & EDGE_FAKE)
+    if ((e->flags & EDGE_FAKE) || (e->flags & EDGE_ABNORMAL))
       return true;
 
   return false;
@@ -900,7 +902,8 @@ public:
   bool valid_p () const { return m_state == state_type::VALID; }
   bool unknown_p () const { return m_state == state_type::UNKNOWN; }
   bool empty_p () const { return m_state == state_type::EMPTY; }
-  bool change_vtype_only_p () const { return m_change_vtype_only; }
+  bool change_vtype_only_p () const { return m_change_vtype_only
+					     && !TARGET_XTHEADVECTOR; }
 
   void set_valid () { m_state = state_type::VALID; }
   void set_unknown () { m_state = state_type::UNKNOWN; }
@@ -1001,6 +1004,9 @@ public:
 
   void parse_insn (insn_info *insn)
   {
+    /* The VL dest of the insn */
+    rtx dest_vl = NULL_RTX;
+
     m_insn = insn;
     m_bb = insn->bb ();
     /* Return if it is debug insn for the consistency with optimize == 0.  */
@@ -1034,7 +1040,10 @@ public:
     if (m_avl)
       {
 	if (vsetvl_insn_p (insn->rtl ()) || has_vlmax_avl ())
-	  m_vl = ::get_vl (insn->rtl ());
+	  {
+	    m_vl = ::get_vl (insn->rtl ());
+	    dest_vl = m_vl;
+	  }
 
 	if (has_nonvlmax_reg_avl ())
 	  m_avl_def = find_access (insn->uses (), REGNO (m_avl))->def ();
@@ -1131,22 +1140,22 @@ public:
       }
 
     /* Determine if dest operand(vl) has been used by non-RVV instructions.  */
-    if (has_vl ())
+    if (dest_vl)
       {
 	const hash_set<use_info *> vl_uses
-	  = get_all_real_uses (get_insn (), REGNO (get_vl ()));
+	  = get_all_real_uses (get_insn (), REGNO (dest_vl));
 	for (use_info *use : vl_uses)
 	  {
 	    gcc_assert (use->insn ()->is_real ());
 	    rtx_insn *rinsn = use->insn ()->rtl ();
 	    if (!has_vl_op (rinsn)
-		|| count_regno_occurrences (rinsn, REGNO (get_vl ())) != 1)
+		|| count_regno_occurrences (rinsn, REGNO (dest_vl)) != 1)
 	      {
 		m_vl_used_by_non_rvv_insn = true;
 		break;
 	      }
 	    rtx avl = ::get_avl (rinsn);
-	    if (!avl || !REG_P (avl) || REGNO (get_vl ()) != REGNO (avl))
+	    if (!avl || !REG_P (avl) || REGNO (dest_vl) != REGNO (avl))
 	      {
 		m_vl_used_by_non_rvv_insn = true;
 		break;
@@ -1438,14 +1447,13 @@ private:
   inline bool prev_ratio_valid_for_next_sew_p (const vsetvl_info &prev,
 					       const vsetvl_info &next)
   {
-    return prev.get_ratio () >= (next.get_sew () / 8);
+    return prev.get_ratio () >= (next.get_sew () / MAX_LMUL);
   }
   inline bool next_ratio_valid_for_prev_sew_p (const vsetvl_info &prev,
 					       const vsetvl_info &next)
   {
-    return next.get_ratio () >= (prev.get_sew () / 8);
+    return next.get_ratio () >= (prev.get_sew () / MAX_LMUL);
   }
-
   inline bool sew_ge_and_ratio_eq_p (const vsetvl_info &prev,
 				     const vsetvl_info &next)
   {
@@ -1463,6 +1471,13 @@ private:
     return sew_ge_p (prev, next) && prev_sew_le_next_max_sew_p (prev, next)
 	   && next_ratio_valid_for_prev_sew_p (prev, next);
   }
+  inline bool
+  sew_ge_and_prev_sew_le_next_max_sew_and_ratio_eq_p (
+    const vsetvl_info &prev, const vsetvl_info &next)
+  {
+    return sew_ge_p (prev, next) && prev_sew_le_next_max_sew_p (prev, next)
+	   && ratio_eq_p (prev, next);
+  }
   inline bool sew_le_and_next_sew_le_prev_max_sew_p (const vsetvl_info &prev,
 						     const vsetvl_info &next)
   {
@@ -1472,8 +1487,15 @@ private:
   max_sew_overlap_and_next_ratio_valid_for_prev_sew_p (const vsetvl_info &prev,
 						       const vsetvl_info &next)
   {
-    return next_ratio_valid_for_prev_sew_p (prev, next)
-	   && max_sew_overlap_p (prev, next);
+    if (next_ratio_valid_for_prev_sew_p (prev, next)
+	&& max_sew_overlap_p (prev, next))
+      {
+	if (next.get_sew () < prev.get_sew ()
+	    && (!next.get_ta () || !next.get_ma ()))
+	  return false;
+	return true;
+      }
+    return false;
   }
   inline bool
   sew_le_and_next_sew_le_prev_max_sew_and_ratio_eq_p (const vsetvl_info &prev,
@@ -2632,6 +2654,7 @@ pre_vsetvl::compute_lcm_local_properties ()
   m_avout = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), num_exprs);
 
   bitmap_vector_clear (m_avloc, last_basic_block_for_fn (cfun));
+  bitmap_vector_clear (m_kill, last_basic_block_for_fn (cfun));
   bitmap_vector_clear (m_antloc, last_basic_block_for_fn (cfun));
   bitmap_vector_ones (m_transp, last_basic_block_for_fn (cfun));
 
@@ -2683,6 +2706,10 @@ pre_vsetvl::compute_lcm_local_properties ()
 
       if (invalid_opt_bb_p (bb->cfg_bb ()))
 	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "\n --- skipping bb %u due to weird edge",
+		     bb->index ());
+
 	  bitmap_clear (m_antloc[bb_index]);
 	  bitmap_clear (m_transp[bb_index]);
 	}
@@ -2942,6 +2969,18 @@ pre_vsetvl::earliest_fuse_vsetvl_info (int iter)
 		    }
 		  continue;
 		}
+
+	      /* We cannot lift a vsetvl into the source block if the block is
+		 not transparent WRT to it.
+		 This is too restrictive for blocks where a register's use only
+		 feeds into vsetvls and no regular insns.  One example is the
+		 test rvv/vsetvl/avl_single-68.c which is currently XFAILed for
+		 that reason.
+		 In order to support this case we'd need to check the vsetvl's
+		 AVL operand's uses in the source block and make sure they are
+		 only used in other vsetvls.  */
+	      if (!bitmap_bit_p (m_transp[eg->src->index], expr_index))
+		continue;
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
