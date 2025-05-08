@@ -810,7 +810,7 @@
   "&& 1"
   [(const_int 0)]
 {
-  riscv_vector::expand_reduction (<WREDUC_UNSPEC_AV>, riscv_vector::REDUCE_OP,
+  riscv_vector::expand_reduction (<WREDUC_UNSPEC>, riscv_vector::REDUCE_OP,
                                   operands,
                                   CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
   DONE;
@@ -829,7 +829,7 @@
   "&& 1"
   [(const_int 0)]
 {
-  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED_AV,
+  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED,
                                   riscv_vector::REDUCE_OP_FRM_DYN,
                                   operands,
                                   CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
@@ -850,7 +850,7 @@
   "&& 1"
   [(const_int 0)]
 {
-  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_ORDERED_AV,
+  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_ORDERED,
                                   riscv_vector::REDUCE_OP_FRM_DYN,
                                   operands, operands[2]);
   DONE;
@@ -878,7 +878,7 @@
   else
     {
       rtx ops[] = {operands[0], operands[2], operands[3], operands[4]};
-      riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_ORDERED_AV,
+      riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_ORDERED,
                                       riscv_vector::REDUCE_OP_M_FRM_DYN,
                                       ops, operands[1]);
     }
@@ -1226,7 +1226,7 @@
 {
   rtx ops[] = {operands[0], operands[2], operands[1],
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
-  riscv_vector::expand_reduction (<WREDUC_UNSPEC_AV>,
+  riscv_vector::expand_reduction (<WREDUC_UNSPEC>,
                                   riscv_vector::REDUCE_OP_M,
                                   ops, CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
   DONE;
@@ -1281,7 +1281,7 @@
   [(const_int 0)]
 {
   rtx ops[] = {operands[0], operands[3], operands[1], operands[2]};
-  riscv_vector::expand_reduction (<WREDUC_UNSPEC_AV>,
+  riscv_vector::expand_reduction (<WREDUC_UNSPEC>,
                                   riscv_vector::REDUCE_OP_M,
                                   ops, CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
   DONE;
@@ -1317,7 +1317,7 @@
 {
   rtx ops[] = {operands[0], operands[2], operands[1],
                gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode)};
-  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED_AV,
+  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED,
                                   riscv_vector::REDUCE_OP_M_FRM_DYN,
                                   ops, CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
   DONE;
@@ -1372,7 +1372,7 @@
   [(const_int 0)]
 {
   rtx ops[] = {operands[0], operands[3], operands[1], operands[2]};
-  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED_AV,
+  riscv_vector::expand_reduction (UNSPEC_WREDUC_SUM_UNORDERED,
                                   riscv_vector::REDUCE_OP_M_FRM_DYN,
                                   ops, CONST0_RTX (<V_DOUBLE_EXTEND_VEL>mode));
   DONE;
