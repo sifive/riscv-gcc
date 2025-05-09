@@ -2070,15 +2070,46 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
 _GLIBCXX_END_NAMESPACE_ALGO
 
+  /// This is an overload used by find algos for the RAI case, that is more
+  /// friendly to LLVM's loop unroller.
+  template<typename _RandomAccessIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
+    _RandomAccessIterator
+    __find_if(_RandomAccessIterator __first, _RandomAccessIterator __last,
+	      _Predicate __pred, random_access_iterator_tag)
+    {
+      typename iterator_traits<_RandomAccessIterator>::difference_type
+          __trip_count = __last - __first;
+
+      for (; __trip_count > 0; --__trip_count)
+        {
+          if (__pred(__first))
+            return __first;
+          ++__first;
+        }
+
+      return __last;
+    }
+
+  template<typename _InputIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
+    inline _InputIterator
+    __find_if(_InputIterator __first, _InputIterator __last,
+              _Predicate __pred, input_iterator_tag)
+    {
+      while (__first != __last && !__pred(__first))
+	++__first;
+      return __first;
+    }
+
   // Implementation of std::find_if, also used in std::remove_if and others.
   template<typename _Iterator, typename _Predicate>
     _GLIBCXX20_CONSTEXPR
     inline _Iterator
     __find_if(_Iterator __first, _Iterator __last, _Predicate __pred)
     {
-      while (__first != __last && !__pred(__first))
-	++__first;
-      return __first;
+      return __find_if(__first, __last, __pred,
+                       std::__iterator_category(__first));
     }
 
   template<typename _InputIterator, typename _Predicate>
