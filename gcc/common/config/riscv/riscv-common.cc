@@ -331,7 +331,8 @@ riscv_subset_list::riscv_subset_list (const char *arch, location_t loc,
     m_subset_num (0),
     m_diag_ready (diag_ready),
     m_warn_implicit_version_for_unratifed_ext (false),
-    m_allow_unratifed_ext (false)
+    m_allow_unratifed_ext (false),
+    m_allow_adding_dup (false)
 {
   if (m_diag_ready)
     {
