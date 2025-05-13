@@ -199,6 +199,7 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zvfbfwma", "zvfbfmin"},
   {"zvfbfwma", "zfbfmin"},
   {"zvfofp8min", "zve32f"},
+  {"zvfofp4min", "zve32f"},
   {"zvfhmin", "zve32f"},
   {"zvfh", "zve32f"},
   {"zvfh", "zfhmin"},
