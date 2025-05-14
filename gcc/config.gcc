@@ -4686,10 +4686,10 @@ case "${target}" in
 		supported_defaults="abi arch tune riscv_attribute isa_spec tls cmodel label_scheme cf_protection"
 
 		case "${with_label_scheme}" in
-		"" | default | "fixed-one")
+		"fixed-one")
 			tm_defines="${tm_defines} TARGET_DEFAULT_LABEL_SCHEME=LPAD_FIXED_ONE"
 			;;
-		unlabeled)
+		"" | default | unlabeled)
 			tm_defines="${tm_defines} TARGET_DEFAULT_LABEL_SCHEME=LPAD_UNLABELED"
 			;;
 		"func-sig")
