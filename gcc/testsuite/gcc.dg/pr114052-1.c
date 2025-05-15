@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target signal } */
+/* { dg-require-effective-target alarm } */
 /* { dg-options "-O2" } */
 
 #include <stdint.h>
