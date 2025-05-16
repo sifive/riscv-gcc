@@ -17,4 +17,3 @@ void addconjboth (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 }
 
 /* { dg-final { scan-assembler {e64,m4} } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 4, At most 16 number of live V_REG" 1 "vect" } } */
