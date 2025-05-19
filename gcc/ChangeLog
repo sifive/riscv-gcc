@@ -1,3 +1,128 @@
+2025-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118623
+	* config/i386/i386.md (*bt<mode>): Represent bt as
+	compare:CCC of const0_rtx and zero_extract rather than
+	zero_extract and const0_rtx.
+	(*bt<SWI48:mode>_mask): Likewise.
+	(*jcc_bt<mode>): Likewise.  Use LTU and GEU as flags test
+	instead of EQ and NE.
+	(*jcc_bt<mode>_mask): Likewise.
+	(*jcc_bt<SWI48:mode>_mask_1): Likewise.
+	(Help combine recognize bt followed by cmov splitter): Likewise.
+	(*bt<mode>_setcqi): Likewise.
+	(*bt<mode>_setncqi): Likewise.
+	(*bt<mode>_setnc<mode>): Likewise.
+	(*bt<mode>_setncqi_2): Likewise.
+	(*bt<mode>_setc<mode>_mask): Likewise.
+
+2025-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118822
+	* tree-iterator.h (tsi_split_stmt_list): Declare.
+	* tree-iterator.cc (tsi_split_stmt_list): New function.
+
+2025-05-14  Kyle Huey  <me@kylehuey.com>
+
+	Backported from master:
+	2025-05-14  Kyle Huey  <me@kylehuey.com>
+
+	* dwarf2out.cc (resolve_addr_in_expr): Propagate dtprel into the address
+	table when appropriate.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116960
+	PR c++/119303
+	* diagnostic.cc (diagnostic_context::report_diagnostic): Check for
+	non-zero m_lock later, after checking diagnostic_enabled.
+
+2025-05-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-01-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/118411
+	* final.cc (get_attr_length_1): Handle asm for CALL_INSN
+	and JUMP_INSNs.
+
+2025-05-12  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/119852
+	* cgraphclones.cc (dump_callgraph_transformation): Document the
+	function.  Do not dump if suffix is NULL.
+
+2025-05-12  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	* doc/invoke.texi (Developer Options): Document -fdump-ipa-clones.
+
+2025-05-11  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2024-05-20  Pan Li  <pan2.li@intel.com>
+
+	* dse.cc (get_stored_val): Make sure read_mode/write_mode
+	is valid subreg before gen_lowpart.
+
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113197
+	* tree-ssa-structalias.cc (handle_call_arg): Remove bougs
+	assert.
+
+2025-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* vr-values.cc (simplify_using_ranges::simplify) <BIT_AND_EXPR>:
+	Do not call simplify_bit_ops_using_ranges for boolean types whose
+	precision is not 1.
+
+2025-05-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120156
+	* tree-ssa-alias.cc (ptr_deref_may_alias_decl_p): Verify
+	the pointer is an SSA name.
+
+2025-05-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-04-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/119610
+	* config/aarch64/aarch64.cc (aarch64_allocate_and_probe_stack_space):
+	Add a bytes_below_sp parameter and use it to calculate the CFA
+	offsets.  Attach the first SVE CFA note to the move into the
+	associated temporary register.
+	(aarch64_allocate_and_probe_stack_space): Update calls accordingly.
+	Start out with bytes_per_sp set to the frame size and decrement
+	it after each allocation.
+
+2025-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119327
+	* config/rs6000/rs6000.cc (rs6000_can_inline_p): Ignore also
+	OPTION_MASK_SAVE_TOC_INDIRECT differences.
+
 2025-05-07  Robin Dapp  <rdapp@ventanamicro.com>
 
 	Backported from master:

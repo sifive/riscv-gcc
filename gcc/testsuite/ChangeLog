@@ -1,3 +1,232 @@
+2025-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118623
+	* gcc.c-torture/execute/pr118623.c: New test.
+
+2025-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118822
+	* g++.dg/expr/for9.C: New test.
+
+2025-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/86769
+	* g++.dg/diagnostic/redeclaration-7.C: New test.
+	* g++.dg/expr/for3.C: New test.
+	* g++.dg/expr/for4.C: New test.
+	* g++.dg/expr/for5.C: New test.
+	* g++.dg/expr/for6.C: New test.
+	* g++.dg/expr/for7.C: New test.
+	* g++.dg/expr/for8.C: New test.
+	* g++.dg/ext/stmtexpr27.C: New test.
+	* g++.dg/cpp2a/constexpr-86769.C: New test.
+	* g++.dg/cpp26/name-independent-decl7.C: New test.
+	* g++.dg/cpp26/name-independent-decl8.C: New test.
+
+2025-05-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/113773
+	* g++.dg/coroutines/torture/pr113773.C: New test.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118245
+	* g++.dg/modules/lambda-7_a.H: Expect the test to fail.
+	* g++.dg/modules/lambda-7_b.C: Likewise.
+	* g++.dg/modules/lambda-7_c.C: Likewise.
+	* g++.dg/cpp2a/lambda-uneval23.C: New test.
+
+2025-05-14  Joseph Myers  <josmyers@redhat.com>
+
+	Backported from master:
+	2024-11-18  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/112556
+	* gcc.dg/c11-null-pointer-constant-1.c,
+	gcc.dg/c23-null-pointer-constant-1.c: New tests.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116379
+	* g++.dg/cpp1y/decltype-auto9.C: New test.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117501
+	* g++.dg/cpp2a/consteval39.C: New test.
+	* g++.dg/cpp2a/consteval40.C: New test.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-02-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117778
+	* g++.dg/cpp1y/lambda-generic-117778.C: New test.
+	* g++.dg/cpp2a/abbrev-fn2.C: New test.
+	* g++.dg/cpp2a/abbrev-fn3.C: New test.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116960
+	PR c++/119303
+	* g++.dg/cpp2a/lambda-uneval26.C: New test.
+	* g++.dg/warn/undefined2.C: New test.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118775
+	* g++.dg/cpp2a/constexpr-new24.C: New test.
+	* g++.dg/cpp2a/constexpr-new25.C: New test.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120125
+	* g++.dg/modules/clone-4_a.C: New test.
+	* g++.dg/modules/clone-4_b.C: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/120196
+	* gfortran.dg/pr120196.f90: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_3.f90: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_2.f90: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+		    Daniil Kochergin  <daniil2472s@gmail.com>
+		    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_1.f90: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118590
+	* g++.dg/goacc/pr118590.C: New test.
+
+2025-05-12  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119986
+	* gfortran.dg/actual_array_subref.f90: New test.
+
+2025-05-12  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/119852
+	* gcc.dg/ipa/pr119852.c: New test.
+
+2025-05-11  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2024-05-20  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/bug-6.c: New test.
+
+2025-05-11  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	Backported from master:
+	2024-10-24  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR ipa/113197
+	* gcc.dg/lto/pr113197_0.c: Require effective target pie.
+
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113197
+	* gcc.dg/lto/pr113197_0.c: New testcase.
+	* gcc.dg/lto/pr113197_1.c: Likewise.
+
+2025-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117498
+	* gcc.c-torture/execute/pr117498.c: New test.
+
+2025-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt106.adb: New test.
+	* gnat.dg/opt106_pkg1.ads, gnat.dg/opt106_pkg1.adb: New helper.
+	* gnat.dg/opt106_pkg2.ads, gnat.dg/opt106_pkg2.adb: Likewise.
+
+2025-05-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-04-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/119610
+	* g++.dg/torture/pr119610.C: New test.
+	* g++.target/aarch64/sve/pr119610-sve.C: Likewise.
+
+2025-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119327
+	* g++.dg/opt/pr119327.C: New test.
+
+2025-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/108900
+	PR preprocessor/116047
+	PR preprocessor/120061
+	* gcc.dg/plugin/plugin.exp: Add location-overflow-test-pr116047.c
+	and location-overflow-test-pr120061.c.
+	* gcc.dg/plugin/location_overflow_plugin.c (plugin_init): Don't error
+	on unknown values, instead just break.
+	* gcc.dg/plugin/location-overflow-test-pr116047.c: New test.
+	* gcc.dg/plugin/location-overflow-test-pr116047-1.h: New test.
+	* gcc.dg/plugin/location-overflow-test-pr116047-2.h: New test.
+	* gcc.dg/plugin/location-overflow-test-pr120061.c: New test.
+	* gcc.dg/plugin/location-overflow-test-pr120061-1.h: New test.
+	* gcc.dg/plugin/location-overflow-test-pr120061-2.h: New test.
+
 2025-05-07  Robin Dapp  <rdapp@ventanamicro.com>
 
 	Backported from master:
