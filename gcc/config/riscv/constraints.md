@@ -280,3 +280,20 @@
   "A 12-bit unsigned immediate for CSR address."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 0, IMM_REACH-1)")))
+
+;; SiFive constraints
+;; SSCI
+(define_constraint "Ou12"
+  "A 12-bit unsigned immediate."
+  (and (match_code "const_int")
+       (match_test "N_BIT_OPERAND_UNSIGNED (ival, 12)")))
+
+(define_constraint "Ou20"
+  "A 20-bit unsigned immediate."
+  (and (match_code "const_int")
+       (match_test "N_BIT_OPERAND_UNSIGNED (ival, 20)")))
+
+(define_constraint "Ou25"
+  "A 25-bit unsigned immediate."
+  (and (match_code "const_int")
+       (match_test "N_BIT_OPERAND_UNSIGNED (ival, 25)")))
