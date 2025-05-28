@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target rv64 } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Og" "-Os" "-Oz" } } */
-/* { dg-options "-march=rv64gc -mtune=sifive-5-series -mbranch-cost=6 -mmovcc -fdump-rtl-ce1" } */
+/* { dg-options "-march=rv64gc -mabi=lp64d -mtune=sifive-5-series -mbranch-cost=6 -mmovcc -fdump-rtl-ce1" } */
 
 typedef unsigned int __attribute__ ((mode (DI))) int_t;
 

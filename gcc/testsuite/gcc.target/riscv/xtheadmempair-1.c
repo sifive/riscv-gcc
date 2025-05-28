@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-g" "-Oz" "-Os" "-flto" } } */
-/* { dg-options "-march=rv64gc_xtheadmempair -mtune=thead-c906" { target { rv64 } } } */
-/* { dg-options "-march=rv32gc_xtheadmempair -mtune=thead-c906" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_xtheadmempair -mabi=lp64d -mtune=thead-c906" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_xtheadmempair -mabi=ilp32d -mtune=thead-c906" { target { rv32 } } } */
 
 #include <inttypes.h>
 

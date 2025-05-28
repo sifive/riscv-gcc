@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Og" "-Os" "-Oz" } } */
-/* { dg-options "-march=rv64g_zba_xtheadmemidx" { target { rv64 } } } */
-/* { dg-options "-march=rv32g_zba_xtheadmemidx" { target { rv32 } } } */
+/* { dg-options "-march=rv64g_zba_xtheadmemidx -mabi=lp64d" { target { rv64 } } } */
+/* { dg-options "-march=rv32g_zba_xtheadmemidx -mabi=ilp32d" { target { rv32 } } } */
 
 void a(long);
 unsigned b[11];

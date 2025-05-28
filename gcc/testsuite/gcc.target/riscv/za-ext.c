@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_za64rs_za128rs" { target { rv64 } } } */
-/* { dg-options "-march=rv32gc_za64rs_za128rs" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_za64rs_za128rs -mabi=lp64d" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_za64rs_za128rs -mabi=ilp32d" { target { rv32 } } } */
 
 #ifndef __riscv_za64rs
 #error "Feature macro for 'za64rs' not defined"

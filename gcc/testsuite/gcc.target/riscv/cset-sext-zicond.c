@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Og" } } */
-/* { dg-options "-march=rv64gc_zicond -mtune=rocket -mbranch-cost=3 -fdump-rtl-ce1" { target { rv64 } } } */
-/* { dg-options "-march=rv32gc_zicond -mtune=rocket -mbranch-cost=3 -fdump-rtl-ce1" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_zicond -mabi=lp64d -mtune=rocket -mbranch-cost=3 -fdump-rtl-ce1" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_zicond -mabi=ilp32d -mtune=rocket -mbranch-cost=3 -fdump-rtl-ce1" { target { rv32 } } } */
 
 int
 foo (long a, long b)

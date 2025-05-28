@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zvkn_zvbc" { target { rv64 } } } */
-/* { dg-options "-march=rv32gc_zvkn_zvbc" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_zvkn_zvbc -mabi=lp64d" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_zvkn_zvbc -mabi=ilp32d" { target { rv32 } } } */
 
 #ifndef __riscv_zvknc
 #error "Feature macro for `Zvknc' not defined"

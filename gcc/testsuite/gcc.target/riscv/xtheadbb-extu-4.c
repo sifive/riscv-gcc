@@ -1,5 +1,5 @@
 /* { dg-do compile { target { rv32 } } } */
-/* { dg-options "-march=rv32gc_xtheadbb" } */
+/* { dg-options "-march=rv32gc_xtheadbb -mabi=ilp32d" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Os" "-Og" "-Oz" } } */
 
 struct c {

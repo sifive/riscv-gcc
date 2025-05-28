@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Og" } } */
-/* { dg-options "-march=rv64gc_xtheadmemidx" { target { rv64 } } } */
-/* { dg-options "-march=rv32gc_xtheadmemidx" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_xtheadmemidx -mabi=lp64d" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_xtheadmemidx -mabi=ilp32d" { target { rv32 } } } */
 
 #include "xtheadmemidx-helpers.h"
 

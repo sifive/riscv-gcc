@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zvksh" { target { rv64 } } } */
-/* { dg-options "-march=rv32gc_zvksh" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_zvksh -mabi=lp64d" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_zvksh -mabi=ilp32d" { target { rv32 } } } */
 
 #ifndef __riscv_zvksh
 #error "Feature macro not defined"

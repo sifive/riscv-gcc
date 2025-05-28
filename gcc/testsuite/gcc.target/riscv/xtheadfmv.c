@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gc_xtheadfmv" { target { rv32 } } } */
-/* { dg-options "-march=rv64gc_xtheadfmv" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_xtheadfmv -mabi=ilp32d" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_xtheadfmv -mabi=lp64d" { target { rv64 } } } */
 
 #ifndef __riscv_xtheadfmv
 #error "Feature macro not defined"

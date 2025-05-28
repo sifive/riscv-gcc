@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target rv64 } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Og" "-Os" "-Oz" } } */
-/* { dg-options "-march=rv64gc_zba" } */
+/* { dg-options "-march=rv64gc_zba -mabi=lp64d" } */
 
 #include <stdint-gcc.h>
 void foo(uint32_t a, uint64_t *b_ptr, uint64_t b, uint64_t *c_ptr, uint64_t c)

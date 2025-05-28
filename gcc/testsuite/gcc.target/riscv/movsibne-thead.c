@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Og" "-Os" "-Oz" } } */
-/* { dg-options "-march=rv64gc_xtheadcondmov -mtune=thead-c906 -mbranch-cost=1 -fdump-rtl-ce1" { target { rv64 } } } */
-/* { dg-options "-march=rv32gc_xtheadcondmov -mtune=thead-c906 -mbranch-cost=1 -fdump-rtl-ce1" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_xtheadcondmov -mabi=lp64d -mtune=thead-c906 -mbranch-cost=1 -fdump-rtl-ce1" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_xtheadcondmov -mabi=ilp32d -mtune=thead-c906 -mbranch-cost=1 -fdump-rtl-ce1" { target { rv32 } } } */
 
 typedef int __attribute__ ((mode (SI))) int_t;
 

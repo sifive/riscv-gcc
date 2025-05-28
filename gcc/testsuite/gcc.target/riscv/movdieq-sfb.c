@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target rv64 } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Og" } } */
-/* { dg-options "-march=rv64gc -mtune=sifive-7-series -mbranch-cost=1 -fdump-rtl-ce1" } */
+/* { dg-options "-march=rv64gc -mabi=lp64d -mtune=sifive-7-series -mbranch-cost=1 -fdump-rtl-ce1" } */
 
 typedef int __attribute__ ((mode (DI))) int_t;
 

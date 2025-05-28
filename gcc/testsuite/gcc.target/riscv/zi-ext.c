@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zic64b_ziccamoa_ziccif_zicclsm_ziccrse" { target { rv64 } } } */
-/* { dg-options "-march=rv32gc_zic64b_ziccamoa_ziccif_zicclsm_ziccrse" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_zic64b_ziccamoa_ziccif_zicclsm_ziccrse -mabi=lp64d" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_zic64b_ziccamoa_ziccif_zicclsm_ziccrse -mabi=ilp32d" { target { rv32 } } } */
 
 #ifndef __riscv_zic64b
 #error "Feature macro for 'zic64b' not defined"

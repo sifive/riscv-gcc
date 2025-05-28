@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gc_zbb" { target { rv32 } } } */
-/* { dg-options "-march=rv64gc_zbb" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_zbb -mabi=ilp32d" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_zbb -mabi=lp64d" { target { rv64 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Os" "-Og" "-Oz" } } */
 
 typedef long unsigned int size_t;

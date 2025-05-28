@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target rv64 } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Og" } } */
-/* { dg-options "-march=rv64gc_xventanacondops -mtune=rocket -mbranch-cost=3 -fdump-rtl-ce1" } */
+/* { dg-options "-march=rv64gc_xventanacondops -mabi=lp64d -mtune=rocket -mbranch-cost=3 -fdump-rtl-ce1" } */
 
 int
 foo (long a, long b)

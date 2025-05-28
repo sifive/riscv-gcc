@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gc_xtheadbb" { target { rv32 } } } */
-/* { dg-options "-march=rv64gc_xtheadbb" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_xtheadbb -mabi=ilp32d" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_xtheadbb -mabi=lp64d" { target { rv64 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Og" } } */
 
 unsigned int

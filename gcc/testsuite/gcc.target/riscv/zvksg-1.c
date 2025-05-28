@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zvksed_zvksh_zvkb_zvkt_zvkg" { target { rv64 } } } */
-/* { dg-options "-march=rv32gc_zvksed_zvksh_zvkb_zvkt_zvkg" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_zvksed_zvksh_zvkb_zvkt_zvkg -mabi=lp64d" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_zvksed_zvksh_zvkb_zvkt_zvkg -mabi=ilp32d" { target { rv32 } } } */
 
 #ifndef __riscv_zvksg
 #error "Feature macro for `Zvksg' not defined"

@@ -2,8 +2,8 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target hard_float } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-g" "-Oz" "-Os" "-flto" } } */
-/* { dg-options "-march=rv64gc_xtheadmempair -mtune=thead-c906 -funwind-tables" { target { rv64 } } } */
-/* { dg-options "-march=rv32gc_xtheadmempair -mtune=thead-c906 -funwind-tables" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_xtheadmempair -mabi=lp64d -mtune=thead-c906 -funwind-tables" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_xtheadmempair -mabi=ilp32d -mtune=thead-c906 -funwind-tables" { target { rv32 } } } */
 
 
 extern int foo (void);
