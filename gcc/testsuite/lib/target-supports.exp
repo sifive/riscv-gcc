@@ -2193,13 +2193,26 @@ proc add_options_for_riscv_d { flags } {
 
 proc add_options_for_riscv_v { flags } {
     if { [lsearch $flags -march=*] >= 0 } {
-	# If there are multiple -march flags, we have to adjust all of them.
-	return [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*[a-rt-uwy]*)v*} $flags \\1v ]
+        set new_flags [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*[a-rt-uwy]*)v*} $flags \\1v ]
+        if { [lsearch $flags -mabi=*] >= 0 } {
+            set new_flags [regsub -all -- {((?:^|[[:space:]])-mabi=[[:alnum:]]*)f} $new_flags \\1d ]
+        } else {
+            if {[regexp {rv64} $new_flags]} {
+                append new_flags " -mabi=lp64d"
+            } else {
+                append new_flags " -mabi=ilp32d"
+            }
+        }
+        return $new_flags
     }
     if { [check_effective_target_riscv_v] } {
-	return "$flags"
+        return "$flags"
     }
-    return "$flags -march=[regsub {[[:alnum:]]*} [riscv_get_arch] &v]"
+    if {[regexp {rv64} [riscv_get_arch]]} {
+        return "$flags -march=[regsub {[[:alnum:]]*} [riscv_get_arch] &v] -mabi=lp64d"
+    } else {
+        return "$flags -march=[regsub {[[:alnum:]]*} [riscv_get_arch] &v] -mabi=ilp32d"
+    }
 }
 
 proc add_options_for_riscv_zfh { flags } {
