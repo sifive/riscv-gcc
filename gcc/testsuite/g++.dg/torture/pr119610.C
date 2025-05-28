@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-skip-if "Skipped due to RISC-V does not support" { riscv*-*-* } }
 // { dg-additional-options "-fstack-protector-strong" { target fstack_protector } }
 // { dg-additional-options "-fstack-clash-protection" { target supports_stack_clash_protection } }
 
