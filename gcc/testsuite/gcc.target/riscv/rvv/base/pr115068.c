@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-add-options riscv_v } */
 /* { dg-additional-options "-std=gnu99 -Wno-pedantic" } */
+/* { dg-skip-if "V extension not allowed with rv32e or rv64e" { *-*-* } { "-march=rv32e*" "-march=rv64e*" } { "" } } */
 
 #include <stdint.h>
 #include <riscv_vector.h>

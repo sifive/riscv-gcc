@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-O1 -fno-schedule-insns -fno-schedule-insns2 -fno-pic" } */
 /* { dg-add-options riscv_v } */
+/* { dg-skip-if "V extension not allowed with rv32e or rv64e" { *-*-* } { "-march=rv32e*" "-march=rv64e*" } { "" } } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #if 0 /* Using include files when using a multilib-relevant -march option is dicey */
