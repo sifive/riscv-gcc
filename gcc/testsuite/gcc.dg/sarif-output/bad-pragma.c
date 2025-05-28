@@ -2,6 +2,7 @@
    related to a bad pragma.  */
 
 /* { dg-do compile } */
+/* { dg-skip-if "Skipped due to the test for python" { riscv*-*-* } } */
 /* { dg-options "-fdiagnostics-format=sarif-file -Wpragmas" } */
 
 #pragma GCC diagnostic ignored "-Wmisleading-indenttion"
