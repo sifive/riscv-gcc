@@ -1,6 +1,7 @@
 /* Test there is no ICE when compile.  */
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gcv_zvfhmin -mabi=lp64d -O3 -ftree-vectorize" } */
+/* { dg-skip-if "incompatible with large/compact code model" { *-*-* } { "-mcmodel=large" "-mcmodel=compact" } { "" } } */
 
 #include <assert.h>
 #include <stdint-gcc.h>

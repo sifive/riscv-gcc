@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -march=rv64gv_zfh_zca_zcmp -mabi=lp64d -fno-shrink-wrap-separate -fno-pic" } */
+/* { dg-skip-if "incompatible with large/compact code model" { *-*-* } { "-mcmodel=large" "-mcmodel=compact" } { "" } } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #include <riscv_vector.h>

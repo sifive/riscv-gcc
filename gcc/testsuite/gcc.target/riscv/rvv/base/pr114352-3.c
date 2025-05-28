@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gc -mabi=lp64 -O3 -fno-schedule-insns -fno-schedule-insns2 -fno-pic" } */
+/* { dg-skip-if "incompatible with large/compact code model" { *-*-* } { "-mcmodel=large" "-mcmodel=compact" } { "" } } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 /*
