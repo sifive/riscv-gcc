@@ -2031,6 +2031,17 @@ proc check_effective_target_riscv_ztso { } {
     }]
 }
 
+# Return 1 if the target arch supports the Zba extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_zba { } {
+    return [check_no_compiler_messages riscv_ext_zba assembly {
+       #ifndef __riscv_zba
+       #error "Not __riscv_zba"
+       #endif
+    }]
+}
+
 # Return 1 if the target arch supports the Zbb extension, 0 otherwise.
 # Cache the result.
 
@@ -2111,6 +2122,26 @@ proc check_effective_target_riscv_zfh_ok { } {
     # Possible future extensions: If the target is a simulator, dg-add-options
     # might change its config to make it allow half float insns, or we might
     # use options to set special elf flags / sections to effect that.
+
+    return 0
+}
+
+# Return 1 if we can execute code when using dg-add-options riscv_zba
+
+proc check_effective_target_riscv_zba_ok { } {
+    if { [check_effective_target_riscv_zba] } {
+        return 1
+    }
+
+    set gcc_march [riscv_get_arch]
+    if { [check_runtime ${gcc_march}_zba_exec {
+        int main() {
+            int a = 5, b = 3, c;
+            asm("sh1add %0, %1, %2" : "=r"(c) : "r"(a), "r"(b));
+            return 0;
+        } } "-march=${gcc_march}_zba"] } {
+        return 1
+    }
 
     return 0
 }
