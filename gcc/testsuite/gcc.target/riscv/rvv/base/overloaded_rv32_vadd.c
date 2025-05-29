@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32gcv_zvfh -mabi=ilp32 -O3" } */
+/* { dg-skip-if "RV32 is incompatible with compact code model" { *-*-* } { "-mcmodel=compact" } { "" } } */
 
 #include "overloaded_vadd.h"
 

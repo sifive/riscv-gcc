@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32gc_zve64x -mabi=ilp32d -O3 -fno-schedule-insns -fno-schedule-insns2" } */
+/* { dg-skip-if "RV32 is incompatible with compact code model" { *-*-* } { "-mcmodel=compact" } { "" } } */
 
 #include "riscv_vector.h"
 

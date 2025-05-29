@@ -1,5 +1,7 @@
 /* { dg-do compile } */
+
 /* { dg-options "-O3 -march=rv32gc_zve32x -mabi=ilp32d" } */
+/* { dg-skip-if "RV32 is incompatible with compact code model" { *-*-* } { "-mcmodel=compact" } { "" } } */
 
 void foo0 () {__rvv_bool64_t t;} /* { dg-error {unknown type name '__rvv_bool64_t'} } */
 void foo1 () {__rvv_bool32_t t;}

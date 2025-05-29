@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -march=rv32gcv -mabi=ilp32d -mrvv-vector-bits=zvl" } */
+/* { dg-skip-if "RV32 is incompatible with compact code model" { *-*-* } { "-mcmodel=compact" } { "" } } */
 
 #include <stdint-gcc.h>
 

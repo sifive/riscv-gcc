@@ -1,5 +1,7 @@
 /* { dg-do compile } */
+
 /* { dg-options "-march=rv32gcv -mabi=ilp32 -O3" } */
+/* { dg-skip-if "RV32 is incompatible with compact code model" { *-*-* } { "-mcmodel=compact" } { "" } } */
 #include "riscv_vector.h"
 
 void f (void * in, void *out, uint64_t x, int n)

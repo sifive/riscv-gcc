@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32gc_zve64d -mabi=ilp32d -O3" } */
+/* { dg-skip-if "RV32 is incompatible with compact code model" { *-*-* } { "-mcmodel=compact" } { "" } } */
 
 #include "pr110299-3.h"
 #include "pr110299-4.h"

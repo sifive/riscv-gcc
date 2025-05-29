@@ -1,5 +1,7 @@
 /* { dg-do compile } */
+
 /* { dg-options "-O3 -march=rv32gc_zve32x_zvl64b_zvfhmin -mabi=ilp32d" } */
+/* { dg-skip-if "RV32 is incompatible with compact code model" { *-*-* } { "-mcmodel=compact" } { "" } } */
 
 void f___rvv_int8mf8x2_t () {__rvv_int8mf8x2_t t;} /* { dg-error {unknown type name '__rvv_int8mf8x2_t'} } */
 void f___rvv_uint8mf8x2_t () {__rvv_uint8mf8x2_t t;} /* { dg-error {unknown type name '__rvv_uint8mf8x2_t'} } */
