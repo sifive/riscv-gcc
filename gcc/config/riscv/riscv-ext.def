@@ -2082,3 +2082,5 @@ DEFINE_RISCV_EXT(
 #include "riscv-ext-sifive.def"
 #include "riscv-ext-thead.def"
 #include "riscv-ext-ventana.def"
+/* SIFIVE_CUSTOMIZATION */
+#include "riscv-ext-sifive-internal.def"
