@@ -2561,7 +2561,7 @@ riscv_select_multilib_by_abi (
       }
     }
 
-  for (ssize_t i = multilib_infos.size () - 1; i >= 0; --i)
+  for (size_t i = 0; i < multilib_infos.size (); ++i)
     if (riscv_current_abi_str == multilib_infos[i].abi_str)
       return xstrdup (multilib_infos[i].path.c_str ());
 
