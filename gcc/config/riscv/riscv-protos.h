@@ -137,6 +137,7 @@ riscv_zcmp_valid_stack_adj_bytes_p (HOST_WIDE_INT, int);
 extern void riscv_legitimize_poly_move (machine_mode, rtx, rtx, rtx);
 extern int riscv_attribute_get_lp_value (tree);
 extern rtx riscv_get_lp_value ();
+extern bool riscv_need_setup_lp_p ();
 
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx, bool *invert_ptr = 0);
