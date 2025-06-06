@@ -7008,6 +7008,12 @@ riscv_attribute_get_lp_value (tree func)
   return -1;
 }
 
+bool
+riscv_need_setup_lp_p ()
+{
+  return is_zicfilp_p () && riscv_lpad_type != LPAD_UNLABELED;
+}
+
 rtx
 riscv_get_lp_value ()
 {
@@ -7071,8 +7077,8 @@ riscv_legitimize_call_address (rtx addr)
       return reg;
     }
 
-  if (is_zicfilp_p () && REG_P (addr))
-    emit_insn (gen_set_lpl (Pmode, const0_rtx));
+  if (riscv_need_setup_lp_p () && REG_P (addr))
+    emit_insn (gen_set_lpl (Pmode, riscv_get_lp_value ()));
 
   return addr;
 }
