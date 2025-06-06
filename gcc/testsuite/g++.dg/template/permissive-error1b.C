@@ -28,7 +28,3 @@ int main() {
   B<int> b;
   b.f();
 }
-
-// SIFIVE: Backport so we got extra fail, but that's fine, we just want work
-// around for compiling spec.
-// { dg-excess-errors "" { xfail *-*-* } }
