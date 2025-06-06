@@ -807,8 +807,11 @@ typedef struct {
 /* Return riscv calling convention of call_insn.  */
 extern enum riscv_cc get_riscv_cc (const rtx use);
 
-#define INIT_CALL_LPAD_FUNC_SIG(CUM, FNTYPE, SUB_FNTYPE) \
-  riscv_init_call_lpad_func_sig (&(CUM), (FNTYPE), (SUB_FNTYPE))
+#define INIT_CALL_LPAD_FUNC_SIG(CUM, FNTYPE, SUB_FNTYPE)		\
+  do {									\
+    if (riscv_lpad_type == LPAD_FUNC_SIG)				\
+      riscv_init_call_lpad_func_sig (&(CUM), (FNTYPE), (SUB_FNTYPE));	\
+  } while (0)
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.

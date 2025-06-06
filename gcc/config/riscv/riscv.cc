@@ -6829,8 +6829,11 @@ riscv_attribute_get_func_sig (tree decl)
       && (DECL_EXTERNAL (decl) == 0))
     return const1_rtx;
 
-  tree attr = lookup_attribute ("lpad_func_sig", DECL_ATTRIBUTES (decl));
-  if (!attr && (TREE_CODE (decl) != FUNCTION_DECL))
+  tree attr = NULL_TREE;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    attr = lookup_attribute ("lpad_func_sig", DECL_ATTRIBUTES (decl));
+  else if (TREE_CODE (decl) != FUNCTION_DECL)
     attr = lookup_attribute ("lpad_func_sig", TYPE_ATTRIBUTES (decl));
 
   if (!attr)
