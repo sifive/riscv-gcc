@@ -142,6 +142,7 @@ extern void riscv_expand_sstrunc (rtx, rtx);
 extern int riscv_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 extern int riscv_attribute_get_lp_value (tree);
 extern rtx riscv_get_lp_value ();
+extern bool riscv_need_setup_lp_p ();
 
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx, bool *invert_ptr = 0);
