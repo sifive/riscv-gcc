@@ -6132,6 +6132,34 @@ riscv_init_call_lpad_func_sig (CUMULATIVE_ARGS *cum, tree fntype,
 			       tree sub_fntype)
 {
   cum->lpad_sig = riscv_attribute_get_func_sig (sub_fntype);
+
+  /* Try to retrieve the `lpad_func_sig` attribute for the target function.
+
+     We first attempt to get the signature from `sub_fntype`, which
+     represents the immediate type of the callee. However, in many indirect
+     call cases - such as virtual calls, function pointers from structures,
+     or devirtualized SSA expressions - this type may not carry attributes
+     due to casting or generic pointer usage.
+
+     If the signature is not found and the original `fntype` is a NOP_EXPR,
+     we walk through its operand (typically an SSA_NAME) and trace back its
+     definition to recover a more specific type with potential attributes.
+
+     The most common patterns we handle include:
+
+       - COMPONENT_REF to a function pointer field (e.g. `h->chunkfun`)
+	 -> recover the function type from the struct field
+
+       - MEM_REF to a virtual function table or raw memory
+	 -> extract the function type from the pointer's target
+
+       - Fallback to SSA_NAME type directly
+	 -> e.g. indirect pointer assignment without explicit struct access
+
+     These heuristics allow us to reconstruct the correct function type
+     even when type information is partially lost, ensuring we can still
+     extract the `lpad_func_sig` attribute where applicable.  */
+
   if (cum->lpad_sig == NULL_RTX
       && TREE_CODE (fntype) == NOP_EXPR)
     {
@@ -6146,22 +6174,28 @@ riscv_init_call_lpad_func_sig (CUMULATIVE_ARGS *cum, tree fntype,
 	      tree rhs = gimple_assign_rhs1 (def_stmt);
 	      if (TREE_CODE (rhs) == COMPONENT_REF)
 		{
-		  tree base = TREE_OPERAND (rhs, 0);
+		  /* If RHS is a COMPONENT_REF to a function pointer field
+		     (e.g. `h->chunkfun`), we retrieve the field's type and
+		     its function type. Example:
+		       (nop_expr (ssa_name pretmp_99 = h_53(D)->chunkfun)).  */
 		  tree field = TREE_OPERAND (rhs, 1);
+
 		  if (TREE_CODE (field) == FIELD_DECL
 		      && POINTER_TYPE_P (TREE_TYPE (field)))
 		    {
-		      /* gcc.c-torture/compile/20010102-1.c */
 		      tree func_type = TREE_TYPE (TREE_TYPE (field));
 		      cum->lpad_sig = riscv_attribute_get_func_sig (func_type);
 		    }
 		}
 	      else if (TREE_CODE (rhs) == MEM_REF)
 		{
+		  /* If RHS is a MEM_REF (e.g. `*_2`), treat it as a virtual
+		     call or raw indirect. Use the MEM_REF type to recover the
+		     function pointer type. Example:
+		       (nop_expr (ssa_name _3 = *_2)).  */
 		  tree ptr_type = TREE_TYPE (rhs);
 		  if (TREE_CODE (ptr_type) == POINTER_TYPE)
 		    {
-		      /* g++.dg/torture/pr60315.C */
 		      tree func_type = TREE_TYPE (ptr_type);
 		      cum->lpad_sig = riscv_attribute_get_func_sig (func_type);
 		    }
@@ -6172,7 +6206,9 @@ riscv_init_call_lpad_func_sig (CUMULATIVE_ARGS *cum, tree fntype,
 	  if (cum->lpad_sig == NULL_RTX
 	      && TREE_CODE (fptr) == POINTER_TYPE)
 	    {
-	      /* gcc.target/riscv/lpad-3.c */
+	      /* If no COMPONENT_REF or MEM_REF is found, check the
+		 SSA_NAME's type directly. Example:
+		   (nop_expr (ssa_name _3 = *_2)).  */
 	      tree func_type = TREE_TYPE (fptr);
 	      cum->lpad_sig = riscv_attribute_get_func_sig (func_type);
 	    }
@@ -7083,10 +7119,24 @@ riscv_need_setup_lp_p ()
 rtx
 riscv_attribute_get_func_sig (tree decl)
 {
+  /* Treat certain compiler-generated artificial functions as having
+     a default landing pad signature, even if they do not explicitly
+     carry a 'lpad_func_sig' attribute.
+
+     This applies to:
+       - OpenMP loop clones (e.g., create_loop_fn, names like .$loopfn),
+       - Compiler-inserted builtin helpers (e.g., __builtin_apply),
+       - Internal OpenMP or OpenACC outlined regions (e.g., .omp_fn.0),
+       - Thunks and virtual adjustors for C++ ABI support.
+
+     These functions are:
+       - Artificial (DECL_ARTIFICIAL),
+
+     Fallback to returning const0_rtx allows LPAD 0 to be emitted,
+     ensuring these targets remain valid under -fcf-protection.  */
   if (TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_ARTIFICIAL (decl)
-      && (DECL_EXTERNAL (decl) == 0))
-    return const1_rtx;
+      && DECL_ARTIFICIAL (decl))
+    return const0_rtx;
 
   tree attr = NULL_TREE;
 
@@ -11174,13 +11224,17 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   if (is_zicfilp_p ())
     {
-      /* FIXME: Should check thunk_fndecl.  */
+      /* Thunk functions are compiler-generated trampolines: they adjust the
+	 'this' pointer and tail-call the actual implementation. Since they
+	 contain no real logic, they should not carry function-specific LPAD
+	 signatures. We emit LPAD 0 to mark them as generic, unlabeled entry
+	 points.  */
       rtx lp_value = riscv_get_lp_value (thunk_fndecl);
 
       if (cfun->machine->attribute_lp_value != -1)
 	lp_value = GEN_INT (cfun->machine->attribute_lp_value);
 
-      emit_insn(gen_lpad (lp_value));
+      emit_insn (gen_lpad (lp_value));
     }
 
   /* Determine if we can use a sibcall to call FUNCTION directly.  */
