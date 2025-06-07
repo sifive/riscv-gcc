@@ -43,6 +43,7 @@
 #include "tree-pass.h"
 #include "cgraph.h"
 #include "output.h"
+#include "insn-opinit.h"
 
 /* This pass implements forward-CFI landing pad checks for RISCV. This is
    a security feature similar to BTI (branch target identification) in
@@ -119,23 +120,14 @@ rest_of_insert_landing_pad (void)
 
 	  if (INSN_P (insn) && INSN_CODE (insn) == CODE_FOR_gpr_save)
 	    {
-	      if (TARGET_64BIT)
-		emit_insn (gen_set_lpldi (lp_value));
-	      else
-		emit_insn (gen_set_lplsi (lp_value));
-
+	      emit_insn (gen_set_lpl (Pmode, lp_value));
 	      emit_insn_before (gen_lpad_align (), insn);
 	      emit_insn_after (gen_lpad (lp_value), insn);
 	      continue;
 	    }
 
 	  if (INSN_P (insn) && INSN_CODE (insn) == CODE_FOR_gpr_restore)
-	    {
-	      if (TARGET_64BIT)
-		emit_insn (gen_set_lpldi (lp_value));
-	      else
-		emit_insn (gen_set_lplsi (lp_value));
-	    }
+	    emit_insn (gen_set_lpl (Pmode, lp_value));
 	}
     }
 
