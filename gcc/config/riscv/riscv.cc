@@ -10196,6 +10196,11 @@ riscv_option_override (void)
       riscv_stack_protector_guard_offset = offs;
     }
 
+  if (riscv_cmodel == CM_COMPACT)
+    warning (OPT_Wdeprecated,
+	     "%<-mcode-model=compact%> is deprecated; "
+	     "Please migrate to %<-mcode-model=large%>");
+
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       param_sched_pressure_algorithm,
 		       SCHED_PRESSURE_MODEL);
