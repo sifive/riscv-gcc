@@ -6824,10 +6824,26 @@ riscv_need_setup_lp_p ()
 rtx
 riscv_attribute_get_func_sig (tree decl)
 {
+  /* Treat certain compiler-generated artificial functions as having
+     a default landing pad signature (lpad 1), even if they do not
+     explicitly carry a 'lpad_func_sig' attribute.
+
+     This applies to:
+       - OpenMP loop clones (e.g., create_loop_fn, names like .$loopfn),
+       - Compiler-inserted builtin helpers (e.g., __builtin_apply),
+       - Internal OpenMP or OpenACC outlined regions (e.g., .omp_fn.0),
+       - Thunks and virtual adjustors for C++ ABI support.
+
+     These functions are:
+       - Artificial (DECL_ARTIFICIAL),
+       - Locally defined (not DECL_EXTERNAL)
+
+     Fallback to returning const0_rtx allows LPAD 0 to be emitted,
+     ensuring these targets remain valid under -fcf-protection.  */
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_ARTIFICIAL (decl)
-      && (DECL_EXTERNAL (decl) == 0))
-    return const1_rtx;
+      && !DECL_EXTERNAL (decl))
+    return const0_rtx;
 
   tree attr = NULL_TREE;
 
@@ -6837,7 +6853,8 @@ riscv_attribute_get_func_sig (tree decl)
     attr = lookup_attribute ("lpad_func_sig", TYPE_ATTRIBUTES (decl));
 
   if (!attr)
-    attr = lookup_attribute ("lpad_func_sig", TYPE_ATTRIBUTES (TREE_TYPE (decl)));
+    attr = lookup_attribute ("lpad_func_sig",
+			     TYPE_ATTRIBUTES (TREE_TYPE (decl)));
 
   if (attr)
     {
