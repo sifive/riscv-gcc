@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target hard_float } */
 /* { dg-require-effective-target "riscv_zvbb_ok" } */
 /* { dg-add-options "riscv_v" } */
 /* { dg-add-options "riscv_zvbb" } */
