@@ -1297,11 +1297,6 @@ riscv_subset_list::parsing_subset_version (const char *ext,
 	return p;
       }
     }
-  if (isa_spec_class == ISA_SPEC_CLASS_UNKNOWN)
-    {
-    error_at (m_loc, "%<-march=%s%>: unsupported extension %<%s%>", m_arch, ext);
-    return p;
-    }
 
   if (implicit_version && warn_drv_require_ext_version)
     {
