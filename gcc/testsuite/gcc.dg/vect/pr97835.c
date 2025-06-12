@@ -18,5 +18,4 @@ x0 (struct co *yy, long int kc, int wi, int md)
     }
 }
 
-/* We don't yet support SLP inductions for variable length vectors.  */
-/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" { xfail vect_variable_length } } } */
+/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" } } */

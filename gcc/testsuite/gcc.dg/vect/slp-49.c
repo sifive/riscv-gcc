@@ -35,6 +35,5 @@ main()
   return 0;
 }
 
-/* We don't yet support SLP inductions for variable length vectors.  */
-/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" { xfail vect_variable_length } } } */
+/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" } } */
 /* { dg-final { scan-tree-dump "Loop contains only SLP stmts" "vect" } } */
