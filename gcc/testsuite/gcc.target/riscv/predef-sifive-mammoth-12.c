@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64i_xsfmm16t0p6 -mabi=lp64 -mcmodel=medlow -Wno-riscv-implicit-extension-version" } */
+/* { dg-options "-march=rv64im_xsfmm16t0p6 -mabi=lp64 -mcmodel=medlow -Wno-riscv-implicit-extension-version" } */
 
 int main () {
 
