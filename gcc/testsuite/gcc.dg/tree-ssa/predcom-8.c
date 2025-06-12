@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-skip-if "skip if RISC-V vector extension is enabled" { riscv_v } } */
+/* { dg-skip-if "skip on RISC-V with Zvbb support" { riscv_zvbb_ok } } */
 /* { dg-options "-O3 -fdump-tree-pcom-details-blocks" } */
 
 int is_sorted(int *a, int n)

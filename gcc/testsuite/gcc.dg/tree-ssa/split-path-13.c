@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-skip-if "vectorized on RISC-V with vector extension, preventing split-paths analysis" { riscv_v } } */
+/* { dg-skip-if "skip on RISC-V with Zvbb support" { riscv_zvbb_ok } } */
 /* { dg-options "-O2 -fsplit-paths -fdump-tree-split-paths-details " } */
 /* PR tree-optimization/112402 */
 /* This is similar to split-path-2.c but instead of the add

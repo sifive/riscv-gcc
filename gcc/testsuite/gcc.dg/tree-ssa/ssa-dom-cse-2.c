@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-skip-if "skip when RVV extension present" { riscv_v } } */
+/* { dg-skip-if "skip on RISC-V with Zvbb support" { riscv_zvbb_ok } } */
 /* { dg-options "-O3 -fno-tree-fre -fno-tree-pre -fdump-tree-optimized --param sra-max-scalarization-size-Ospeed=32" } */
 /* System Z needs hardware vector support for this to work (the optimization
    gets too complex without it.
