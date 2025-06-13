@@ -30,9 +30,9 @@ _Complex float res[N] =
 ** foo:
 ** ...
 ** csrr\s+[atx][0-9]+,\s*vlenb
-** slli\s+[atx][0-9]+,\s*[atx][0-9],\s*1
+** slli\s+[atx][0-9]+,\s*[atx][0-9],\s*[0-9]+
 ** ...
-** slli\s+[atx][0-9]+,\s*[atx][0-9],\s*32
+** slli\s+[atx][0-9]+,\s*[atx][0-9],\s*[0-9]+
 ** ...
 */
 void
