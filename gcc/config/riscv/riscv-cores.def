@@ -117,10 +117,9 @@ RISCV_CORE ("sifive-x390",
 	   "zifencei_zihintntl_zihintpause_zihpm_zimop_za64rs_zawrs_zfa_" \
 	   "zfh_zfhmin_zcb_zcmop_zba_zbb_zbs_zkr_zkt_zvbb_zvfbfmin_" \
 	   "zvfbfwma_zvfh_zvfhmin_zvkt_zvl1024b_xsfcease0p1_" \
-	   "xsfpgflushdlone0p1_xsfvfbfa0p1_xsfvfbfexp16e0p1_" \
+	   "xsfpgflushdlone0p1_xsfvcp_xsfvfbfa0p1_xsfvfbfexp16e0p1_" \
 	   "xsfvfexp16e0p1_xsfvfexp32e0p1_xsfvfexpa0p2_xsfvfnrclipxfqf_" \
-	   "xsfvfwmaccqqq_xsfvqdotq0p1_xsfvqmaccqoq_xsifivecdiscarddlone0p1_" \
-	   "xsifivecflushdlone0p1", "sifive-7-series")
+	   "xsfvqdotq0p1_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1", "sifive-7-series")
 RISCV_CORE("sifive-p450",     "rv64imafdc_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei" \
 			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs"
 			      "_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1", "sifive-p500-series")
