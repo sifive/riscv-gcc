@@ -1,6 +1,7 @@
 /* { dg-add-options vect_early_break } */
 /* { dg-require-effective-target vect_early_break } */
 /* { dg-require-effective-target vect_long_long } */
+/* { dg-skip-if "LOOP VECTORIZED output is target-dependent on RVV" { riscv_v_ok } } */
 
 /* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
 

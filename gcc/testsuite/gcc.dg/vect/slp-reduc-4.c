@@ -1,3 +1,4 @@
+/* { dg-skip-if "VEC_PERM_EXPR output is target-dependent on RVV" { riscv_v_ok } } */
 /* { dg-require-effective-target vect_int } */
 
 #include <stdarg.h>

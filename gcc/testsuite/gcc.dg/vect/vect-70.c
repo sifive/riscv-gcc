@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-skip-if "Invalid sum output is target-dependent on ZVL size" { riscv_v_ok } } */
 /* { dg-additional-options "--param vect-max-peeling-for-alignment=0 -fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>
