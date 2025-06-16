@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-skip-if "rv32e toolchain implies QEMU -cpu=rv32e" { riscv_abi_e } } */
 /* { dg-options "-march=rv64gc_zbs -mabi=lp64d" { target { rv64 } } } */
 /* { dg-options "-march=rv32gc_zbs -mabi=ilp32" { target { rv32 } } } */
 #include <stdint-gcc.h>
