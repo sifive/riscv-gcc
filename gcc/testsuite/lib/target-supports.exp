@@ -2113,6 +2113,17 @@ proc check_effective_target_riscv_ztso { } {
     }]
 }
 
+# Return 1 if the target arch supports the Zba extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_zba { } {
+    return [check_no_compiler_messages riscv_ext_zba assembly {
+       #ifndef __riscv_zba
+       #error "Not __riscv_zba"
+       #endif
+    }]
+}
+
 # Return 1 if the target arch supports the Zbb extension, 0 otherwise.
 # Cache the result.
 
