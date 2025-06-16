@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "skip for large code model on RISC-V" { riscv*-*-* }  { "-mcmodel=large" } { "" } } */
 /* { dg-options "-mno-inline-atomics" } */
 /* { dg-remove-options riscv_zabha } */
 /* { dg-message "note: '__sync_fetch_and_nand' changed semantics in GCC 4.4" "fetch_and_nand" { target *-*-* } 0 } */

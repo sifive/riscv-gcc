@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-skip-if "skip for large code model on RISC-V" { riscv*-*-* }  { "-mcmodel=large" } { "" } } */
+
 /* Ensure subword zacas is not emitted unless both zacas and zabha are
    present.  */
 /* { dg-options "-O3" } */
