@@ -11079,13 +11079,10 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
   rtx addr, end_addr, mem;
   uint32_t trampoline[4];
-  uint32_t trampoline_cfi[6];
+  uint32_t trampoline_cfi[5];
   unsigned int i;
   HOST_WIDE_INT static_chain_offset, target_function_offset;
-  HOST_WIDE_INT lp_value = INTVAL (riscv_get_lp_value ());
-
-  if (cfun->machine->attribute_lp_value != -1)
-    lp_value = cfun->machine->attribute_lp_value;
+  HOST_WIDE_INT lp_value = 0;
 
   /* Work out the offsets of the pointers from the start of the
      trampoline code.  */
@@ -11238,27 +11235,23 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	}
       else
 	{
-	  /* lpad    1
+	  /* lpad    0
 	     auipc   t3, 0
-	     l[wd]   t0, (target_function_offset - 4)(t3)
+	     l[wd]   t2, (target_function_offset - 4)(t3)
 	     l[wd]   t3, (static_chain_offset - 4)(t3)
-	     lui     t2, 1
-	     jr      t0
+	     jr      t2
 	  */
 	  trampoline_cfi[0] = OPCODE_AUIPC | (0 << SHIFT_RD) | (lp_value << IMM_BITS);
 	  trampoline_cfi[1] = OPCODE_AUIPC | (STATIC_CHAIN_REGNUM << SHIFT_RD);
 	  trampoline_cfi[2] = (Pmode == DImode ? OPCODE_LD : OPCODE_LW)
-			      | (RISCV_PROLOGUE_TEMP_REGNUM << SHIFT_RD)
+			      | (RISCV_CALL_ADDRESS_LPAD_REGNUM << SHIFT_RD)
 			      | (STATIC_CHAIN_REGNUM << SHIFT_RS1)
 			      | ((target_function_offset - 4) << SHIFT_IMM);
 	  trampoline_cfi[3] = (Pmode == DImode ? OPCODE_LD : OPCODE_LW)
 			      | (STATIC_CHAIN_REGNUM << SHIFT_RD)
 			      | (STATIC_CHAIN_REGNUM << SHIFT_RS1)
 			      | ((static_chain_offset - 4) << SHIFT_IMM);
-	  trampoline_cfi[4] = OPCODE_LUI
-			      | (RISCV_CALL_ADDRESS_LPAD_REGNUM << SHIFT_RD)
-			      | (lp_value << IMM_BITS);
-	  trampoline_cfi[5] = OPCODE_JALR | (RISCV_PROLOGUE_TEMP_REGNUM << SHIFT_RS1);
+	  trampoline_cfi[4] = OPCODE_JALR | (RISCV_CALL_ADDRESS_LPAD_REGNUM << SHIFT_RS1);
 
 	  /* Copy the trampoline code.  */
 	  for (i = 0; i < ARRAY_SIZE (trampoline_cfi); i++)
