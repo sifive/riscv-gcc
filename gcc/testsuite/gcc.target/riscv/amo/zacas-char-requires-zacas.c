@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "skip for large code model on RISC-V" { riscv*-*-* }  { "-mcmodel=large" } { "" } } */
+/* { dg-skip-if "Test not valid under large or compact code model" { riscv*-*-* } { "-mcmodel=large" "-mcmodel=compact" } { "" } } */
 
 /* Ensure subword zacas is not emitted unless both zacas and zabha are
    present.  */
