@@ -1373,15 +1373,26 @@ rest_of_insert_func_sig_call (function *fun)
 	gcc_assert ((TREE_CODE (TREE_TYPE (fptr)) == POINTER_TYPE)
 		    || (TREE_CODE (TREE_TYPE (fptr)) == REFERENCE_TYPE));
 
-	const char *type_mangled;
 	tree func = TREE_TYPE (TREE_TYPE (fptr));
 	tree func_attr = lookup_attribute ("lpad_func_sig", TYPE_ATTRIBUTES (func));
 
 	if (!func_attr)
 	  {
-	    type_mangled = lang_hooks.mangle_type (func);
-	    if (type_mangled == NULL)
-	      type_mangled = riscv_mangle_type_string (func);
+	    const char *type_mangled;
+
+	    if (TREE_CODE (func) == FUNCTION_TYPE
+		&& TYPE_NAME (func)
+		&& TREE_CODE (TYPE_NAME (func)) == IDENTIFIER_NODE
+		&& strcmp (IDENTIFIER_POINTER (TYPE_NAME (func)), "main") == 0)
+	      {
+		type_mangled = "FiiPPcE";
+	      }
+	    else
+	      {
+		type_mangled = lang_hooks.mangle_type (func);
+		if (type_mangled == NULL)
+		  type_mangled = riscv_mangle_type_string (func);
+	      }
 
 	    tree value = tree_cons (NULL_TREE, get_identifier (type_mangled),
 				    NULL_TREE);
@@ -1403,9 +1414,15 @@ rest_of_insert_func_sig (function *fun)
   tree attr = lookup_attribute ("lpad_func_sig", DECL_ATTRIBUTES (fun->decl));
   if (!attr)
     {
-      fun_mangled = lang_hooks.mangle_type (TREE_TYPE (fun->decl));
-      if (fun_mangled == NULL)
-	fun_mangled = riscv_mangle_type_string (TREE_TYPE (fun->decl));
+      const char *fname = IDENTIFIER_POINTER (DECL_NAME (fun->decl));
+      if (strcmp (fname, "main") == 0)
+	fun_mangled = "FiiPPcE";
+      else
+	{
+	  fun_mangled = lang_hooks.mangle_type (TREE_TYPE (fun->decl));
+	  if (fun_mangled == NULL)
+	    fun_mangled = riscv_mangle_type_string (TREE_TYPE (fun->decl));
+	}
 
       tree old_attr = DECL_ATTRIBUTES (fun->decl);
       tree value = tree_cons (NULL_TREE, get_identifier (fun_mangled), NULL_TREE);
