@@ -3243,8 +3243,8 @@
   [(set (pc) (match_operand 0 "register_operand"))]
   ""
 {
-  if (is_zicfilp_p ())
-    emit_insn (gen_set_lpl (Pmode, const1_rtx));
+  if (riscv_need_setup_lp_p ())
+    emit_insn (gen_set_lpl (Pmode, riscv_get_lp_value ()));
 
   operands[0] = force_reg (Pmode, operands[0]);
   if (is_zicfilp_p ())

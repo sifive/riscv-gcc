@@ -630,6 +630,14 @@ enum reg_class
   64, 65, 66, 67							\
 }
 
+/* SiFive Customization */
+/* True if VALUE is an unsigned n-bit number. */
+
+#define N_BIT_OPERAND_UNSIGNED(VALUE, N) \
+  (IN_RANGE(VALUE, 0, (1UL << N) - 1))
+
+/* Last line of SiFive Customization */
+
 /* True if VALUE is a signed 12-bit number.  */
 
 #define SMALL_OPERAND(VALUE) \
