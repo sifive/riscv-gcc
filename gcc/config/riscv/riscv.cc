@@ -11473,7 +11473,7 @@ riscv_option_override (void)
 	   "%<%d%>", guard_size, probe_interval);
 
   if (riscv_cmodel == CM_COMPACT)
-    warning (OPT_Wdeprecated,
+    warning (OPT_Wriscv_deprecated,
 	     "%<-mcode-model=compact%> is deprecated; "
 	     "Please migrate to %<-mcode-model=large%>");
 
