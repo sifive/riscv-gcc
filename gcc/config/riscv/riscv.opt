@@ -540,6 +540,10 @@ Werror=riscv-implicit-extension-version
 Target Var(error_drv_require_ext_version) Warning Init(0)
 Error when an experimental extension is not give an explicit version.
 
+Wriscv-deprecated
+Target Var(warn_riscv_deprecated) Warning Init(0)
+Warn about deprecated RISC-V features.
+
 mmovcc
 Target Var(TARGET_MOVCC)
 Enable conditional moves unconditionally.
