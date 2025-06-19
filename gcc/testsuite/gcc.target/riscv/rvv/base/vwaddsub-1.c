@@ -2,6 +2,9 @@
 /* { dg-require-effective-target rv64 } */
 /* { dg-add-options riscv_v } */
 /* { dg-additional-options "-std=gnu99 -O3 -fno-schedule-insns -fno-schedule-insns2 -Wno-pedantic" } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection=full" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection=branch" } } */
 
 #include <stdint.h>
 #include <riscv_vector.h>
