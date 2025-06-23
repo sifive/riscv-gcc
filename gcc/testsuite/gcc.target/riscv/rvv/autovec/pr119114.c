@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target rvv_zvl128b_ok } */
 /* { dg-require-effective-target riscv_v_ok } */
 /* { dg-require-effective-target rv64 } */
 /* { dg-add-options riscv_v } */
