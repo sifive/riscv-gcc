@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target riscv_v } */
-/* { dg-options { -march=rv64gcv_zvl256b -mabi=lp64d -fwhole-program -O3 -mrvv-vector-bits=zvl  } } */
+/* { dg-require-effective-target riscv_zvl256b } */
+/* { dg-options { -fwhole-program -O3 -mrvv-vector-bits=zvl } } */
 
 int f[18];
 int g[18];
