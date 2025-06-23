@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target riscv_v } */
-/* { dg-options { -O3 -fno-vect-cost-model -march=rv64gcv -mabi=lp64d  } } */
+/* { dg-options { -O3 -fno-vect-cost-model } } */
 
 char a;
 int b;
