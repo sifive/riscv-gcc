@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v && rv64 } } } */
-/* { dg-options { -march=rv64gcv -mabi=lp64d -O3 -fwrapv } } */
+/* { dg-options { -O3 -fwrapv } } */
 
 short a, e = 1;
 _Bool b, d;

@@ -2,6 +2,9 @@
 /* { dg-additional-options "-O1 -fno-schedule-insns -fno-schedule-insns2" } */
 /* { dg-add-options riscv_v } */
 /* { dg-skip-if "V extension not allowed with rv32e or rv64e" { *-*-* } { "-march=rv32e*" "-march=rv64e*" } { "" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection=full" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection=branch" } } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 typedef struct { char c[16]; } c16;

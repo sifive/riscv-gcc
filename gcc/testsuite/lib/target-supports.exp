@@ -1992,6 +1992,42 @@ proc check_effective_target_riscv_zvfh { } {
     }]
 }
 
+# Return 1 if the target arch supports the Zvl256b extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_zvl256b { } {
+    if { ![istarget riscv*-*-*] } {
+        return 0
+    }
+
+    # Cache result to avoid recompiling.
+    if { [info exists et_riscv_zvl256b] } {
+        return $et_riscv_zvl256b
+    }
+
+    set et_riscv_zvl256b \
+        [check_no_compiler_messages riscv_zvl256b object {
+            /* Require vector extension.  */
+            #ifndef __riscv_vector
+            #error "no V extension"
+            #endif
+            /* GCC 14+ defines this when Zvl* existed.  */
+            #ifdef __riscv_v_min_vlen
+            #if __riscv_v_min_vlen < 256
+            #error "VLEN too small"
+            #endif
+            #else
+            /* GCC 12/13 fallback: look for the extension macro itself.  */
+            #ifndef __riscv_zvl256b
+            #error "no Zvl256b"
+            #endif
+            #endif
+            int dummy;
+        }]
+
+    return $et_riscv_zvl256b
+}
+
 # Return 1 if the target arch supports Zicond extension, 0 otherwise.
 # Note, this differs from the test performed by
 # /* dg-skip-if "" { *-*-* } { "*" } { "-march=rv*zicond*" } */
