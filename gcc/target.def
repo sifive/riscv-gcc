@@ -2637,6 +2637,12 @@ types.",
  const char *, (const_tree type),
  hook_constcharptr_const_tree_null)
 
+DEFHOOK
+(mangle_class_suffix,
+ "Return target-specific mangling string for a class type, if needed.",
+ const char *, (const_tree type),
+ hook_constcharptr_const_tree_null)
+
 /* Temporarily add conditional target specific types for the purpose of
    emitting C++ fundamental type tinfos.  */
 DEFHOOK

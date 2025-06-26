@@ -349,6 +349,9 @@ poly_uint16 riscv_vector_chunks;
 /* The number of bytes in a vector chunk.  */
 unsigned riscv_bytes_per_vector_chunk;
 
+/* Global flag to indicate we are inside the func_sig pass. */
+bool riscv_in_func_sig_pass = false;
+
 /* Index R is the smallest register class that contains register R.  */
 const enum reg_class riscv_regno_to_class[FIRST_PSEUDO_REGISTER] = {
   GR_REGS,	GR_REGS,	GR_REGS,	GR_REGS,
@@ -11927,6 +11930,35 @@ riscv_mangle_type (const_tree type)
   return NULL;
 }
 
+static const char *
+riscv_mangle_class_suffix (const_tree type)
+{
+  if (!riscv_in_func_sig_pass)
+    return NULL;
+
+  if (TREE_CODE (type) == METHOD_TYPE)
+    {
+      tree class_type = TYPE_METHOD_BASETYPE (type);
+      if (class_type
+	  && TREE_CODE (class_type) == RECORD_TYPE
+	  && TYPE_LANG_SPECIFIC (class_type)
+	  && TYPE_CXX_ODR_P (class_type))
+      return "M1v";
+    }
+
+  if (POINTER_TYPE_P (type))
+    {
+      tree class_type = TREE_TYPE (type);
+      if (class_type
+	  && TREE_CODE (class_type) == RECORD_TYPE
+	  && TYPE_LANG_SPECIFIC (class_type)
+	  && TYPE_CXX_ODR_P (class_type))
+      return "v";
+    }
+
+  return NULL;
+}
+
 /* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
 
 static bool
@@ -14645,6 +14677,9 @@ riscv_function_attribute_inlinable_p (const_tree fndecl)
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE riscv_mangle_type
+
+#undef TARGET_MANGLE_CLASS_SUFFIX
+#define TARGET_MANGLE_CLASS_SUFFIX riscv_mangle_class_suffix
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P riscv_scalar_mode_supported_p

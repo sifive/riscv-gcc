@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "print-tree.h"
 #include "flags.h"
+#include "riscv-protos.h"
 
 /* Append a single character to the end of the mangled
  *    representation.  */
@@ -1440,6 +1441,7 @@ static unsigned int
 rest_of_insert_func_sig_wrapper (void)
 {
   cgraph_node *node;
+  riscv_in_func_sig_pass = true;
 
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
     {
@@ -1469,6 +1471,7 @@ rest_of_insert_func_sig_wrapper (void)
       pop_cfun ();
     }
 
+  riscv_in_func_sig_pass = false;
   return 0;
 }
 

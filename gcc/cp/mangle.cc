@@ -2553,7 +2553,13 @@ write_type (tree type)
 		    if (abi_version_at_least (5))
 		      target = build_qualified_type (target, TYPE_UNQUALIFIED);
 		  }
-		write_type (target);
+
+		/* Add "v" suffix for class function pointers
+		   during func_sig pass.  */
+		if (const char *sfx = targetm.mangle_class_suffix (type))
+		  write_string (sfx);
+		else
+		  write_type (target);
 	      }
 	      break;
 
@@ -2981,6 +2987,10 @@ write_function_type (const tree type)
 	 `this' parameter.  */
       tree this_type = class_of_this_parm (type);
       write_CV_qualifiers_for_type (this_type);
+
+      /* Add "M1v" suffix for class function pointers during func_sig pass.  */
+      if (const char *sfx = targetm.mangle_class_suffix (type))
+	write_string (sfx);
     }
 
   write_exception_spec (TYPE_RAISES_EXCEPTIONS (type));
