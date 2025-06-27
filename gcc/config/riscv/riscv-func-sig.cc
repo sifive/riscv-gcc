@@ -1377,9 +1377,20 @@ rest_of_insert_func_sig_call (function *fun)
 	tree func = TREE_TYPE (TREE_TYPE (fptr));
 	tree func_attr = lookup_attribute ("lpad_func_sig", TYPE_ATTRIBUTES (func));
 
+	if (dump_file)
+	  {
+	    fprintf (dump_file,
+		     "\n[LPAD FUNC_SIG_CALL] Indirect call in function: %s (UID=%d)\n",
+		     fndecl_name (fun->decl), DECL_UID (fun->decl));
+	    fprintf (dump_file, "  stmt location: ");
+	    print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	    fprintf (dump_file, "  function type: %s\n",
+		     get_tree_code_name(TREE_CODE (func)));
+	  }
+
 	if (!func_attr)
 	  {
-	    const char *type_mangled;
+	    const char *type_mangled = NULL;
 
 	    if (TREE_CODE (func) == FUNCTION_TYPE
 		&& TYPE_NAME (func)
@@ -1387,12 +1398,20 @@ rest_of_insert_func_sig_call (function *fun)
 		&& strcmp (IDENTIFIER_POINTER (TYPE_NAME (func)), "main") == 0)
 	      {
 		type_mangled = "FiiPPcE";
+		if (dump_file)
+		  fprintf (dump_file, "  special handling for 'main': using"
+			   "fixed signature '%s'\n", type_mangled);
 	      }
 	    else
 	      {
 		type_mangled = lang_hooks.mangle_type (func);
 		if (type_mangled == NULL)
-		  type_mangled = riscv_mangle_type_string (func);
+		  {
+		    type_mangled = riscv_mangle_type_string (func);
+		    if (dump_file)
+		      fprintf (dump_file,
+			       "  fallback to riscv_mangle_type_string\n");
+		  }
 	      }
 
 	    tree value = tree_cons (NULL_TREE, get_identifier (type_mangled),
@@ -1400,8 +1419,15 @@ rest_of_insert_func_sig_call (function *fun)
 	    TYPE_ATTRIBUTES (func)
 	      = tree_cons (get_identifier ("lpad_func_sig"), value,
 			   TYPE_ATTRIBUTES (func));
+
 	    if (dump_file)
-	      fprintf (dump_file, "call type mangling = '%s'\n", type_mangled);
+	      fprintf (dump_file, "  inserted lpad_func_sig = '%s'\n",
+		       type_mangled);
+	  }
+	else if (dump_file)
+	  {
+	    fprintf (dump_file, "  existing lpad_func_sig found"
+		     " — skipping insert.\n");
 	  }
       }
   return 0;
@@ -1410,30 +1436,54 @@ rest_of_insert_func_sig_call (function *fun)
 static unsigned int
 rest_of_insert_func_sig (function *fun)
 {
-  const char *fun_mangled;
+  const char *fun_mangled = NULL;
+  tree decl = fun->decl;
 
-  tree attr = lookup_attribute ("lpad_func_sig", DECL_ATTRIBUTES (fun->decl));
+  if (dump_file)
+    {
+      fprintf (dump_file, "\n[LPAD FUNC_SIG] Processing: %s (UID=%d)\n",
+	       fndecl_name (decl), DECL_UID (decl));
+      fprintf (dump_file, "  is_artificial: %d, is_public: %d, is_comdat: %d\n",
+	       DECL_ARTIFICIAL (decl), TREE_PUBLIC (decl), DECL_COMDAT (decl));
+      fprintf (dump_file, "  function type: %s\n",
+	       get_tree_code_name (TREE_CODE (TREE_TYPE (decl))));
+    }
+
+  tree attr = lookup_attribute ("lpad_func_sig", DECL_ATTRIBUTES (decl));
   if (!attr)
     {
-      const char *fname = IDENTIFIER_POINTER (DECL_NAME (fun->decl));
+      const char *fname = IDENTIFIER_POINTER (DECL_NAME (decl));
       if (strcmp (fname, "main") == 0)
-	fun_mangled = "FiiPPcE";
+	{
+	  fun_mangled = "FiiPPcE";
+	  if (dump_file)
+	    fprintf (dump_file, "  special handling for 'main': "
+		     "using fixed signature '%s'\n", fun_mangled);
+	}
       else
 	{
-	  fun_mangled = lang_hooks.mangle_type (TREE_TYPE (fun->decl));
+	  fun_mangled = lang_hooks.mangle_type (TREE_TYPE (decl));
 	  if (fun_mangled == NULL)
-	    fun_mangled = riscv_mangle_type_string (TREE_TYPE (fun->decl));
+	    {
+	      fun_mangled = riscv_mangle_type_string (TREE_TYPE (decl));
+	      if (dump_file)
+		fprintf (dump_file, "  fallback to riscv_mangle_type_string\n");
+	    }
 	}
 
-      tree old_attr = DECL_ATTRIBUTES (fun->decl);
+      tree old_attr = DECL_ATTRIBUTES (decl);
       tree value = tree_cons (NULL_TREE, get_identifier (fun_mangled), NULL_TREE);
       tree fsig_attr = tree_cons (get_identifier ("lpad_func_sig"), value, old_attr);
-      DECL_ATTRIBUTES (fun->decl) = merge_attributes (fsig_attr, old_attr);
+      DECL_ATTRIBUTES (decl) = merge_attributes (fsig_attr, old_attr);
 
       if (dump_file)
-	fprintf (dump_file, "mangle_type_string(%s) = '%s'\n",
-		 fndecl_name(fun->decl), fun_mangled);
+	fprintf (dump_file, "  inserted lpad_func_sig = '%s'\n", fun_mangled);
     }
+  else if (dump_file)
+    {
+      fprintf (dump_file, "  already has lpad_func_sig — skipping insert.\n");
+    }
+
   return 0;
 }
 
