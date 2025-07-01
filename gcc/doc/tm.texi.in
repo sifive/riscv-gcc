@@ -1301,6 +1301,8 @@ pattern needs to support both a 32- and a 64-bit mode.
 
 @hook TARGET_MANGLE_CLASS_SUFFIX
 
+@hook TARGET_SKIP_EXCEPTION_SPEC
+
 @hook TARGET_EMIT_SUPPORT_TINFOS
 
 @node Type Layout

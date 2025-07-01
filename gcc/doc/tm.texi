@@ -1561,6 +1561,10 @@ types.
 Return target-specific mangling string for a class type, if needed.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_SKIP_EXCEPTION_SPEC (void)
+Return true if exception specification should be skipped.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_EMIT_SUPPORT_TINFOS (emit_support_tinfos_callback @var{callback})
 If your target defines any fundamental types which depend on ISA flags,
 they might need C++ tinfo symbols in libsupc++/libstdc++ regardless of

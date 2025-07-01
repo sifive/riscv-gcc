@@ -427,8 +427,13 @@ canonicalize_for_substitution (tree node)
 	  if (flag_noexcept_type)
 	    node = build_exception_variant (node, r);
 	  else
-	    /* Set the warning flag if appropriate.  */
-	    write_exception_spec (r);
+	    {
+	      if (!targetm.skip_exception_spec ())
+		{
+		  /* Set the warning flag if appropriate.  */
+		  write_exception_spec (r);
+		}
+	    }
 	}
     }
   return node;
@@ -2993,10 +2998,13 @@ write_function_type (const tree type)
 	write_string (sfx);
     }
 
-  write_exception_spec (TYPE_RAISES_EXCEPTIONS (type));
+  if (!targetm.skip_exception_spec ())
+    {
+      write_exception_spec (TYPE_RAISES_EXCEPTIONS (type));
 
-  if (tx_safe_fn_type_p (type))
-    write_string ("Dx");
+      if (tx_safe_fn_type_p (type))
+	write_string ("Dx");
+    }
 
   write_char ('F');
   /* We don't track whether or not a type is `extern "C"'.  Note that

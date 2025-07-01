@@ -11959,6 +11959,12 @@ riscv_mangle_class_suffix (const_tree type)
   return NULL;
 }
 
+static bool
+riscv_skip_exception_spec (void)
+{
+  return riscv_in_func_sig_pass;
+}
+
 /* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
 
 static bool
@@ -14680,6 +14686,9 @@ riscv_function_attribute_inlinable_p (const_tree fndecl)
 
 #undef TARGET_MANGLE_CLASS_SUFFIX
 #define TARGET_MANGLE_CLASS_SUFFIX riscv_mangle_class_suffix
+
+#undef TARGET_SKIP_EXCEPTION_SPEC
+#define TARGET_SKIP_EXCEPTION_SPEC riscv_skip_exception_spec
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P riscv_scalar_mode_supported_p

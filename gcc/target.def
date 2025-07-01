@@ -2643,6 +2643,12 @@ DEFHOOK
  const char *, (const_tree type),
  hook_constcharptr_const_tree_null)
 
+DEFHOOK
+(skip_exception_spec,
+ "Return true if exception specification should be skipped.",
+ bool, (void),
+ hook_bool_void_false)
+
 /* Temporarily add conditional target specific types for the purpose of
    emitting C++ fundamental type tinfos.  */
 DEFHOOK
