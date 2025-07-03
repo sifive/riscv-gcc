@@ -837,7 +837,7 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
 
 /* Trampolines are a block of code followed by two pointers.  */
 
-#define TRAMPOLINE_CODE_SIZE ((is_zicfilp_p ()) ? 20 : 16)
+#define TRAMPOLINE_CODE_SIZE ((is_zicfilp_p ()) ? 24 : 16)
 
 #define TRAMPOLINE_SIZE		\
   ((Pmode == SImode)		\
