@@ -11591,7 +11591,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
   rtx addr, end_addr, mem;
   uint32_t trampoline[4];
-  uint32_t trampoline_cfi[5];
+  uint32_t trampoline_cfi[6];
   unsigned int i;
   HOST_WIDE_INT static_chain_offset, target_function_offset;
   HOST_WIDE_INT lp_value = 0;
@@ -11752,6 +11752,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	     l[wd]   t2, (target_function_offset - 4)(t3)
 	     l[wd]   t3, (static_chain_offset - 4)(t3)
 	     jr      t2
+	     nop
 	  */
 	  trampoline_cfi[0] = OPCODE_AUIPC | (0 << SHIFT_RD) | (lp_value << IMM_BITS);
 	  trampoline_cfi[1] = OPCODE_AUIPC | (STATIC_CHAIN_REGNUM << SHIFT_RD);
@@ -11764,7 +11765,8 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 			      | (STATIC_CHAIN_REGNUM << SHIFT_RS1)
 			      | ((static_chain_offset - 4) << SHIFT_IMM);
 	  trampoline_cfi[4] = OPCODE_JALR | (RISCV_CALL_ADDRESS_LPAD_REGNUM << SHIFT_RS1);
-
+	  trampoline_cfi[5] = OPCODE_ADDI | (0 << SHIFT_RD)
+			      | (0 << SHIFT_RS1) | (0 << SHIFT_IMM);
 	  /* Copy the trampoline code.  */
 	  for (i = 0; i < ARRAY_SIZE (trampoline_cfi); i++)
 	    {
