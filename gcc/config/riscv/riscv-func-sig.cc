@@ -77,6 +77,8 @@ along with GCC; see the file COPYING3.  If not see
 #define COMPARE_REDECLARATION 4
 #define COMPARE_STRUCTURAL    8
 
+static int in_return_type = 0;
+
 /* The obstack on which we build mangled names.  */
 static struct obstack *mangle_obstack;
 
@@ -764,7 +766,11 @@ write_bare_function_type (const tree type, const int include_return_type_p)
 {
   /* Mangle the return type, if requested.  */
   if (include_return_type_p)
-    write_type (TREE_TYPE (type));
+    {
+      in_return_type = 1;
+      write_type (TREE_TYPE (type));
+      in_return_type = 0;
+    }
 
   /* Now mangle the types of the arguments.  */
   ++G.parm_depth;
@@ -1278,7 +1284,12 @@ write_type (tree type)
 		    if (abi_version_at_least (5))
 		      target = build_qualified_type (target, TYPE_UNQUALIFIED);
 		  }
-		write_type (target);
+
+		const char *sfx = targetm.mangle_class_suffix (type);
+		if (sfx && (in_return_type == 1))
+		  write_string (sfx);
+		else
+		  write_type (target);
 	      }
 	      break;
 

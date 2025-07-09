@@ -11951,12 +11951,10 @@ riscv_mangle_class_suffix (const_tree type)
 
   if (POINTER_TYPE_P (type))
     {
-      tree class_type = TREE_TYPE (type);
-      if (class_type
-	  && TREE_CODE (class_type) == RECORD_TYPE
-	  && TYPE_LANG_SPECIFIC (class_type)
-	  && TYPE_CXX_ODR_P (class_type))
-      return "v";
+      tree record_type = TREE_TYPE (type);
+      if (record_type
+	  && TREE_CODE (record_type) == RECORD_TYPE)
+        return "v";
     }
 
   return NULL;

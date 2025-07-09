@@ -123,6 +123,8 @@ struct GTY(()) globals {
   bool mod;
 };
 
+static int in_return_type = 0;
+
 static GTY (()) globals G;
 
 /* The obstack on which we build mangled names.  */
@@ -2561,7 +2563,8 @@ write_type (tree type)
 
 		/* Add "v" suffix for class function pointers
 		   during func_sig pass.  */
-		if (const char *sfx = targetm.mangle_class_suffix (type))
+		const char *sfx = targetm.mangle_class_suffix (type);
+		if (sfx && (in_return_type == 1))
 		  write_string (sfx);
 		else
 		  write_type (target);
@@ -3044,7 +3047,11 @@ write_bare_function_type (const tree type, const int include_return_type_p,
 
   /* Mangle the return type, if requested.  */
   if (include_return_type_p)
-    write_type (TREE_TYPE (type));
+    {
+      in_return_type = 1;
+      write_type (TREE_TYPE (type));
+      in_return_type = 0;
+    }
 
   /* Now mangle the types of the arguments.  */
   ++G.parm_depth;
