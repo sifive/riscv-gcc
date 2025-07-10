@@ -2876,8 +2876,26 @@ riscv_call_tls_get_addr (rtx sym, rtx result)
   start_sequence ();
 
   emit_insn (riscv_got_load_tls_gd (a0, sym));
-  insn = emit_call_insn (gen_call_value (result, func, const0_rtx,
-					 gen_int_mode (RISCV_CC_BASE, SImode)));
+
+  if (riscv_lpad_type == LPAD_FUNC_SIG)
+    {
+      /* The symbol refers to the TLS function signature for
+         __tls_get_addr() from glibc.  */
+      rtx tls_func_sig = gen_rtx_SYMBOL_REF (Pmode, "FPvP9tls_indexE");
+      rtx variant_cc = gen_int_mode (RISCV_CC_BASE, SImode);
+      rtx tls_func_params = gen_rtx_PARALLEL (VOIDmode,
+					      gen_rtvec (2, variant_cc,
+							 tls_func_sig));
+      insn = emit_call_insn (gen_call_value (result, func, const0_rtx,
+					     tls_func_params));
+    }
+  else
+    {
+      insn = emit_call_insn (gen_call_value (result, func, const0_rtx,
+					     gen_int_mode (RISCV_CC_BASE,
+							   SImode)));
+    }
+
   RTL_CONST_CALL_P (insn) = 1;
   use_reg (&CALL_INSN_FUNCTION_USAGE (insn), a0);
   insn = get_insns ();
@@ -6982,8 +7000,6 @@ riscv_legitimize_cfi_call_args (rtx func_arg, bool indirect_p)
       emit_insn (gen_set_lpl (Pmode, func_sig));
     }
 
-  /* TODO: riscv_output_mi_thunk (), riscv_call_tls_get_addr (),
-	   untyped_call pattern do not assign function signature.  */
   if (GET_CODE (func_arg) == PARALLEL)
     func_arg = XVECEXP (func_arg, 0, 0);
 
