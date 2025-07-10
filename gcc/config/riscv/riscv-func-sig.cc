@@ -822,7 +822,6 @@ decl_mangling_context (tree decl)
   if (tcontext != NULL_TREE)
     return tcontext;
 
-  /* FIXME: 20040625-1.c with flto.  */
   if (TREE_CODE (decl) != IDENTIFIER_NODE)
     tcontext = CP_DECL_CONTEXT (decl);
   else
@@ -1113,9 +1112,8 @@ write_array_type (const tree type)
 	    }
 	  else
 	    {
-	      max = TREE_OPERAND (max, 0);
-	      /* FIXME: case from gcc.c-torture/compile/20010202-1.c. */
-	      // write_expression (max);
+	      /* Detected VLA: skip element count and type.  */
+	      return;
 	    }
 	}
     }
