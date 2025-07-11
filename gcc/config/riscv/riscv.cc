@@ -6919,6 +6919,11 @@ riscv_attribute_get_func_sig (tree decl)
       if (func_sig_symbol == NULL || *func_sig_symbol == '\0')
 	gcc_unreachable ();
 
+       /* Special case: if the signature string is "0",
+	  treat it as no check required.  */
+      if (strcmp (func_sig_symbol, "0") == 0)
+        return const0_rtx;
+
       return gen_rtx_SYMBOL_REF (Pmode, func_sig_symbol);
     }
 

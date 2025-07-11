@@ -1502,6 +1502,39 @@ rest_of_insert_func_sig_wrapper (void)
   cgraph_node *node;
   riscv_in_func_sig_pass = true;
 
+  struct varpool_node *vnode;
+  FOR_EACH_VARIABLE (vnode)
+    {
+      tree decl = vnode->decl;
+
+      const char *sec = DECL_SECTION_NAME (decl);
+      if (!sec || (
+	  strcmp (sec, ".init_array") != 0 &&
+	  strcmp (sec, ".fini_array") != 0 &&
+	  strcmp (sec, ".preinit_array") != 0))
+	continue;
+
+      tree init = DECL_INITIAL (decl);
+      if (!init || TREE_CODE (init) != ADDR_EXPR)
+	continue;
+
+      tree func = TREE_OPERAND (init, 0);
+      if (!func || TREE_CODE (func) != FUNCTION_DECL)
+	continue;
+
+      if (lookup_attribute ("lpad_func_sig", DECL_ATTRIBUTES (func)))
+	continue;
+
+      tree value = tree_cons (NULL_TREE, get_identifier ("0"), NULL_TREE);
+      tree attr = tree_cons (get_identifier ("lpad_func_sig"), value,
+			     DECL_ATTRIBUTES (func));
+      DECL_ATTRIBUTES (func) = merge_attributes (attr, DECL_ATTRIBUTES (func));
+
+      if (dump_file)
+	fprintf (dump_file, "Inserted lpad_func_sig(\"0\") for init_array"
+		 "function %s\n", IDENTIFIER_POINTER (DECL_NAME (func)));
+    }
+
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
     {
       if (!gimple_has_body_p (node->decl))
