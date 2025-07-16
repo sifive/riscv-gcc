@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* Verify that store mappings match the PSABI doc's recommended compatibility
    mapping.  */
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -fcf-protection=none" } */
 /* { dg-remove-options riscv_ztso } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */
 /* { dg-final { check-function-bodies "**" "" } } */

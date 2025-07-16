@@ -4,6 +4,9 @@
 // For MIN/MAX recognition
 // { dg-additional-options "-ffast-math" }
 // { dg-skip-if "requires hosted libstdc++ for cmath" { ! hostedlib } }
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection=full" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection=branch" } } */
 
 #include <algorithm>
 #include <cmath>

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* Verify that fence mappings match the PSABI doc's recommended mapping.  */
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -fcf-protection=none" } */
 /* { dg-remove-options riscv_ztso } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */
 /* { dg-final { check-function-bodies "**" "" } } */

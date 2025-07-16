@@ -1,6 +1,6 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-add-options riscv_v } */
-/* { dg-additional-options "-O3 -mrvv-max-lmul=dynamic" } */
+/* { dg-additional-options "-O3 -mrvv-max-lmul=dynamic -fcf-protection=none" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #define MIN_VECTOR_BYTES (__riscv_v_min_vlen / 8)

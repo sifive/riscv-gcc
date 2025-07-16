@@ -2,6 +2,9 @@
 /* { dg-additional-options "--param vect-epilogues-nomask=0 -fdump-tree-optimized-details-blocks" } */
 /* { dg-require-effective-target vect_int } */
 /* { dg-add-options double_vectors } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection=full" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection=branch" } } */
 
 #include <stdarg.h>
 #include "tree-vect.h"

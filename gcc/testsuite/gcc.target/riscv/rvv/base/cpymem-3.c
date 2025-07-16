@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
-/* { dg-additional-options "-O1 -fno-schedule-insns -fno-schedule-insns2 -mrvv-max-lmul=m8" } */
+/* { dg-additional-options "-O1 -fno-schedule-insns -fno-schedule-insns2 -mrvv-max-lmul=m8  -fcf-protection=none" } */
 /* { dg-add-options riscv_v } */
 /* { dg-final { check-function-bodies "**" "" } } */
 

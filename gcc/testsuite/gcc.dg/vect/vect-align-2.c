@@ -1,4 +1,7 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection=full" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection=branch" } } */
 
 #include <stdlib.h>
 #include <stdarg.h>

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* Verify that atomic op mappings match the PSABI doc's recommended mapping.  */
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -fcf-protection=none" } */
 /* { dg-add-options riscv_zaamo } */
 /* { dg-remove-options riscv_ztso } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */

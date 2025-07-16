@@ -2,6 +2,9 @@
 /* { dg-require-effective-target vect_early_break } */
 /* { dg-require-effective-target vect_long_long } */
 /* { dg-skip-if "LOOP VECTORIZED output is target-dependent on RVV" { riscv_v_ok } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection=full" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection=branch" } } */
 
 /* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
 

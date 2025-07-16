@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* Ensure that AMO ops are emitted when both zalrsc and zaamo are enabled.  */
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -fcf-protection=none" } */
 /* { dg-add-options riscv_zalrsc } */
 /* { dg-add-options riscv_zaamo } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */

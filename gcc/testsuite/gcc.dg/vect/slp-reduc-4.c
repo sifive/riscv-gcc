@@ -1,5 +1,8 @@
 /* { dg-skip-if "VEC_PERM_EXPR output is target-dependent on RVV" { riscv_v_ok } } */
 /* { dg-require-effective-target vect_int } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection=full" } } */
+/* { dg-skip-if "" { riscv*-*-* } { "-fcf-protection=branch" } } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
