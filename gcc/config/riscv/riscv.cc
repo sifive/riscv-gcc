@@ -227,6 +227,9 @@ struct GTY(())  machine_function {
   /* Get a landing pad value from landing_pad_value attribute.  */
   int attribute_lp_value;
 
+  /* True if current function uses unlabeled landing pad.  */
+  bool unlabeled_p;
+
   /* The current frame information, calculated by riscv_compute_frame_info.  */
   struct riscv_frame_info frame;
 
@@ -755,7 +758,10 @@ static const attribute_spec riscv_gnu_attributes[] =
   { "no_cfi_ss", 0, 0, true, false, false, false,
     riscv_handle_fndecl_attribute, NULL },
   /* The attribute disable CFI landing pad.  */
-  { "no_cfi_lp", 0, 0, true, false, false, false,
+  { "nolabel", 0, 0, true, false, false, false,
+    riscv_handle_fndecl_attribute, NULL },
+  /* The attribute disable CFI landing pad.  */
+  { "zerolabel", 0, 0, true, false, false, false,
     riscv_handle_fndecl_attribute, NULL },
   /* Set a landing pad value, and the landing pad value
      starts from 0 to 0xfffff.  */
@@ -7114,10 +7120,19 @@ riscv_no_cfi_ss_p (tree func)
 static bool
 riscv_no_cfi_lp_p (tree func)
 {
-  tree func_decl = func;
   if (func == NULL_TREE)
-    func_decl = current_function_decl;
-  return NULL_TREE != lookup_attribute ("no_cfi_lp", DECL_ATTRIBUTES (func_decl));
+    func = current_function_decl;
+
+  return lookup_attribute ("nolabel", DECL_ATTRIBUTES (func)) != NULL_TREE;
+}
+
+static bool
+riscv_unlabeled_p (tree func)
+{
+  if (func == NULL_TREE)
+    func = current_function_decl;
+
+  return lookup_attribute ("zerolabel", DECL_ATTRIBUTES (func)) != NULL_TREE;
 }
 
 int
@@ -7127,6 +7142,9 @@ riscv_attribute_get_lp_value (tree func)
   tree func_decl = func;
   if (func == NULL_TREE)
     func_decl = current_function_decl;
+
+  if (cfun->machine->unlabeled_p)
+    return 0;
 
   attr = lookup_attribute ("landing_pad_value", DECL_ATTRIBUTES (func_decl));
 
@@ -12142,6 +12160,7 @@ riscv_set_current_function (tree decl)
 	= riscv_interrupt_type_p (TREE_TYPE (decl));
       cfun->machine->no_cfi_ss_p = riscv_no_cfi_ss_p (decl);
       cfun->machine->no_cfi_lp_p = riscv_no_cfi_lp_p (decl);
+      cfun->machine->unlabeled_p = riscv_unlabeled_p (decl);
       cfun->machine->attribute_lp_value = riscv_attribute_get_lp_value (decl);
 
       if (cfun->machine->naked_p && cfun->machine->interrupt_handler_p)

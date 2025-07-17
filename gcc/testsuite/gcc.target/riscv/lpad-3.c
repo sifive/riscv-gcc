@@ -4,7 +4,7 @@
 
 typedef void (*func_ptr)();
 
-__attribute__((no_cfi_lp))
+__attribute__((nolabel))
 void bar(func_ptr ptr){
  ptr(); // No need to setup t2 before function call.
 }
