@@ -1,10 +1,10 @@
 /* Verify the no_cfi_lp attribute with function pointer.  */
 /* { dg-do compile { target { riscv64*-*-* } } } */
-/* { dg-options "-O0 -march=rv64gc_zicfilp -mabi=lp64d" } */
+/* { dg-options "-O0 -march=rv64gc_zicfilp -mabi=lp64d -fcf-protection=branch" } */
 
 typedef void (*func_ptr)();
 
-__attribute__((no_cfi_lp))
+__attribute__((nolabel))
 void bar(func_ptr ptr){
  ptr(); // No need to setup t2 before function call.
 }
