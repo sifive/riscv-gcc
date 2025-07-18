@@ -1187,6 +1187,9 @@ write_type (tree type)
     {
       tree type_orig = type;
 
+      /* See through any typedefs.  */
+      type = TYPE_MAIN_VARIANT (type);
+
       /* According to the C++ ABI, some library classes are passed the
 	 same as the scalar type of their single member and use the same
 	 mangling.  */
