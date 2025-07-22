@@ -237,9 +237,8 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"xsfvfnrclipxfqf", "zve32f"},
   {"zacas", "a"},
 
-  /* Mammoth 0.6.1 */
+  /* Mammoth 0.6.4 */
   {"xsfmmbase", "zve32x"},
-  {"xsfmm32a4i", "xsfmmbase"},
   {"xsfmm32a8i", "xsfmmbase"},
   {"xsfmm32a8f", "xsfmmbase"},
   {"xsfmm32a8f", "zve32f"},
@@ -572,7 +571,6 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"xsfvfbfexp16e", ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
   /* Mammoth */
   {"xsfmmbase",	ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
-  {"xsfmm32a4i", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
   {"xsfmm32a8i", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
   {"xsfmm32a8f", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
   {"xsfmm32a16f", ISA_SPEC_CLASS_UNRATIFIED, 0, 6},
