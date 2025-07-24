@@ -1245,44 +1245,8 @@ write_type (tree type)
 	      /* Filter out problematic anonymous structs like:
 		 void f(struct {int b;}) {}. and struct { char (*p)[++n]; }  */
 	      if (TYPE_NAME (type))
-		{
-		  write_class_enum_type (type);
-		}
-	      else
-		{
-		  /* Only skip anonymous RECORD/UNION with VLA.  */
-		  if (TREE_CODE (type) == RECORD_TYPE
-		      || TREE_CODE (type) == UNION_TYPE)
-		    {
-		      for (tree field = TYPE_FIELDS (type); field;
-			   field = TREE_CHAIN (field))
-			{
-			  tree ftype = TREE_TYPE (field);
+		write_class_enum_type (type);
 
-			  /* Skip if VLA (array with non-constant bound).  */
-			  if (TREE_CODE (ftype) == ARRAY_TYPE)
-			    {
-			      tree domain = TYPE_DOMAIN (ftype);
-			      if (domain
-				  && !TREE_CONSTANT (TYPE_MAX_VALUE (domain)))
-				return;
-			    }
-
-			  /* Skip if pointer to VLA.  */
-			  if (TREE_CODE (ftype) == POINTER_TYPE)
-			    {
-			      tree eltype = TREE_TYPE (ftype);
-			      if (TREE_CODE (eltype) == ARRAY_TYPE)
-				{
-				  tree domain = TYPE_DOMAIN (eltype);
-				  if (domain
-				      && !TREE_CONSTANT (TYPE_MAX_VALUE (domain)))
-				    return;
-				}
-			    }
-			}
-		    }
-		}
 	      break;
 
 	    case POINTER_TYPE:
