@@ -1246,6 +1246,11 @@ write_type (tree type)
 		 void f(struct {int b;}) {}. and struct { char (*p)[++n]; }  */
 	      if (TYPE_NAME (type))
 		{
+		  write_class_enum_type (type);
+		}
+	      else
+		{
+		  /* Only skip anonymous RECORD/UNION with VLA.  */
 		  if (TREE_CODE (type) == RECORD_TYPE
 		      || TREE_CODE (type) == UNION_TYPE)
 		    {
@@ -1253,15 +1258,30 @@ write_type (tree type)
 			   field = TREE_CHAIN (field))
 			{
 			  tree ftype = TREE_TYPE (field);
+
+			  /* Skip if VLA (array with non-constant bound).  */
 			  if (TREE_CODE (ftype) == ARRAY_TYPE)
-			    return;
-			  /* Check pointer to array.  */
-			  if (TREE_CODE (ftype) == POINTER_TYPE
-			      && TREE_CODE (TREE_TYPE (ftype)) == ARRAY_TYPE)
-			    return;
+			    {
+			      tree domain = TYPE_DOMAIN (ftype);
+			      if (domain
+				  && !TREE_CONSTANT (TYPE_MAX_VALUE (domain)))
+				return;
+			    }
+
+			  /* Skip if pointer to VLA.  */
+			  if (TREE_CODE (ftype) == POINTER_TYPE)
+			    {
+			      tree eltype = TREE_TYPE (ftype);
+			      if (TREE_CODE (eltype) == ARRAY_TYPE)
+				{
+				  tree domain = TYPE_DOMAIN (eltype);
+				  if (domain
+				      && !TREE_CONSTANT (TYPE_MAX_VALUE (domain)))
+				    return;
+				}
+			    }
 			}
 		    }
-		  write_class_enum_type (type);
 		}
 	      break;
 
