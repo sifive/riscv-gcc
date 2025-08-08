@@ -59,7 +59,8 @@ along with GCC; see the file COPYING3.  If not see
       %{!static-pie: \
 	%{rdynamic:-export-dynamic} \
 	-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
-    %{static:-static} %{static-pie:-static -pie --no-dynamic-linker -z text}}"
+    %{static:-static} %{static-pie:-static -pie --no-dynamic-linker -z text}} \
+%{fcf-protection=*: %{!fcf-protection=none: -z now}}"
 
 #define STARTFILE_PREFIX_SPEC 			\
    "/lib" XLEN_SPEC "/" ABI_SPEC "/ "		\
