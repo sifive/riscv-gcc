@@ -316,6 +316,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 
   {"v",       ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"p",       ISA_SPEC_CLASS_NONE, 0, 15},
+
   {"zicsr", ISA_SPEC_CLASS_20191213, 2, 0},
   {"zicsr", ISA_SPEC_CLASS_20190608, 2, 0},
 
