@@ -1937,6 +1937,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   RISCV_EXT_FLAG_ENTRY ("zicclsm",     x_riscv_zi_subext, MASK_ZICCLSM),
   RISCV_EXT_FLAG_ENTRY ("ziccrse",     x_riscv_zi_subext, MASK_ZICCRSE),
   RISCV_EXT_FLAG_ENTRY ("zilsd",       x_riscv_zi_subext, MASK_ZILSD),
+  RISCV_EXT_FLAG_ENTRY ("zibi",        x_riscv_zi_subext, MASK_ZIBI),
 
   RISCV_EXT_FLAG_ENTRY ("zicboz", x_riscv_zicmo_subext, MASK_ZICBOZ),
   RISCV_EXT_FLAG_ENTRY ("zicbom", x_riscv_zicmo_subext, MASK_ZICBOM),
