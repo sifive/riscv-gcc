@@ -1899,6 +1899,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zicclsm", &gcc_options::x_riscv_zi_subext, MASK_ZICCLSM},
   {"ziccrse", &gcc_options::x_riscv_zi_subext, MASK_ZICCRSE},
   {"zilsd", &gcc_options::x_riscv_zi_subext, MASK_ZILSD},
+  {"zibi", &gcc_options::x_riscv_zi_subext, MASK_ZIBI},
 
   {"zicboz", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOZ},
   {"zicbom", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOM},
