@@ -445,6 +445,9 @@ Mask(ZVFHMIN) Var(riscv_zf_subext)
 
 Mask(ZVFH)    Var(riscv_zf_subext)
 
+Mask(ZVQDOTQ) Var(riscv_zf_subext)
+
+
 TargetVariable
 int riscv_zfa_subext
 
