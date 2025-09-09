@@ -230,6 +230,7 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zvfbfwma", "zvfbfmin"},
   {"zvfofp8min", "zve32f"},
   {"zvfofp4min", "zve32f"},
+  {"zvqdotq", "zve32x"},
   {"xsfvfexpa", "zve32f"},
   {"xsfvfexpa64e", "xsfvfexpa"},
   {"xsfvfexpa64e", "zve64d"},
@@ -549,6 +550,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zvfbfwma", ISA_SPEC_CLASS_UNRATIFIED, 0, 8},
   {"zvfofp8min", ISA_SPEC_CLASS_NONE, 0, 2},
   {"zvfofp4min", ISA_SPEC_CLASS_NONE, 0, 1},
+  {"zvqdotq", ISA_SPEC_CLASS_NONE, 0, 0},
 
   {"zvkns",  ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
   {"zvknf",  ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
@@ -1953,6 +1955,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zvfh",      &gcc_options::x_riscv_zf_subext, MASK_ZVFH},
   {"zvfofp8min", &gcc_options::x_riscv_zf_subext, MASK_ZVFOFP8MIN},
   {"zvfofp4min", &gcc_options::x_riscv_zf_subext, MASK_ZVFOFP4MIN},
+  {"zvqdotq",   &gcc_options::x_riscv_zf_subext, MASK_ZVQDOTQ},
 
   {"zfa",       &gcc_options::x_riscv_zfa_subext, MASK_ZFA},
 
