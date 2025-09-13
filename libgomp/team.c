@@ -755,8 +755,6 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       attr = &thread_attr;
     }
 
-  if (i >= nthreads)
-    __builtin_unreachable ();
   start_data = gomp_alloca (sizeof (struct gomp_thread_start_data)
 			    * (nthreads - i));
 
