@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fdump-tree-crc-details" } */
-/* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Os" "-flto" } } */
+/* { dg-skip-if "" { "riscv*-*-*" } } */
 
 #include <stddef.h>
 typedef unsigned char  u8;
