@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvfhmin -mabi=lp64d -O3" } */
+/* { dg-options "-march=rv64gcv_zvfhmin -mabi=lp64d -O3 -w" } */
 
 long *print_bfloat_block;
 void ftoastr(float);
