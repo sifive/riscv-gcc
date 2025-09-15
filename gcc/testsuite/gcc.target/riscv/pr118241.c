@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "rv32e toolchain" { riscv_abi_e } } */
 /* { dg-options "-march=rv64gc_zicbop" { target { rv64 } } } */
 /* { dg-options "-march=rv32gc_zicbop" { target { rv32 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } } */
