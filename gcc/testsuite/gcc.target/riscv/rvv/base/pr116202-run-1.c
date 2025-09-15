@@ -1,4 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
+/* { dg-require-effective-target rvv_zvl256b_ok } */
 /* { dg-options "-O3 -march=rv64gcv_zvl256b -mabi=lp64d -fdump-rtl-expand-details" } */
 
 int b[24];

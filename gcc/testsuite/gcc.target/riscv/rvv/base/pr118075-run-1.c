@@ -1,4 +1,5 @@
 /* { dg-do run { target { riscv_v && rv64 } } } */
+/* { dg-require-effective-target rvv_zvl256b_ok } */
 /* { dg-additional-options "-std=c99 -O3 -march=rv64gcv_zvl256b -mrvv-vector-bits=zvl" } */
 
 int a;

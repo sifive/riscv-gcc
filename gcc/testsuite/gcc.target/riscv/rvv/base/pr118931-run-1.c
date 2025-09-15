@@ -1,4 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
+/* { dg-require-effective-target riscv_no_cfi } */
 /* { dg-options "-O3 -march=rv64gcv -mabi=lp64d -fwhole-program -mrvv-vector-bits=zvl" } */
 
 long long m;
