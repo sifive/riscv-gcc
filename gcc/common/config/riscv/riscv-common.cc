@@ -241,7 +241,6 @@ static const riscv_implied_info_t riscv_implied_info[] =
   /* SiFive */
   {"smwgd", "smwg"},
   {"xsfvfhbfmin", "zve32f"},
-  {"zvfbfmin", "zfbfmin"},
   {"xsfvfexpa", "zve32f"},
   {"xsfvfexpa64e", "xsfvfexpa"},
   {"xsfvfexpa64e", "zve64d"},
