@@ -690,6 +690,10 @@ static const attribute_spec riscv_gnu_attributes[] =
      types.  */
   {"riscv_rvv_vector_bits", 1, 1, false, true, false, true,
    riscv_handle_rvv_vector_bits_attribute, NULL},
+  /* This attribute is used to mark functions that may return indirectly,
+     requiring LPAD protection after calls to such functions for control
+     flow integrity. */
+  {"indirect_return", 0, 0, false, true, true, true, NULL, NULL},
 };
 
 static const scoped_attribute_specs riscv_gnu_attribute_table  =
