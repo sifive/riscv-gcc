@@ -83,6 +83,60 @@ is_interrupt_handler_p (tree type)
   return lookup_attribute ("interrupt", TYPE_ATTRIBUTES (type)) != NULL;
 }
 
+/* Check if the called function has an indirect_return attribute.
+   Functions marked with this attribute may return indirectly and require
+   LPAD protection after calls to them.  */
+static bool
+riscv_fun_is_indirect_return (rtx_insn *insn)
+{
+  /* Extract the function being called from the call instruction.
+     Since CALL_P (insn) was already checked, we know this is a CALL_INSN.  */
+  rtx call_rtx = PATTERN (insn);
+
+  if (GET_CODE (call_rtx) == PARALLEL)
+    call_rtx = XVECEXP (call_rtx, 0, 0);
+
+  if (GET_CODE (call_rtx) == SET)
+    call_rtx = SET_SRC (call_rtx);
+
+  gcc_assert (GET_CODE (call_rtx) == CALL);
+
+  rtx fn = XEXP (call_rtx, 0);
+  if (GET_CODE (fn) != MEM)
+    return false;
+
+  rtx addr = XEXP (fn, 0);
+  if (GET_CODE (addr) != SYMBOL_REF)
+    return false;
+
+  /* Get the function declaration from the symbol reference.  */
+  tree decl = SYMBOL_REF_DECL (addr);
+  if (!decl || TREE_CODE (decl) != FUNCTION_DECL)
+    return false;
+
+  /* Check for the indirect_return attribute on the function type.  */
+  tree fntype = TREE_TYPE (decl);
+  return lookup_attribute ("indirect_return", TYPE_ATTRIBUTES (fntype)) != NULL;
+}
+
+/* Decide if LPAD is needed after a call instruction.
+   LPAD is required for calls that may return indirectly to provide
+   control flow integrity protection.  */
+static bool
+call_needs_lpad (rtx_insn *insn)
+{
+  /* Call returns twice, one of which may be indirect (e.g., setjmp).  */
+  if (find_reg_note (insn, REG_SETJMP, NULL))
+    return true;
+
+  /* Tail call does not return to the call site.  */
+  if (SIBLING_CALL_P (insn))
+    return false;
+
+  /* Check if the function is marked to return indirectly.  */
+  return riscv_fun_is_indirect_return (insn);
+}
+
 /* Insert landing-pad check instructions.  This is a late RTL pass that runs
    before branch shortening. */
 static unsigned int
@@ -127,6 +181,16 @@ rest_of_insert_landing_pad (void)
 
 	  if (INSN_P (insn) && INSN_CODE (insn) == CODE_FOR_gpr_restore)
 	    emit_move_insn (RISCV_CALL_ADDRESS_LPAD (Pmode), lp_value);
+
+	  /* Check for calls that may return indirectly, such as setjmp
+	     or functions marked with indirect_return attribute,
+	     and insert LPAD after them for control flow protection.  */
+	  if (CALL_P (insn) && call_needs_lpad (insn))
+	    {
+	      emit_insn_before (gen_lpad_align (), NEXT_INSN (insn));
+	      emit_insn_after (gen_lpad (const0_rtx), insn);
+	      continue;
+	    }
 	}
     }
 

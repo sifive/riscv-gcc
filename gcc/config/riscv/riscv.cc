@@ -784,6 +784,10 @@ static const attribute_spec riscv_gnu_attributes[] =
     standard vector calling convention variant. Syntax:
     __attribute__((norelax)). */
   {"norelax", 0, 0, true, false, false, false, NULL, NULL},
+  /* This attribute is used to mark functions that may return indirectly,
+     requiring LPAD protection after calls to such functions for control
+     flow integrity. */
+  {"indirect_return", 0, 0, false, true, true, true, NULL, NULL},
 };
 
 static const scoped_attribute_specs riscv_gnu_attribute_table  =
