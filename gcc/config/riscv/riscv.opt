@@ -189,6 +189,8 @@ Mask(VECTOR)
 
 Mask(FULL_V)
 
+Mask(RVP)
+
 mriscv-attribute
 Target Var(riscv_emit_attribute_p) Init(-1)
 Emit RISC-V ELF attribute.

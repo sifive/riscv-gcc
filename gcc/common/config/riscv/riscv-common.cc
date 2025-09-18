@@ -1881,6 +1881,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   RISCV_EXT_FLAG_ENTRY ("f", x_target_flags, MASK_HARD_FLOAT),
   RISCV_EXT_FLAG_ENTRY ("d", x_target_flags, MASK_DOUBLE_FLOAT),
   RISCV_EXT_FLAG_ENTRY ("c", x_target_flags, MASK_RVC),
+  RISCV_EXT_FLAG_ENTRY ("p", x_target_flags, MASK_RVP),
   RISCV_EXT_FLAG_ENTRY ("v", x_target_flags, MASK_FULL_V),
   RISCV_EXT_FLAG_ENTRY ("v", x_target_flags, MASK_VECTOR),
 

@@ -12406,6 +12406,10 @@ riscv_vector_mode_supported_p (machine_mode mode)
   if (TARGET_VECTOR)
     return riscv_v_ext_mode_p (mode);
 
+  /* Support packed P-extension modes when RVP is enabled.  */
+  if (TARGET_RVP)
+    return riscv_pext_mode_supported_p (mode);
+
   return false;
 }
 
@@ -12686,10 +12690,35 @@ riscv_use_divmod_expander (void)
 /* Implement TARGET_VECTORIZE_PREFERRED_SIMD_MODE.  */
 
 static machine_mode
+rvp_vectorize_preferred_simd_mode (scalar_mode mode)
+{
+  switch (mode)
+    {
+    case E_QImode:
+      if (TARGET_64BIT)
+        return PV8QImode;
+      return PV4QImode;
+    case E_HImode:
+      if (TARGET_64BIT)
+        return PV4HImode;
+      return PV2HImode;
+    case E_SImode:
+      if (TARGET_64BIT)
+        return PV2SImode;
+      /* Fall through.  */
+    default:
+      return word_mode;
+    }
+}
+
+static machine_mode
 riscv_preferred_simd_mode (scalar_mode mode)
 {
   if (TARGET_VECTOR && !TARGET_XTHEADVECTOR)
     return riscv_vector::preferred_simd_mode (mode);
+
+  if (TARGET_RVP)
+    return rvp_vectorize_preferred_simd_mode (mode);
 
   return word_mode;
 }
@@ -13145,6 +13174,23 @@ riscv_autovectorize_vector_modes (vector_modes *modes, bool all)
 {
   if (TARGET_VECTOR && !TARGET_XTHEADVECTOR)
     return riscv_vector::autovectorize_vector_modes (modes, all);
+
+  /* Enable auto-vectorization for RVP packed modes.  */
+  if (TARGET_RVP)
+    {
+      if (TARGET_64BIT)
+	{
+	  modes->safe_push (PV8QImode);
+	  modes->safe_push (PV4HImode);
+	  modes->safe_push (PV2SImode);
+	}
+      else
+	{
+	  modes->safe_push (PV4QImode);
+	  modes->safe_push (PV2HImode);
+	}
+      return 0;
+    }
 
   return default_autovectorize_vector_modes (modes, all);
 }
@@ -14813,6 +14859,30 @@ riscv_init_pic_reg (void)
   entry_edge = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   insert_insn_on_edge (seq, entry_edge);
   commit_one_edge_insertion (entry_edge);
+}
+
+bool riscv_pext_mode_supported_p (machine_mode mode)
+{
+  if (!TARGET_RVP)
+    return false;
+
+  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
+    return false;
+
+  switch (mode)
+    {
+    case PV4QImode:
+    case PV2HImode:
+      return !TARGET_64BIT;
+
+    case PV8QImode:
+    case PV4HImode:
+    case PV2SImode:
+      return TARGET_64BIT;
+
+    default:
+      return false;
+    }
 }
 
 /* Initialize the GCC target structure.  */
