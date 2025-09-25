@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target { riscv_v && rv64 } } } */
 /* { dg-require-effective-target rvv_zvl256b_ok } */
 /* { dg-options "-march=rv64gcv_zvl256b -mabi=lp64d -mrvv-vector-bits=zvl -O2" } */
 
