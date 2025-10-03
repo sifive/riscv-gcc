@@ -242,6 +242,12 @@ static const riscv_implied_info_t riscv_implied_info[] =
   /* SiFive */
   {"smwgd", "smwg"},
   {"xsfvfhbfmin", "zve32f"},
+  {"zvqdotq", "zve32x"},
+  {"zvqbdot8i", "zve32f"},
+  {"zvqbdot16i", "zve32f"},
+  {"zvfwbdot16bf", "zve32f"},
+  {"zvfqbdot8f", "zve32f"},
+  {"zvfbdot32f", "zve32f"},
   {"xsfvfexpa", "zve32f"},
   {"xsfvfexpa64e", "xsfvfexpa"},
   {"xsfvfexpa64e", "zve64d"},
@@ -567,6 +573,11 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zvfofp8min", ISA_SPEC_CLASS_NONE, 0, 2},
   {"zvfofp4min", ISA_SPEC_CLASS_NONE, 0, 1},
   {"zvqdotq", ISA_SPEC_CLASS_NONE, 0, 0},
+  {"zvqbdot8i", ISA_SPEC_CLASS_NONE, 0, 1},
+  {"zvqbdot16i", ISA_SPEC_CLASS_NONE, 0, 1},
+  {"zvfwbdot16bf", ISA_SPEC_CLASS_NONE, 0, 1},
+  {"zvfqbdot8f", ISA_SPEC_CLASS_NONE, 0, 1},
+  {"zvfbdot32f", ISA_SPEC_CLASS_NONE, 0, 1},
 
   {"zvkns",  ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
   {"zvknf",  ISA_SPEC_CLASS_UNRATIFIED, 0, 1},
@@ -1999,6 +2010,11 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   RISCV_EXT_FLAG_ENTRY ("zvfofp8min", x_riscv_zf_subext, MASK_ZVFOFP8MIN),
   RISCV_EXT_FLAG_ENTRY ("zvfofp4min", x_riscv_zf_subext, MASK_ZVFOFP4MIN),
   RISCV_EXT_FLAG_ENTRY ("zvqdotq",    x_riscv_zf_subext, MASK_ZVQDOTQ),
+  RISCV_EXT_FLAG_ENTRY ("zvqbdot8i", x_riscv_zf_subext, MASK_ZVQBDOT8I),
+  RISCV_EXT_FLAG_ENTRY ("zvqbdot16i", x_riscv_zf_subext, MASK_ZVQBDOT16I),
+  RISCV_EXT_FLAG_ENTRY ("zvfwbdot16bf", x_riscv_zf_subext, MASK_ZVFWBDOT16BF),
+  RISCV_EXT_FLAG_ENTRY ("zvfqbdot8f", x_riscv_zf_subext, MASK_ZVFQBDOT8F),
+  RISCV_EXT_FLAG_ENTRY ("zvfbdot32f", x_riscv_zf_subext, MASK_ZVFBDOT32F),
 
   RISCV_EXT_FLAG_ENTRY ("zfa", x_riscv_zfa_subext, MASK_ZFA),
 
