@@ -524,7 +524,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zaamo",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zalrsc", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zama16b",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zalasr", ISA_SPEC_CLASS_NONE, 1, 0}, 
+  {"zalasr", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zabha", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zba", ISA_SPEC_CLASS_UNRATIFIED, 0, 93},
   {"zbb", ISA_SPEC_CLASS_UNRATIFIED, 0, 93},
