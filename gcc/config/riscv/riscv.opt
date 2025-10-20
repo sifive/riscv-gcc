@@ -451,15 +451,15 @@ Mask(ZVFH)    Var(riscv_zf_subext)
 
 Mask(ZVQDOTQ) Var(riscv_zf_subext)
 
-Mask(ZVQBDOT8I) Var(riscv_zf_subext)
+Mask(ZVQWBDOTA8I) Var(riscv_zf_subext)
 
-Mask(ZVQBDOT16I) Var(riscv_zf_subext)
+Mask(ZVQWBDOTA16I) Var(riscv_zf_subext)
 
-Mask(ZVFWBDOT16BF) Var(riscv_zf_subext)
+Mask(ZVFWBDOTA16BF) Var(riscv_zf_subext)
 
-Mask(ZVFQBDOT8F) Var(riscv_zf_subext)
+Mask(ZVFQWBDOTA8F) Var(riscv_zf_subext)
 
-Mask(ZVFBDOT32F) Var(riscv_zf_subext)
+Mask(ZVFBDOTA32F) Var(riscv_zf_subext)
 
 
 TargetVariable
