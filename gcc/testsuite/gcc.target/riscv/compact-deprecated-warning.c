@@ -5,4 +5,4 @@ int main() {
   return 0;
 }
 
-/* { dg-warning "-mcode-model=compact. is deprecated" "" { target riscv*-*-* } 0 } */
+/* { dg-warning "-mcmodel=compact. is deprecated" "" { target riscv*-*-* } 0 } */
