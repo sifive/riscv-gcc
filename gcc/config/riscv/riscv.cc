@@ -10265,8 +10265,8 @@ riscv_option_override (void)
 
   if (riscv_cmodel == CM_COMPACT)
     warning (OPT_Wriscv_deprecated,
-	     "%<-mcode-model=compact%> is deprecated; "
-	     "Please migrate to %<-mcode-model=large%>");
+	     "%<-mcmodel=compact%> is deprecated; "
+	     "Please migrate to %<-mcmodel=large%>");
 
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       param_sched_pressure_algorithm,

@@ -5,4 +5,4 @@ int main() {
   return 0;
 }
 
-/* { dg-bogus "-mcode-model=compact. is deprecated" "" { target riscv*-*-* } 0 } */
+/* { dg-bogus "-mcmodel=compact. is deprecated" "" { target riscv*-*-* } 0 } */
