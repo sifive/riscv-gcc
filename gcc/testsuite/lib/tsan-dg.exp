@@ -93,6 +93,7 @@ proc tsan_init { args } {
     global tsan_saved_ALWAYS_CXXFLAGS
     global dg-do-what-default
     global tsan_saved_dg-do-what-default
+    setenv TSAN_OPTIONS "color=never"
 
     set link_flags ""
     if ![is_remote host] {
