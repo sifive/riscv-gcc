@@ -96,21 +96,10 @@ rest_of_insert_landing_pad (void)
   rtx_insn *insn;
   basic_block bb;
   rtx lp_value = riscv_get_lp_value (cfun->decl);
-  rtx func_name_rtx = NULL_RTX;
 
   int attribute_lp_value = riscv_attribute_get_lp_value (cfun->decl);
   if (attribute_lp_value != -1)
     lp_value = GEN_INT (attribute_lp_value);
-
-  /* Get function name for .lpad_info directive.  */
-  if (riscv_lpad_type == LPAD_FUNC_SIG && GET_CODE (lp_value) == SYMBOL_REF)
-    {
-      if (cfun->decl && DECL_NAME (cfun->decl))
-	{
-	  const char *func_name = IDENTIFIER_POINTER (DECL_NAME (cfun->decl));
-	  func_name_rtx = gen_rtx_SYMBOL_REF (Pmode, func_name);
-	}
-    }
 
   bb = 0;
   FOR_EACH_BB_FN (bb, cfun)
@@ -125,9 +114,6 @@ rest_of_insert_landing_pad (void)
 		   || bb->flags & BB_NON_LOCAL_GOTO_TARGET))
 	    {
 	      emit_insn_before (gen_lpad_align (), insn);
-	      if (func_name_rtx)
-		emit_insn_after (gen_lpad_directive (func_name_rtx, lp_value),
-				 insn);
 	      emit_insn_after (gen_lpad (lp_value), insn);
 	      continue;
 	    }
@@ -136,9 +122,6 @@ rest_of_insert_landing_pad (void)
 	    {
 	      emit_insn (gen_set_lpl (Pmode, lp_value));
 	      emit_insn_before (gen_lpad_align (), insn);
-	      if (func_name_rtx)
-		emit_insn_after (gen_lpad_directive (func_name_rtx, lp_value),
-				 insn);
 	      emit_insn_after (gen_lpad (lp_value), insn);
 	      continue;
 	    }
@@ -156,8 +139,6 @@ rest_of_insert_landing_pad (void)
       bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
       insn = BB_HEAD (bb);
       lpad_insn = gen_lpad (lp_value);
-      if (func_name_rtx)
-	emit_insn_before (gen_lpad_directive (func_name_rtx, lp_value), insn);
       emit_insn_before (lpad_insn, insn);
     }
 

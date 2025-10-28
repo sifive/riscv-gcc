@@ -1469,53 +1469,38 @@ rest_of_insert_func_sig_call (function *fun)
 	      fprintf (dump_file, "  inserted lpad_func_sig = '%s'\n",
 		       type_mangled);
 
-	    /* Insert func_name attribute only for indirect calls.  */
-	    if (called_func_name && TREE_CODE (fptr) == SSA_NAME)
+	    /* Collect .lpad_info for indirect call target.  */
+	    if (called_func_name && type_mangled && TREE_CODE (fptr) == SSA_NAME)
 	      {
-		tree name_value = tree_cons (NULL_TREE,
-					     get_identifier (called_func_name),
-					     NULL_TREE);
-		TYPE_ATTRIBUTES (func)
-		  = tree_cons (get_identifier ("func_name"), name_value,
-			       TYPE_ATTRIBUTES (func));
-
+		riscv_add_lpad_info (called_func_name, type_mangled);
 		if (dump_file)
 		  fprintf (dump_file,
-			   "  inserted func_name = '%s' (indirect call)\n",
-			   called_func_name);
+			   "  collected lpad_info (indirect): %s, %s\n",
+			   called_func_name, type_mangled);
 	      }
 	  }
 	else
 	  {
-	    /* lpad_func_sig already exists, but we may still
-	       need to add func_name.  */
+	    /* lpad_func_sig already exists, collect lpad_info.  */
 	    if (dump_file)
 	      fprintf (dump_file, "  existing lpad_func_sig found.\n");
 
-	    /* Check if func_name attribute already exists */
-	    tree func_name_attr = lookup_attribute ("func_name",
-						    TYPE_ATTRIBUTES (func));
-
-	    /* Insert func_name if not present and we have the name */
-	    if (!func_name_attr && called_func_name
-		&& TREE_CODE (fptr) == SSA_NAME)
+	    /* Collect .lpad_info for indirect call target.  */
+	    if (called_func_name && TREE_CODE (fptr) == SSA_NAME)
 	      {
-		tree name_value = tree_cons (NULL_TREE,
-					     get_identifier (called_func_name),
-					     NULL_TREE);
-		TYPE_ATTRIBUTES (func)
-		  = tree_cons (get_identifier ("func_name"), name_value,
-			       TYPE_ATTRIBUTES (func));
-
-		if (dump_file)
-		  fprintf (dump_file,
-			   "  inserted func_name = '%s' (indirect call,"
-			   " existing sig)\n", called_func_name);
-	      }
-	    else if (dump_file && func_name_attr)
-	      {
-		fprintf (dump_file, "  func_name already exists"
-				    " — skipping insert.\n");
+		tree sig_id = TREE_VALUE (TREE_VALUE (func_attr));
+		if (sig_id && TREE_CODE (sig_id) == IDENTIFIER_NODE)
+		  {
+		    const char *type_mangled = IDENTIFIER_POINTER (sig_id);
+		    if (type_mangled)
+		      {
+			riscv_add_lpad_info (called_func_name, type_mangled);
+			if (dump_file)
+			  fprintf (dump_file,
+				   "  collected lpad_info (indirect, existing): %s, %s\n",
+				   called_func_name, type_mangled);
+		      }
+		  }
 	      }
 	  }
       }
@@ -1567,10 +1552,41 @@ rest_of_insert_func_sig (function *fun)
 
       if (dump_file)
 	fprintf (dump_file, "  inserted lpad_func_sig = '%s'\n", fun_mangled);
+
+      /* Collect .lpad_info for .riscv.lpadinfo section.
+	 Do this here in GIMPLE pass so all function info is collected early.  */
+      const char *func_name = fndecl_name (decl);
+      if (func_name && fun_mangled)
+	{
+	  riscv_add_lpad_info (func_name, fun_mangled);
+	  if (dump_file)
+	    fprintf (dump_file, "  collected lpad_info: %s, %s\n",
+		     func_name, fun_mangled);
+	}
     }
-  else if (dump_file)
+  else
     {
-      fprintf (dump_file, "  already has lpad_func_sig — skipping insert.\n");
+      if (dump_file)
+	fprintf (dump_file, "  already has lpad_func_sig — skipping insert.\n");
+
+      /* Even if lpad_func_sig exists, we may need to collect lpad_info.  */
+      tree attr_value = TREE_VALUE (attr);
+      if (attr_value)
+	{
+	  tree sig_id = TREE_VALUE (attr_value);
+	  if (sig_id && TREE_CODE (sig_id) == IDENTIFIER_NODE)
+	    {
+	      const char *func_name = fndecl_name (decl);
+	      const char *fun_mangled = IDENTIFIER_POINTER (sig_id);
+	      if (func_name && fun_mangled)
+		{
+		  riscv_add_lpad_info (func_name, fun_mangled);
+		  if (dump_file)
+		    fprintf (dump_file, "  collected lpad_info (existing): %s, %s\n",
+			     func_name, fun_mangled);
+		}
+	    }
+	}
     }
 
   return 0;

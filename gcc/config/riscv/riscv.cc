@@ -691,8 +691,6 @@ static const attribute_spec riscv_gnu_attributes[] =
   { "landing_pad_value", 1, 1, false, false, false, false,
     riscv_handle_lpad_value_attribute, NULL },
   {"lpad_func_sig", 0, 0, false, true, false, true, NULL, NULL},
-  /* The attribute to store the called function name for indirect calls.  */
-  {"func_name", 0, 0, false, true, false, true, NULL, NULL},
 
   /* The following two are used for the built-in properties of the Vector type
      and are not used externally */
@@ -2865,6 +2863,50 @@ riscv_add_offset (rtx temp, rtx reg, HOST_WIDE_INT offset)
 
 /* The __tls_get_attr symbol.  */
 static GTY(()) rtx riscv_tls_symbol;
+
+/* Structure to hold .lpad_info entries for output in riscv_file_end.  */
+struct GTY(()) lpad_info_entry
+{
+  const char *func_name;
+  const char *func_sig;
+  const char *lpad_hash;
+};
+
+/* Vector to collect all .lpad_info entries.  */
+static GTY(()) vec<lpad_info_entry, va_gc> *lpad_info_table;
+
+/* Add a .lpad_info entry to be output in riscv_file_end.
+   This collects information for the .riscv.lpadinfo section.  */
+
+void
+riscv_add_lpad_info (const char *func_name, const char *func_sig)
+{
+  if (!func_name || !func_sig)
+    return;
+
+  /* Initialize the vector if needed.
+     Reserve space for 128 entries to reduce reallocation overhead.  */
+  if (lpad_info_table == NULL)
+    vec_alloc (lpad_info_table, 128);
+
+  /* Check for duplicates to avoid redundant entries.  */
+  lpad_info_entry *entry;
+  unsigned int i;
+  FOR_EACH_VEC_SAFE_ELT (lpad_info_table, i, entry)
+    {
+      if (strcmp (entry->func_name, func_name) == 0
+	  && strcmp (entry->func_sig, func_sig) == 0)
+	return; /* Already exists.  */
+    }
+
+  /* Add new entry.  */
+  lpad_info_entry new_entry;
+  new_entry.func_name = ggc_strdup (func_name);
+  new_entry.func_sig = ggc_strdup (func_sig);
+ /* Same as func_sig.  */
+  new_entry.lpad_hash = new_entry.func_sig;
+  vec_safe_push (lpad_info_table, new_entry);
+}
 
 /* Return an instruction sequence that calls __tls_get_addr.  SYM is
    the TLS symbol we are referencing and TYPE is the symbol type to use
@@ -6899,34 +6941,7 @@ riscv_need_setup_lp_p ()
   return is_zicfilp_p () && riscv_lpad_type != LPAD_UNLABELED;
 }
 
-/* Get the func_name attribute from a function or type declaration.
-   Returns the function name as a string, or NULL if not found.  */
-static const char *
-riscv_attribute_get_func_name (tree decl)
-{
-  tree attr = NULL_TREE;
 
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    attr = lookup_attribute ("func_name", DECL_ATTRIBUTES (decl));
-  else if (TREE_CODE (decl) != FUNCTION_DECL)
-    attr = lookup_attribute ("func_name", TYPE_ATTRIBUTES (decl));
-
-  if (!attr)
-    attr = lookup_attribute ("func_name",
-			     TYPE_ATTRIBUTES (TREE_TYPE (decl)));
-
-  if (attr)
-    {
-      tree attr_args = TREE_VALUE (attr);
-      const char *func_name = IDENTIFIER_POINTER (TREE_VALUE (attr_args));
-      if (func_name == NULL || *func_name == '\0')
-	return NULL;
-
-      return func_name;
-    }
-
-  return NULL;
-}
 
 rtx
 riscv_attribute_get_func_sig (tree decl)
@@ -6973,39 +6988,7 @@ riscv_attribute_get_func_sig (tree decl)
       if (strcmp (func_sig_symbol, "0") == 0)
         return const0_rtx;
 
-      /* Only combine func_name for non-FUNCTION_DECL (i.e., TYPE attributes).
-         For FUNCTION_DECL, use only the type signature.  */
-      const char *combined_sig = func_sig_symbol;
-
-      if (TREE_CODE (decl) != FUNCTION_DECL)
-	{
-	  /* Try to get the func_name attribute and
-	     combine it with func_sig.  */
-	  const char *func_name = riscv_attribute_get_func_name (decl);
-
-	  if (func_name)
-	    {
-	      /* Combine func_name + "@" + func_sig_symbol */
-	      size_t name_len = strlen (func_name);
-	      size_t sig_len = strlen (func_sig_symbol);
-	      char *combined = (char *) xmalloc (name_len + 1 + sig_len + 1);
-	      strcpy (combined, func_name);
-	      strcat (combined, "@");
-	      strcat (combined, func_sig_symbol);
-	      combined_sig = combined;
-
-	      if (dump_file)
-		fprintf (dump_file, "Combined: %s @ %s = %s\n",
-			 func_name, func_sig_symbol, combined_sig);
-	    }
-	}
-      else if (dump_file)
-	{
-	  fprintf (dump_file, "FUNCTION_DECL: using signature only: %s\n",
-		   func_sig_symbol);
-	}
-
-      return gen_rtx_SYMBOL_REF (Pmode, combined_sig);
+      return gen_rtx_SYMBOL_REF (Pmode, func_sig_symbol);
     }
 
   return NULL_RTX;
@@ -7053,44 +7036,7 @@ riscv_va_start (tree valist, rtx nextarg)
   std_expand_builtin_va_start (valist, nextarg);
 }
 
-/* Split combined signature "func_name@func_sig" into separate parts.
-   Returns true if split was successful, false otherwise.
-   If successful, *func_name_out and *func_sig_out will point to newly
-   allocated RTX SYMBOL_REFs.  */
-static bool
-riscv_split_combined_signature (rtx combined_sig, rtx *func_name_out,
-				rtx *func_sig_out)
-{
-  if (GET_CODE (combined_sig) != SYMBOL_REF)
-    return false;
 
-  const char *combined = XSTR (combined_sig, 0);
-  const char *at_pos = strchr (combined, '@');
-
-  if (!at_pos)
-    return false;
-
-  /* Found '@', split into func_name and func_sig.  */
-  size_t name_len = at_pos - combined;
-  size_t sig_len = strlen (at_pos + 1);
-
-  /* Extract function name.  */
-  char *name_str = (char *) xmalloc (name_len + 1);
-  strncpy (name_str, combined, name_len);
-  name_str[name_len] = '\0';
-  *func_name_out = gen_rtx_SYMBOL_REF (Pmode, name_str);
-
-  /* Extract function signature.  */
-  char *sig_str = (char *) xmalloc (sig_len + 1);
-  strcpy (sig_str, at_pos + 1);
-  *func_sig_out = gen_rtx_SYMBOL_REF (Pmode, sig_str);
-
-  if (dump_file)
-    fprintf (dump_file, "Split: %s -> name='%s', sig='%s'\n",
-	     combined, name_str, sig_str);
-
-  return true;
-}
 
 /* TARGET_FUNCTION_ARG create a parallel to save 2 arguments,
    the first is variant_cc, and second is lpad signature string.  */
@@ -7112,28 +7058,7 @@ riscv_legitimize_cfi_call_args (rtx func_arg, bool indirect_p)
 	  case LPAD_FUNC_SIG:
 	    {
 	      if (GET_CODE (func_arg) == PARALLEL)
-		{
-		  rtx combined_sig = XVECEXP (func_arg, 0, 1);
-		  rtx func_name = NULL_RTX;
-
-		  /* Try to split "func_name@func_sig" format */
-		  if (riscv_split_combined_signature (combined_sig, &func_name,
-						      &func_sig))
-		    {
-		      /* Successfully split, func_sig now contains
-			 only the signature part.  */
-		      if (func_name && dump_file)
-			fprintf (dump_file, "func_name available: %s\n",
-				 XSTR (func_name, 0));
-
-		      emit_insn (gen_lpad_directive (func_name, func_sig));
-		    }
-		  else
-		    {
-		      /* No '@' found, use the whole thing as func_sig.  */
-		      func_sig = combined_sig;
-		    }
-		}
+		func_sig = XVECEXP (func_arg, 0, 1);
 	      else
 		func_sig = const1_rtx;
 	    }
@@ -10833,6 +10758,30 @@ void
 riscv_file_end ()
 {
   file_end_indicate_exec_stack ();
+
+  /* Output .riscv.lpadinfo section for function signature based PLT.
+     This section contains landing pad information for each symbol,
+     as specified in riscv-asm-manual PR #113.  */
+  if (riscv_lpad_type == LPAD_FUNC_SIG && lpad_info_table != NULL
+      && !vec_safe_is_empty (lpad_info_table))
+    {
+      switch_to_section (get_section (".riscv.lpadinfo",
+				      SECTION_NOTYPE, NULL));
+
+      fprintf (asm_out_file, "\t.p2align\t3\n");
+
+      /* Output all collected .lpad_info entries.  */
+      lpad_info_entry *entry;
+      unsigned int i;
+      FOR_EACH_VEC_SAFE_ELT (lpad_info_table, i, entry)
+	{
+	  fprintf (asm_out_file, "\t.lpad_info\t%s, \"$x%s\", %%lpad_hash(\"%s\")\n",
+		   entry->func_name,
+		   entry->func_sig,
+		   entry->lpad_hash);
+	}
+    }
+
   unsigned long feature_1_and = 0;
 
   if (is_zicfilp_p ())

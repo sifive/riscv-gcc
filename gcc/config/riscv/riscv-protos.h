@@ -145,6 +145,7 @@ extern rtx riscv_get_lp_value (tree);
 extern bool riscv_need_setup_lp_p ();
 extern rtx riscv_attribute_get_func_sig (tree);
 extern const char *riscv_mangle_type_string (const tree);
+extern void riscv_add_lpad_info (const char *, const char *);
 
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx, bool *invert_ptr = 0);
