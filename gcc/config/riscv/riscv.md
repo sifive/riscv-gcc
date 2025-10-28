@@ -148,6 +148,7 @@
   UNSPECV_SETLPL
   UNSPECV_LPAD_ALIGN
   UNSPECV_SET_GUARDED
+  UNSPECV_LPAD_DIRECTIVE
 
   ;; XTheadInt unspec
   UNSPECV_XTHEADINT_PUSH
@@ -4801,6 +4802,13 @@
    "lui\tt2, %F0"
   [(set_attr "type" "const")
    (set_attr "mode" "<MODE>")])
+
+(define_insn "lpad_directive"
+  [(unspec_volatile [(match_operand 0 "immediate_operand" "i")
+		     (match_operand 1 "immediate_operand" "i")] UNSPECV_LPAD_DIRECTIVE)]
+  "TARGET_ZICFILP"
+  ".lpad_info\t%0, \\\"$x%1\\\", %F1"
+  [(set_attr "type" "nop")])
 
 (define_insn "lpad_align"
   [(unspec_volatile [(const_int 0)] UNSPECV_LPAD_ALIGN)]

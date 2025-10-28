@@ -1353,16 +1353,60 @@ rest_of_insert_func_sig_call (function *fun)
 
 	fptr = gimple_call_fn (stmt);
 
+	/* Try to extract the called function name if available.  */
+	const char *called_func_name = NULL;
+	tree called_func_decl = NULL;
+
 	switch (TREE_CODE (fptr))
 	  {
 	  case INTEGER_CST:
 	    continue;
 
 	  case SSA_NAME:
+	    {
+	      /* Try to trace back to find the actual function being called */
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (fptr);
+
+	      if (def_stmt && is_gimple_assign (def_stmt))
+		{
+		  tree rhs = gimple_assign_rhs1 (def_stmt);
+
+		  if (rhs && TREE_CODE (rhs) == ADDR_EXPR)
+		    {
+		      tree target = TREE_OPERAND (rhs, 0);
+		      if (target && TREE_CODE (target) == FUNCTION_DECL)
+			{
+			  called_func_decl = target;
+			  called_func_name = fndecl_name (called_func_decl);
+			  if (dump_file)
+			    fprintf (dump_file, " [SSA_NAME] Traced to function: %s\n",
+				     called_func_name);
+			}
+		      else if (dump_file)
+			fprintf (dump_file, "  [SSA_NAME] Indirect call via "
+					    "function pointer (target not a function)\n");
+		    }
+		  else if (dump_file)
+		    fprintf (dump_file, "  [SSA_NAME] Indirect call via "
+					"function pointer (rhs not ADDR_EXPR)\n");
+		}
+	      else if (dump_file)
+		fprintf (dump_file, "  [SSA_NAME] Indirect call via function"
+				    "pointer (no def or not assignment)\n");
+	    }
 	    break;
+
 	  case ADDR_EXPR:
-	  case OBJ_TYPE_REF:
+	    /* Direct call - no need to track function name.  */
+	    if (dump_file)
+	      fprintf (dump_file, "  [ADDR_EXPR] Direct call\n");
 	    break;
+
+	  case OBJ_TYPE_REF:
+	    if (dump_file)
+	      fprintf (dump_file, "  [OBJ_TYPE_REF] Virtual function call\n");
+	    break;
+
 	  default:
 	    gcc_unreachable ();
 	  }
@@ -1380,6 +1424,10 @@ rest_of_insert_func_sig_call (function *fun)
 		     fndecl_name (fun->decl), DECL_UID (fun->decl));
 	    fprintf (dump_file, "  stmt location: ");
 	    print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	    fprintf (dump_file, "  fptr type: %s\n",
+		     get_tree_code_name(TREE_CODE (fptr)));
+	    if (called_func_name)
+	      fprintf (dump_file, "  called function: %s\n", called_func_name);
 	    fprintf (dump_file, "  function type: %s\n",
 		     get_tree_code_name(TREE_CODE (func)));
 	  }
@@ -1410,6 +1458,7 @@ rest_of_insert_func_sig_call (function *fun)
 		  }
 	      }
 
+	    /* Insert lpad_func_sig attribute with type signature.  */
 	    tree value = tree_cons (NULL_TREE, get_identifier (type_mangled),
 				    NULL_TREE);
 	    TYPE_ATTRIBUTES (func)
@@ -1419,11 +1468,55 @@ rest_of_insert_func_sig_call (function *fun)
 	    if (dump_file)
 	      fprintf (dump_file, "  inserted lpad_func_sig = '%s'\n",
 		       type_mangled);
+
+	    /* Insert func_name attribute only for indirect calls.  */
+	    if (called_func_name && TREE_CODE (fptr) == SSA_NAME)
+	      {
+		tree name_value = tree_cons (NULL_TREE,
+					     get_identifier (called_func_name),
+					     NULL_TREE);
+		TYPE_ATTRIBUTES (func)
+		  = tree_cons (get_identifier ("func_name"), name_value,
+			       TYPE_ATTRIBUTES (func));
+
+		if (dump_file)
+		  fprintf (dump_file,
+			   "  inserted func_name = '%s' (indirect call)\n",
+			   called_func_name);
+	      }
 	  }
-	else if (dump_file)
+	else
 	  {
-	    fprintf (dump_file, "  existing lpad_func_sig found"
-		     " — skipping insert.\n");
+	    /* lpad_func_sig already exists, but we may still
+	       need to add func_name.  */
+	    if (dump_file)
+	      fprintf (dump_file, "  existing lpad_func_sig found.\n");
+
+	    /* Check if func_name attribute already exists */
+	    tree func_name_attr = lookup_attribute ("func_name",
+						    TYPE_ATTRIBUTES (func));
+
+	    /* Insert func_name if not present and we have the name */
+	    if (!func_name_attr && called_func_name
+		&& TREE_CODE (fptr) == SSA_NAME)
+	      {
+		tree name_value = tree_cons (NULL_TREE,
+					     get_identifier (called_func_name),
+					     NULL_TREE);
+		TYPE_ATTRIBUTES (func)
+		  = tree_cons (get_identifier ("func_name"), name_value,
+			       TYPE_ATTRIBUTES (func));
+
+		if (dump_file)
+		  fprintf (dump_file,
+			   "  inserted func_name = '%s' (indirect call,"
+			   " existing sig)\n", called_func_name);
+	      }
+	    else if (dump_file && func_name_attr)
+	      {
+		fprintf (dump_file, "  func_name already exists"
+				    " — skipping insert.\n");
+	      }
 	  }
       }
   return 0;
