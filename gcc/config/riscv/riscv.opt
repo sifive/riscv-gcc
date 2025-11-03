@@ -601,7 +601,7 @@ Target Var(error_drv_require_ext_version) Warning Init(0)
 Error when an experimental extension is not give an explicit version.
 
 Wriscv-deprecated
-Target Var(warn_riscv_deprecated) Warning Init(0)
+Target Var(warn_riscv_deprecated) Warning Init(1)
 Warn about deprecated RISC-V features.
 
 mmovcc

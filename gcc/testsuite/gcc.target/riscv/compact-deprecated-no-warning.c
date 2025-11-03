@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64i -mabi=lp64 -mcmodel=compact -Wdeprecated" } */
+/* { dg-options "-march=rv64i -mabi=lp64 -mcmodel=compact -Wno-riscv-deprecated" } */
 
 int main() {
   return 0;
