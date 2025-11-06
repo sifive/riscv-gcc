@@ -125,10 +125,10 @@ RISCV_CORE ("sifive-x390",
 	   "xsfvfexp16e0p1_xsfvfexp32e0p1_xsfvfexpa0p2_xsfvfnrclipxfqf_" \
 	   "xsfvqdotq0p1_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1", "sifive-7-series")
 RISCV_CORE("sifive-p450",     "rv64imafdc_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei" \
-			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs"
+			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs_zkt"
 			      "_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1", "sifive-p500-series")
 RISCV_CORE("sifive-p470",     "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei" \
-			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs_zvbb1p0_zvknc1p0_zvkng1p0_zvksc1p0_zvksg1p0" \
+			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs_zkt_zvbb1p0_zvknc1p0_zvkng1p0_zvksc1p0_zvksg1p0" \
 			      "_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1_zvl128b", "sifive-p500-series")
 RISCV_CORE("sifive-leopard",
 	   "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicfilp1p0_zicfiss1p0_" \
@@ -137,10 +137,10 @@ RISCV_CORE("sifive-leopard",
 	   "xsfpgflushdlone0p1_xsfvqdotq0p1_xsifivecflushdlone0p1", "sifive-p600-series")
 RISCV_CORE("sifive-p550",     "rv64imafdc_zifencei_zfhmin_zba_zbb", "sifive-p500-series")
 RISCV_CORE("sifive-p650",     "rv64imafdc_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei" \
-			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs" \
+			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs_zkt" \
 			      "_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1", "sifive-p600-series")
 RISCV_CORE("sifive-p670",     "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei" \
-			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs_zvbb1p0_zvknc1p0_zvkng1p0_zvksc1p0_zvksg1p0" \
+			      "_zihintntl_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs_zkt_zvbb1p0_zvknc1p0_zvkng1p0_zvksc1p0_zvksg1p0" \
 			      "_xsifivecdiscarddlone0p1_xsifivecflushdlone0p1_zvl128b", "sifive-p600-series")
 RISCV_CORE("sifive-lion",
 	   "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicfilp1p0_zicfiss1p0_" \
