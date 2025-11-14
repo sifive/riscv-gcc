@@ -80,6 +80,19 @@
   [(set_attr "type" "arith")
    (set_attr "mode" "<MODE>")])
 
+;; Vector shift instructions by scalar amount (operand 2 is scalar SI)
+(define_insn "<rvp_shift_optab><mode>3"
+  [(set (match_operand:PVALL 0 "register_operand" "=r, r")
+        (shift_op:PVALL
+          (match_operand:PVALL 1 "register_operand" "r, r")
+          (match_operand:SI 2 "reg_or_int_operand" "r, I")))]
+  "TARGET_RVP"
+  "@
+   <rvp_shift_insn>.<rvp_width>s\t%0,%1,%2
+   <rvp_shift_insn>i.<rvp_width>\t%0,%1,%2"
+  [(set_attr "type" "shift")
+   (set_attr "mode" "<MODE>")])
+
 ;; Vector comparison expander for signed comparisons
 (define_expand "vec_cmp<mode><mode>"
   [(set (match_operand:PVALL 0 "register_operand")

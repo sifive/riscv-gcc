@@ -47,6 +47,9 @@
 ;; Operations for averaging instructions
 (define_code_iterator avg_op [plus minus])
 
+;; Operations for shift instructions
+(define_code_iterator shift_op [ashift lshiftrt ashiftrt])
+
 ;; Code Attributes
 
 (define_code_attr rvp_optab
@@ -58,3 +61,13 @@
   [(plus "padd") (minus "psub")
    (smax "pmax") (umax "pmaxu") (smin "pmin") (umin "pminu")
    (eq "pmseq") (lt "pmslt") (ltu "pmsltu")])
+
+(define_code_attr rvp_shift_optab
+  [(ashift   "ashl")
+   (lshiftrt "lshr")
+   (ashiftrt "ashr")])
+
+(define_code_attr rvp_shift_insn
+  [(ashift   "psll")
+   (lshiftrt "psrl")
+   (ashiftrt "psra")])
