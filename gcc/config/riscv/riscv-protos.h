@@ -141,6 +141,8 @@ extern void riscv_expand_ussub (rtx, rtx, rtx);
 extern void riscv_expand_sssub (rtx, rtx, rtx);
 extern void riscv_expand_ustrunc (rtx, rtx);
 extern void riscv_expand_sstrunc (rtx, rtx);
+extern void riscv_p_expand_vec_cmp (rtx *);
+extern void riscv_p_expand_vcond_mask (rtx *);
 extern int riscv_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 extern int riscv_attribute_get_lp_value (tree);
 extern rtx riscv_get_lp_value ();

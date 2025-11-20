@@ -79,3 +79,60 @@
   "<rvp_insn>.<rvp_width>\t%0, %1, %2"
   [(set_attr "type" "arith")
    (set_attr "mode" "<MODE>")])
+
+;; Vector comparison expander for signed comparisons
+(define_expand "vec_cmp<mode><mode>"
+  [(set (match_operand:PVALL 0 "register_operand")
+	(match_operator:PVALL 1 "comparison_operator"
+	  [(match_operand:PVALL 2 "register_operand")
+	   (match_operand:PVALL 3 "register_operand")]))]
+  "TARGET_RVP"
+{
+  riscv_p_expand_vec_cmp (operands);
+  DONE;
+})
+
+;; Vector comparison expander for unsigned comparisons
+(define_expand "vec_cmpu<mode><mode>"
+  [(set (match_operand:PVALL 0 "register_operand")
+	(match_operator:PVALL 1 "comparison_operator"
+	  [(match_operand:PVALL 2 "register_operand")
+	   (match_operand:PVALL 3 "register_operand")]))]
+  "TARGET_RVP"
+{
+  riscv_p_expand_vec_cmp (operands);
+  DONE;
+})
+
+;; Vector conditional mask operation
+;; Implements: result = mask ? op1 : op2
+;; For each element i: result[i] = mask[i] ? op1[i] : op2[i]
+(define_expand "vcond_mask_<mode><mode>"
+  [(set (match_operand:PVALL 0 "register_operand")
+	(if_then_else:PVALL
+	  (match_operand:PVALL 3 "register_operand")
+	  (match_operand:PVALL 1 "nonmemory_operand")
+	  (match_operand:PVALL 2 "nonmemory_operand")))]
+  "TARGET_RVP"
+{
+  riscv_p_expand_vcond_mask (operands);
+  DONE;
+})
+
+;; Bitwise operations for vector modes
+(define_insn "<optab><mode>3"
+  [(set (match_operand:PVALL 0 "register_operand" "=r")
+	(any_bitwise:PVALL (match_operand:PVALL 1 "register_operand" "r")
+			   (match_operand:PVALL 2 "register_operand" "r")))]
+  "TARGET_RVP"
+  "<insn>\t%0,%1,%2"
+  [(set_attr "type" "logical")
+   (set_attr "mode" "DI")])
+
+(define_insn "one_cmpl<mode>2"
+  [(set (match_operand:PVALL 0 "register_operand" "=r")
+	(not:PVALL (match_operand:PVALL 1 "register_operand" "r")))]
+  "TARGET_RVP"
+  "not\t%0,%1"
+  [(set_attr "type" "logical")
+   (set_attr "mode" "DI")])
