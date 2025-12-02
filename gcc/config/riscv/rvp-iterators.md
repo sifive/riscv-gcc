@@ -42,7 +42,9 @@
 ;; Code Iterators
 
 (define_code_iterator rvp_binop
-  [plus minus smax umax smin umin eq lt ltu])
+  [plus ss_plus us_plus
+   minus ss_minus us_minus
+   smax umax smin umin eq lt ltu])
 
 ;; Operations for averaging instructions
 (define_code_iterator avg_op [plus minus])
@@ -53,14 +55,21 @@
 ;; Code Attributes
 
 (define_code_attr rvp_optab
-  [(plus "add") (minus "sub")
+  [(plus "add") (ss_plus "ssadd") (us_plus "usadd")
+   (minus "sub") (ss_minus "sssub") (us_minus "ussub")
    (smax "smax") (umax "umax") (smin "smin") (umin "umin")
    (eq "eq") (lt "lt") (ltu "ltu")])
 
 (define_code_attr rvp_insn
-  [(plus "padd") (minus "psub")
+  [(plus "padd") (ss_plus "psadd") (us_plus "psaddu")
+   (minus "psub") (ss_minus "pssub") (us_minus "pssubu")
    (smax "pmax") (umax "pmaxu") (smin "pmin") (umin "pminu")
    (eq "pmseq") (lt "pmslt") (ltu "pmsltu")])
+
+;; Averaging arithmetic instruction names
+(define_code_attr avg_insn
+  [(plus "paadd")
+   (minus "pasub")])
 
 (define_code_attr rvp_shift_optab
   [(ashift   "ashl")

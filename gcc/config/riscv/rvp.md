@@ -93,6 +93,34 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "<MODE>")])
 
+;; Averaging arithmetic operations
+;; paadd/paaddu: signed/unsigned averaging add: (a + b) >> 1
+;; pasub/pasubu: signed/unsigned averaging subtract: (a - b) >> 1
+
+;; Signed averaging
+(define_insn "<avg_insn><mode>"
+  [(set (match_operand:PVALL 0 "register_operand" "=r")
+	(ashiftrt:PVALL
+	  (avg_op:PVALL (match_operand:PVALL 1 "register_operand" "r")
+			(match_operand:PVALL 2 "register_operand" "r"))
+	  (const_int 1)))]
+  "TARGET_RVP"
+  "<avg_insn>.<rvp_width>\t%0,%1,%2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
+
+;; Unsigned averaging
+(define_insn "<avg_insn>u<mode>"
+  [(set (match_operand:PVALL 0 "register_operand" "=r")
+	(lshiftrt:PVALL
+	  (avg_op:PVALL (match_operand:PVALL 1 "register_operand" "r")
+			(match_operand:PVALL 2 "register_operand" "r"))
+	  (const_int 1)))]
+  "TARGET_RVP"
+  "<avg_insn>u.<rvp_width>\t%0,%1,%2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
+
 ;; Vector comparison expander for signed comparisons
 (define_expand "vec_cmp<mode><mode>"
   [(set (match_operand:PVALL 0 "register_operand")
