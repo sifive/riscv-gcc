@@ -10,12 +10,12 @@ int sum(int count, ...)
   va_list args;
   int total = 0;
   int i;
-  
+
   va_start(args, count);
   for (i = 0; i < count; i++)
     total += va_arg(args, int);
   va_end(args);
-  
+
   return total;
 }
 

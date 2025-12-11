@@ -115,9 +115,6 @@ along with GCC; see the file COPYING3.  If not see
 #define FUNCTION_RVALUE_QUALIFIED(NODE) \
   TREE_LANG_FLAG_5 (FUNC_OR_METHOD_CHECK (NODE))
 
-#define CP_DECL_CONTEXT(NODE) \
-  (!DECL_FILE_SCOPE_P (NODE) ? DECL_CONTEXT (NODE) : NULL_TREE)
-
 #define same_type_p(TYPE1, TYPE2) \
   comptypes ((TYPE1), (TYPE2), 0)
 
@@ -906,13 +903,24 @@ write_function_type (const tree type)
 static tree
 decl_mangling_context (tree decl)
 {
+  /* Safety check: if decl is NULL, return NULL */
+  if (decl == NULL_TREE)
+    return NULL_TREE;
+
   tree tcontext = targetm.cxx.decl_mangling_context (decl);
 
   if (tcontext != NULL_TREE)
     return tcontext;
 
   if (TREE_CODE (decl) != IDENTIFIER_NODE)
-    tcontext = CP_DECL_CONTEXT (decl);
+    {
+      /* For C language, just use DECL_CONTEXT.
+	 For C++, CP_DECL_CONTEXT would be used, but we can't use it here
+	 because it's C++ specific and requires global_namespace.
+	 Since we're in riscv-func-sig.cc (not cp/mangle.cc), we use
+	 DECL_CONTEXT for both C and C++. */
+      tcontext = DECL_CONTEXT (decl);
+    }
   else
     tcontext = NULL_TREE;
 
@@ -941,9 +949,18 @@ write_unqualified_name (tree decl)
 
   if (DECL_NAME (decl) == NULL_TREE)
     {
-      found = true;
-      gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
-      write_source_name (DECL_ASSEMBLER_NAME (decl));
+      /* If no DECL_NAME, try to use DECL_ASSEMBLER_NAME */
+      if (DECL_ASSEMBLER_NAME_SET_P (decl))
+	{
+	  found = true;
+	  write_source_name (DECL_ASSEMBLER_NAME (decl));
+	}
+      else
+	{
+	  /* No name at all, skip this decl */
+	  found = true;
+	  return;
+	}
     }
 
   if (found)
@@ -1059,8 +1076,8 @@ write_prefix (const tree node)
       decl = TYPE_NAME (node);
     }
 
-  /* If TYPE_NAME is NULL (anonymous type), we can't write a prefix.  */
-  if (!decl)
+  /* Safety check: if decl or its type is NULL, we can't proceed.  */
+  if (decl == NULL_TREE || TREE_TYPE (decl) == NULL_TREE)
     return;
 
   if (TREE_CODE (TREE_TYPE (decl)) == TYPENAME_TYPE)
@@ -1103,6 +1120,11 @@ static void
 write_name (tree decl, const int ignore_local_scope)
 {
   tree context;
+
+  /* Safety check: if decl is NULL, we can't proceed */
+  if (decl == NULL_TREE)
+    return;
+
   context = decl_mangling_context (decl);
 
   /* A decl in :: or ::std scope is treated specially.  The former is
@@ -1140,7 +1162,7 @@ write_name (tree decl, const int ignore_local_scope)
 		{
 		  context = TYPE_NAME (context);
 		  /* If TYPE_NAME is NULL, we can't continue.  */
-		  if (!context)
+		  if (context == NULL_TREE)
 		    break;
 		}
 	      /* Is this a function?  */
@@ -1349,7 +1371,14 @@ write_type (tree type)
 	      /* Filter out problematic anonymous structs like:
 		 void f(struct {int b;}) {}. and struct { char (*p)[++n]; }  */
 	      if (TYPE_NAME (type))
-		write_class_enum_type (type);
+		{
+		  /* Skip types with hardbool attribute - they can cause issues
+		     in mangling due to their special handling */
+		  if (lookup_attribute ("hardbool", TYPE_ATTRIBUTES (type)))
+		    break;
+
+		  write_class_enum_type (type);
+		}
 
 	      break;
 
