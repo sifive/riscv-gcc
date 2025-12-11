@@ -1485,43 +1485,108 @@ riscv_mangle_type_string (const tree type)
   return result;
 }
 
-/* Process indirect call sites in FUNCTION to attach function signatures.
+/* Helper function to process C++ member function signatures.
+   For METHOD_TYPE, this function:
+   1. Simplifies class pointers in return type to 'Pv' (for covariant
+      return types)
+   2. Adds 'M1v' prefix
 
-   This function is part of the pass_insert_func_sig GIMPLE pass and handles
-   the call-site side of function signature CFI. It processes all indirect
-   calls (calls through function pointers) in the given function and attaches
-   the appropriate function signature to each call site.
+   Returns the processed signature, or the original if not a METHOD_TYPE.  */
+static const char *
+process_cxx_member_function_signature (const char *mangled, tree func_type)
+{
+  if (TREE_CODE (func_type) != METHOD_TYPE)
+    return mangled;
 
-   ALGORITHM:
-   -----------
-   For each indirect call in the function:
-   1. Extract the function pointer being called
-   2. Determine the function type from the pointer type
-   3. Generate or retrieve the mangled signature for that type
-   4. Attach the signature as an "lpad_func_sig" attribute to the type
+  /* Save the original function mangling before we call
+     lang_hooks.mangle_type again, as it may modify global state */
+  const char *original_fun_mangled = xstrdup (mangled);
+  const char *result = original_fun_mangled;
 
-   SPECIAL CASES:
-   --------------
-   - main function: Always uses fixed signature "FiiPPcE"
-   - Already processed types: Reuses existing "lpad_func_sig" attribute
+  /* Simplify class pointers/references in return type.
+     According to RISC-V PSABI, we need to replace pointer or reference to
+     class types in the return type with 'Pv' or 'Rv' for covariant
+     return types. */
 
-   MANGLING STRATEGY:
-   ------------------
-   1. For C++ code: Uses lang_hooks.mangle_type (cp/mangle.cc)
-   2. For C code or fallback: Uses riscv_mangle_type_string
+  tree return_type = TREE_TYPE (func_type);
+  if (POINTER_TYPE_P (return_type) || TREE_CODE (return_type) == REFERENCE_TYPE)
+    {
+      tree pointee = TREE_TYPE (return_type);
+      if (pointee && TREE_CODE (pointee) == RECORD_TYPE)
+	{
+	  /* Get the mangled name of the pointee (class type) */
+	  const char *pointee_mangled = lang_hooks.mangle_type (pointee);
+	  if (pointee_mangled)
+	    {
+	      /* Replace class name with "v" in the full signature.
+		 For example: "FP4BaseiE" -> "FPviE" or "FR4BasevE" -> "FRvvE"
+		 We need to find and replace just the class name part (e.g., "4Base"),
+		 not the whole pointer/reference type (e.g., "P4Base" or "R4Base").
 
-   PARAMETERS:
-   -----------
-   fun: The function whose call sites should be processed
+		 We search for the pointee name in the expected context, i.e.
+		 immediately preceded by a pointer/reference/rvalue-ref qualifier
+		 such as 'P', 'R', or 'O'.  This avoids matching the pointee name
+		 at an incorrect location if it appears multiple times.  */
+	      size_t fun_len = strlen (original_fun_mangled);
+	      size_t pointee_len = strlen (pointee_mangled);
 
-   RETURNS:
-   --------
-   0 on success (required by GIMPLE pass infrastructure)
+	      /* Allocate new string with enough space */
+	      char *new_result = (char *) xmalloc (fun_len + 3);
 
-   SIDE EFFECTS:
-   -------------
-   - Attaches "lpad_func_sig" attributes to function types
-   - May output diagnostic information to dump_file if enabled  */
+	      /* Find the pointee name preceded by P, R, or O.  */
+	      const char *pos = NULL;
+	      const char *search = original_fun_mangled;
+	      while ((pos = strstr (search, pointee_mangled)) != NULL)
+		{
+		  if (pos > original_fun_mangled)
+		    {
+		      char prev = pos[-1];
+		      if (prev == 'P' || prev == 'R' || prev == 'O')
+			break;
+		    }
+		  /* Not the occurrence we want; continue searching.  */
+		  search = pos + 1;
+		}
+
+	      if (pos && pos > original_fun_mangled)
+		{
+		  /* Copy prefix (before class name, including P/R/O) */
+		  size_t prefix_len = pos - original_fun_mangled;
+		  memcpy (new_result, original_fun_mangled, prefix_len);
+
+		  /* Add "v" to replace the class name */
+		  new_result[prefix_len] = 'v';
+
+		  /* Copy suffix (after class name) */
+		  strcpy (new_result + prefix_len + 1, pos + pointee_len);
+
+		  result = new_result;
+
+		  if (dump_file)
+		    fprintf (dump_file,
+			     "  simplified class type '%s' to 'v': '%s'\n",
+			     pointee_mangled, result);
+		}
+	    }
+	}
+    }
+
+  /* Add M1v prefix */
+  size_t mangled_len = strlen (result);
+  char *final_result = (char *) xmalloc (3 + mangled_len + 1);
+  strcpy (final_result, "M1v");
+  strcat (final_result, result);
+
+  /* Free intermediate mangled strings now that final_result is built.  */
+  if (result != original_fun_mangled)
+    free (const_cast<char *> (result));
+  free (const_cast<char *> (original_fun_mangled));
+
+  if (dump_file)
+    fprintf (dump_file, "  final signature: '%s'\n", final_result);
+
+  return final_result;
+}
 
 static unsigned int
 rest_of_insert_func_sig_call (function *fun)
@@ -1595,13 +1660,24 @@ rest_of_insert_func_sig_call (function *fun)
 	      }
 	    else
 	      {
+		/* For C++, use lang_hooks.mangle_type to get standard C++ mangling.
+		   For C, use riscv_mangle_type_string as fallback. */
 		type_mangled = lang_hooks.mangle_type (func);
+		if (dump_file && type_mangled)
+		  fprintf (dump_file, "  lang_hooks.mangle_type(func) = '%s'\n",
+			   type_mangled);
+
 		if (type_mangled == NULL)
 		  {
+		    /* C language or mangling failed, use our simple implementation */
 		    type_mangled = riscv_mangle_type_string (func);
 		    if (dump_file)
-		      fprintf (dump_file,
-			       "  fallback to riscv_mangle_type_string\n");
+		      fprintf (dump_file, "  fallback to riscv_mangle_type_string\n");
+		  }
+		else
+		  {
+		    /* C++ language: process member function signatures */
+		    type_mangled = process_cxx_member_function_signature (type_mangled, func);
 		  }
 	      }
 
@@ -1690,6 +1766,28 @@ rest_of_insert_func_sig (function *fun)
   /* Get the function type. All lpad_func_sig attributes are stored
      in TYPE_ATTRIBUTES for consistency and simplicity.  */
   tree func_type = TREE_TYPE (decl);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "  func_type code: %s\n",
+	       get_tree_code_name (TREE_CODE (func_type)));
+      if (TREE_CODE (func_type) == METHOD_TYPE
+	  || TREE_CODE (func_type) == FUNCTION_TYPE)
+	{
+	  tree ret_type = TREE_TYPE (func_type);
+	  fprintf (dump_file, "  return type: %s\n",
+		   get_tree_code_name (TREE_CODE (ret_type)));
+	  tree parms = TYPE_ARG_TYPES (func_type);
+	  fprintf (dump_file, "  parameters: ");
+	  for (tree p = parms; p; p = TREE_CHAIN (p))
+	    {
+	      tree ptype = TREE_VALUE (p);
+	      fprintf (dump_file, "%s ", get_tree_code_name (TREE_CODE (ptype)));
+	    }
+	  fprintf (dump_file, "\n");
+	}
+    }
+
   tree attr = lookup_attribute ("lpad_func_sig", TYPE_ATTRIBUTES (func_type));
 
   if (!attr)
@@ -1708,12 +1806,24 @@ rest_of_insert_func_sig (function *fun)
 	}
       else
 	{
+	  /* For C++, use lang_hooks.mangle_type to get standard C++ mangling.
+	     For C, use riscv_mangle_type_string as fallback. */
 	  fun_mangled = lang_hooks.mangle_type (func_type);
+	  if (dump_file && fun_mangled)
+	    fprintf (dump_file, "  lang_hooks.mangle_type(func_type) = '%s'\n",
+		     fun_mangled);
 	  if (fun_mangled == NULL)
 	    {
+	      /* C language or mangling failed, use our simple implementation */
 	      fun_mangled = riscv_mangle_type_string (func_type);
 	      if (dump_file)
 		fprintf (dump_file, "  fallback to riscv_mangle_type_string\n");
+	    }
+	  else
+	    {
+	      /* C++ language: process member function signatures */
+	      fun_mangled = process_cxx_member_function_signature (fun_mangled,
+								    func_type);
 	    }
 	}
 

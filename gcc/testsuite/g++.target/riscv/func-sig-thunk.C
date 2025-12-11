@@ -24,5 +24,13 @@ int main() {
   return 0;
 }
 
+/* Test that thunk functions get the same signature as the actual function.
+   Both the actual function and the thunk should have signature M1vFviE
+   (member function, void return, void* this, int parameter).
+
+   With proper member function signature implementation, thunks now share
+   the same signature as the actual function, which is more correct from
+   a CFI perspective.  */
+
 /* { dg-final { scan-assembler-times "_ZThn8_N7Derived3FooEi:" 1 } } */
-/* { dg-final { scan-assembler-times "lpad\t0" 1 } } */
+/* { dg-final { scan-assembler-times "lpad\[ \\t\]%lpad_hash\\(\"M1vFviE\"\\)" 2 } } */

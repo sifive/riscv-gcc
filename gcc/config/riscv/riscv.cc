@@ -377,6 +377,9 @@ poly_uint16 riscv_vector_chunks;
 /* The number of bytes in a vector chunk.  */
 unsigned riscv_bytes_per_vector_chunk;
 
+/* Global flag to indicate we are inside the func_sig pass. */
+bool riscv_in_func_sig_pass = false;
+
 /* Index R is the smallest register class that contains register R.  */
 const enum reg_class riscv_regno_to_class[FIRST_PSEUDO_REGISTER] = {
   GR_REGS,	GR_REGS,	GR_REGS,	GR_REGS,
@@ -7181,10 +7184,10 @@ riscv_attribute_get_func_sig (tree decl)
        - OpenMP loop clones (e.g., create_loop_fn, names like .$loopfn)
        - Compiler-inserted builtin helpers (e.g., __builtin_apply)
        - Internal OpenMP or OpenACC outlined regions (e.g., .omp_fn.0)
-       - Thunks and virtual adjustors for C++ ABI support
+       - Other artificial functions
 
-     Returning const0_rtx allows LPAD 0 to be emitted, ensuring these
-     targets remain valid under -fcf-protection.  */
+     Fallback to returning const0_rtx allows LPAD 0 to be emitted,
+     ensuring these targets remain valid under -fcf-protection.  */
   if (!attr && TREE_CODE (decl) == FUNCTION_DECL && DECL_ARTIFICIAL (decl))
     return const0_rtx;
 
