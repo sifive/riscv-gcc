@@ -1485,6 +1485,109 @@ riscv_mangle_type_string (const tree type)
   return result;
 }
 
+/* Helper function to remove exception specification from mangled signature.
+   Exception specs are encoded according to Itanium C++ ABI as:
+   - "Do" for noexcept/noexcept(true)/throw()
+   - "DO...E" for noexcept(expr) where expr is template-dependent
+   - "Dw...E" for throw(type1, type2, ...)
+   - "Dx" for transaction-safe
+
+   We need to remove these from the signature for func_sig pass,
+   as exception specs should not affect CFI signatures.
+
+   Note: The returned string is allocated with xmalloc and the caller
+   is responsible for freeing it when no longer needed.  */
+static const char *
+remove_exception_spec_from_signature (const char *mangled)
+{
+  if (!mangled || !*mangled)
+    return mangled;
+
+  size_t len = strlen (mangled);
+  char *result = (char *) xmalloc (len + 1);
+  const char *src = mangled;
+  char *dst = result;
+
+  while (*src)
+    {
+      if (*src == 'D' && src[1])
+	{
+	  if (src[1] == 'o')
+	    {
+	      /* Skip "Do" (noexcept) */
+	      src += 2;
+	      continue;
+	    }
+	  else if (src[1] == 'O')
+	    {
+	      /* Skip "DO...E" (noexcept(expr)).  The depth counter tracks
+		 nested exception specifications.  While nested exception
+		 specs are rare in practice, they can occur in template
+		 contexts.  Each "DO" or "Dw" opens a new level, and each
+		 "E" closes one.  We only increment depth when we see a
+		 complete "DO" or "Dw" sequence to avoid false matches.  */
+	      src += 2;
+	      int depth = 1;
+	      while (*src && depth > 0)
+		{
+		  if (*src == 'E')
+		    depth--;
+		  /* Check for nested exception specs.  We need to verify
+		     src[1] is valid before accessing it.  Only increment
+		     depth for complete "DO" or "Dw" sequences.  */
+		  else if (*src == 'D' && src[1]
+			   && (src[1] == 'O' || src[1] == 'w'))
+		    {
+		      depth++;
+		      src++;  /* Skip the 'O' or 'w' as well.  */
+		    }
+		  src++;
+		}
+	      continue;
+	    }
+	  else if (src[1] == 'w')
+	    {
+	      /* Skip "Dw...E" (throw(types...)).  Same depth tracking
+		 logic as above for nested exception specifications.  */
+	      src += 2;
+	      int depth = 1;
+	      while (*src && depth > 0)
+		{
+		  if (*src == 'E')
+		    depth--;
+		  /* Check for nested exception specs.  We need to verify
+		     src[1] is valid before accessing it.  */
+		  else if (*src == 'D' && src[1]
+			   && (src[1] == 'O' || src[1] == 'w'))
+		    {
+		      depth++;
+		      src++;  /* Skip the 'O' or 'w' as well.  */
+		    }
+		  src++;
+		}
+	      continue;
+	    }
+	  else if (src[1] == 'x')
+	    {
+	      /* Skip "Dx" (transaction-safe) */
+	      src += 2;
+	      continue;
+	    }
+	}
+
+      /* Copy character */
+      *dst++ = *src++;
+    }
+
+  *dst = '\0';
+
+  if (dump_file && strcmp (mangled, result) != 0)
+    fprintf (dump_file, "  removed exception spec: '%s' -> '%s'\n",
+	     mangled, result);
+
+  return result;
+}
+
 /* Helper function to process C++ member function signatures.
    For METHOD_TYPE, this function:
    1. Simplifies class pointers in return type to 'Pv' (for covariant
@@ -1676,7 +1779,8 @@ rest_of_insert_func_sig_call (function *fun)
 		  }
 		else
 		  {
-		    /* C++ language: process member function signatures */
+		    /* C++ language: remove exception spec and process member function signatures */
+		    type_mangled = remove_exception_spec_from_signature (type_mangled);
 		    type_mangled = process_cxx_member_function_signature (type_mangled, func);
 		  }
 	      }
@@ -1821,7 +1925,9 @@ rest_of_insert_func_sig (function *fun)
 	    }
 	  else
 	    {
-	      /* C++ language: process member function signatures */
+	      /* C++ language: remove exception spec and process member function
+		 signatures */
+	      fun_mangled = remove_exception_spec_from_signature (fun_mangled);
 	      fun_mangled = process_cxx_member_function_signature (fun_mangled,
 								    func_type);
 	    }

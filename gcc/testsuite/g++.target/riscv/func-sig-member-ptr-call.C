@@ -1,5 +1,5 @@
 /* { dg-do compile { target { riscv64*-*-* } } } */
-/* { dg-options "-std=c++11 -O1 -fno-inline -march=rv64gc_zicfilp -mabi=lp64d -fcf-protection=branch -mcf-branch-label-scheme=func-sig" } */
+/* { dg-options "-std=c++11 -O1 -fno-inline -march=rv64gc_zicfilp_zicfiss -mabi=lp64d -fcf-protection=branch -mcf-branch-label-scheme=func-sig" } */
 
 /* Verify that LPAD signature is correctly generated for virtual member function calls
    via method pointers (i.e. static_cast + pointer-to-member-function). */
