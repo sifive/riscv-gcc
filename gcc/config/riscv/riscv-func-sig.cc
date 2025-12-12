@@ -1687,7 +1687,11 @@ rest_of_insert_func_sig (function *fun)
 	       get_tree_code_name (TREE_CODE (TREE_TYPE (decl))));
     }
 
-  tree attr = lookup_attribute ("lpad_func_sig", DECL_ATTRIBUTES (decl));
+  /* Get the function type. All lpad_func_sig attributes are stored
+     in TYPE_ATTRIBUTES for consistency and simplicity.  */
+  tree func_type = TREE_TYPE (decl);
+  tree attr = lookup_attribute ("lpad_func_sig", TYPE_ATTRIBUTES (func_type));
+
   if (!attr)
     {
       /* Check for main function.  DECL_NAME can be NULL for some
@@ -1704,24 +1708,28 @@ rest_of_insert_func_sig (function *fun)
 	}
       else
 	{
-	  fun_mangled = lang_hooks.mangle_type (TREE_TYPE (decl));
+	  fun_mangled = lang_hooks.mangle_type (func_type);
 	  if (fun_mangled == NULL)
 	    {
-	      fun_mangled = riscv_mangle_type_string (TREE_TYPE (decl));
+	      fun_mangled = riscv_mangle_type_string (func_type);
 	      if (dump_file)
 		fprintf (dump_file, "  fallback to riscv_mangle_type_string\n");
 	    }
 	}
 
-      tree old_attr = DECL_ATTRIBUTES (decl);
-      tree value = tree_cons (NULL_TREE, get_identifier (fun_mangled),
-			      NULL_TREE);
-      tree fsig_attr = tree_cons (get_identifier ("lpad_func_sig"),
-				  value, old_attr);
-      DECL_ATTRIBUTES (decl) = merge_attributes (fsig_attr, old_attr);
+      /* Add lpad_func_sig attribute to the function type.
+	 This ensures all functions with the same type share the same signature,
+	 which is semantically correct since the signature is a property of
+	 the function type, not the individual declaration.  */
+      tree value = build_tree_list (NULL_TREE, get_identifier (fun_mangled));
+      tree new_attr = build_tree_list (get_identifier ("lpad_func_sig"),
+					value);
+      TYPE_ATTRIBUTES (func_type) = chainon (TYPE_ATTRIBUTES (func_type),
+					     new_attr);
 
       if (dump_file)
-	fprintf (dump_file, "  inserted lpad_func_sig = '%s'\n", fun_mangled);
+	fprintf (dump_file, "  Added lpad_func_sig='%s' to TYPE_ATTRIBUTES\n",
+		 fun_mangled);
     }
   else if (dump_file)
     {

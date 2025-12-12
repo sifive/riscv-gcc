@@ -7166,35 +7166,27 @@ riscv_need_setup_lp_p ()
 rtx
 riscv_attribute_get_func_sig (tree decl)
 {
-  /* Treat certain compiler-generated artificial functions as having
-     a default landing pad signature, even if they do not explicitly
-     carry a 'lpad_func_sig' attribute.
+  /* Get the function type. For FUNCTION_DECL, extract the type;
+     for type nodes, use directly.  */
+  tree func_type = (TREE_CODE (decl) == FUNCTION_DECL)
+		   ? TREE_TYPE (decl) : decl;
 
-     This applies to:
-       - OpenMP loop clones (e.g., create_loop_fn, names like .$loopfn),
-       - Compiler-inserted builtin helpers (e.g., __builtin_apply),
-       - Internal OpenMP or OpenACC outlined regions (e.g., .omp_fn.0),
-       - Thunks and virtual adjustors for C++ ABI support.
+  /* All lpad_func_sig attributes are stored in TYPE_ATTRIBUTES.
+     This simplifies lookup and ensures consistency across all functions
+     of the same type.  */
+  tree attr = lookup_attribute ("lpad_func_sig", TYPE_ATTRIBUTES (func_type));
 
-     These functions are:
-       - Artificial (DECL_ARTIFICIAL),
+  /* For artificial functions without a signature, return lpad 0.
+     This includes compiler-generated functions like:
+       - OpenMP loop clones (e.g., create_loop_fn, names like .$loopfn)
+       - Compiler-inserted builtin helpers (e.g., __builtin_apply)
+       - Internal OpenMP or OpenACC outlined regions (e.g., .omp_fn.0)
+       - Thunks and virtual adjustors for C++ ABI support
 
-     Fallback to returning const0_rtx allows LPAD 0 to be emitted,
-     ensuring these targets remain valid under -fcf-protection.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_ARTIFICIAL (decl))
+     Returning const0_rtx allows LPAD 0 to be emitted, ensuring these
+     targets remain valid under -fcf-protection.  */
+  if (!attr && TREE_CODE (decl) == FUNCTION_DECL && DECL_ARTIFICIAL (decl))
     return const0_rtx;
-
-  tree attr = NULL_TREE;
-
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    attr = lookup_attribute ("lpad_func_sig", DECL_ATTRIBUTES (decl));
-  else if (TREE_CODE (decl) != FUNCTION_DECL)
-    attr = lookup_attribute ("lpad_func_sig", TYPE_ATTRIBUTES (decl));
-
-  if (!attr)
-    attr = lookup_attribute ("lpad_func_sig",
-			     TYPE_ATTRIBUTES (TREE_TYPE (decl)));
 
   if (attr)
     {
@@ -7203,6 +7195,11 @@ riscv_attribute_get_func_sig (tree decl)
 	= IDENTIFIER_POINTER (TREE_VALUE (attr_args));
       if (func_sig_symbol == NULL || *func_sig_symbol == '\0')
 	gcc_unreachable ();
+
+      /* Special case: if the signature string is "0",
+	 treat it as no check required.  */
+      if (strcmp (func_sig_symbol, "0") == 0)
+	return const0_rtx;
 
       return gen_rtx_SYMBOL_REF (Pmode, func_sig_symbol);
     }
