@@ -714,4 +714,216 @@
 @tab 1.0
 @tab Ventana integer conditional operations extension
 
+@item p
+@tab 0.15
+@tab Packed SIMD extension
+
+@item zibi
+@tab 0.1
+@tab Branch with immediate extension
+
+@item zalasr
+@tab 1.0
+@tab Load-acquire and store-release
+
+@item zvknf
+@tab 0.1
+@tab Vector crypto NIST AES full-round (draft)
+
+@item zvkns
+@tab 0.1
+@tab Vector crypto NIST AES single-round (draft)
+
+@item zjid
+@tab 0.0
+@tab Zjid extension
+
+@item sspmp
+@tab 0.9
+@tab S-level Physical Memory Protection
+
+@item smwg
+@tab 0.3
+@tab Machine WorldGuard
+
+@item smwgd
+@tab 0.3
+@tab Machine WorldGuard delegation
+
+@item sswg
+@tab 0.3
+@tab Supervisor WorldGuard
+
+@item zvlsseg
+@tab 0.10
+@tab Vector segment load/store extension (obsolete)
+
+@item smctr
+@tab 1.0
+@tab Machine Control Transfer Records
+
+@item ssctr
+@tab 1.0
+@tab Supervisor Control Transfer Records
+
+@item sdext
+@tab 1.0
+@tab Debug external
+
+@item ss
+@tab 1.12 1.13
+@tab Supervisor specification version
+
+@item ssqosid
+@tab 1.0
+@tab Supervisor QoS ID
+
+@item svukte
+@tab 0.4
+@tab User-mode kernel trap entry
+
+@item sv39
+@tab 1.12
+@tab Sv39 page-based virtual memory
+
+@item sv48
+@tab 1.12
+@tab Sv48 page-based virtual memory
+
+@item sv57
+@tab 1.12
+@tab Sv57 page-based virtual memory
+
+@item xsifivecdiscarddlone
+@tab 0.1
+@tab SiFive cache line discard
+
+@item xsifivecflushdlone
+@tab 0.1
+@tab SiFive cache line flush
+
+@item xsfpgflushdlone
+@tab 0.1
+@tab SiFive power-gate cache flush
+
+@item xsfpmpmt
+@tab 0.1
+@tab SiFive PMP-based Memory Types extension
+
+@item xsfsci
+@tab 1.0
+@tab SiFive supervisor cache instructions
+
+@item xsfvqdotq
+@tab 0.1
+@tab SiFive vector quad-widening 8-bit dot product
+
+@item xsfvfwmaccqqq
+@tab 0.1 1.0
+@tab SiFive vector BF16 matrix multiply-accumulate
+
+@item xsfvfhbfmin
+@tab 0.1
+@tab SiFive vector FP16/BF16 conversions (deprecated)
+
+@item xsfvfbfa
+@tab 0.1
+@tab SiFive additional BF16 vector compute support
+
+@item xsfvfexpa
+@tab 0.2
+@tab SiFive vector FP 2^x approximation
+
+@item xsfvfexpa64e
+@tab 0.2
+@tab SiFive vector FP64 2^x approximation
+
+@item xsfvfexp32e
+@tab 0.1
+@tab SiFive vector FP32 exp(x)
+
+@item xsfvfexp16e
+@tab 0.1
+@tab SiFive vector FP16 exp(x)
+
+@item xsfvfbfexp16e
+@tab 0.1
+@tab SiFive vector BF16 exp(x)
+
+@item xsfmmbase
+@tab 0.6
+@tab SiFive Mammoth matrix base instructions
+
+@item xsfmm32a8i
+@tab 0.6
+@tab SiFive Mammoth 32-bit accum, 8-bit int
+
+@item xsfmm32a8f
+@tab 0.6
+@tab SiFive Mammoth 32-bit accum, OCP FP8
+
+@item xsfmm32a16f
+@tab 0.6
+@tab SiFive Mammoth 32-bit accum, FP16/BF16
+
+@item xsfmm32a32f
+@tab 0.6
+@tab SiFive Mammoth 32-bit accum, FP32
+
+@item xsfmm32a
+@tab 0.6
+@tab SiFive Mammoth 32-bit accum combined
+
+@item xsfmm64a64f
+@tab 0.6
+@tab SiFive Mammoth 64-bit accum, FP64
+
+@item xsfmm128t
+@tab 0.6
+@tab SiFive Mammoth TE >= 128 tile
+
+@item xsfmm64t
+@tab 0.6
+@tab SiFive Mammoth TE >= 64 tile
+
+@item xsfmm32t
+@tab 0.6
+@tab SiFive Mammoth TE >= 32 tile
+
+@item xsfmm16t
+@tab 0.6
+@tab SiFive Mammoth TE >= 16 tile
+
+@item zvfofp8min
+@tab 0.2
+@tab Vector OCP FP8 format support
+
+@item zvfofp4min
+@tab 0.1
+@tab Vector OCP FP4 format support
+
+@item zvqdotq
+@tab 0.0
+@tab Vector quad widening 4D Dot Product
+
+@item zvqwbdota8i
+@tab 0.2
+@tab 8-bit integer batched dot-product
+
+@item zvqwbdota16i
+@tab 0.2
+@tab 16-bit integer batched dot-product
+
+@item zvfwbdota16bf
+@tab 0.2
+@tab BF16 batched dot-product
+
+@item zvfqwbdota8f
+@tab 0.2
+@tab OCP FP8 batched dot-product
+
+@item zvfbdota32f
+@tab 0.2
+@tab FP32 batched dot-product
+
 @end multitable

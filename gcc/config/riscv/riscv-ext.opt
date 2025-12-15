@@ -445,3 +445,109 @@ Mask(XTHEADVECTOR) Var(riscv_xthead_subext)
 
 Mask(XVENTANACONDOPS) Var(riscv_xventana_subext)
 
+Mask(RVP) Var(riscv_base_subext)
+
+Mask(ZIBI) Var(riscv_zi_subext)
+
+Mask(ZALASR) Var(riscv_za_subext)
+
+Mask(ZVKNF) Var(riscv_zvk_subext)
+
+Mask(ZVKNS) Var(riscv_zvk_subext)
+
+Mask(ZJID) Var(riscv_zi_subext)
+
+Mask(SSPMP) Var(riscv_ss_subext)
+
+Mask(SMWG) Var(riscv_sm_subext)
+
+Mask(SMWGD) Var(riscv_sm_subext)
+
+Mask(SSWG) Var(riscv_ss_subext)
+
+Mask(ZVLSSEG) Var(riscv_zve_subext)
+
+Mask(SMCTR) Var(riscv_sm_subext)
+
+Mask(SSCTR) Var(riscv_ss_subext)
+
+Mask(SDEXT) Var(riscv_sd_subext)
+
+Mask(SS) Var(riscv_ss_subext)
+
+Mask(SSQOSID) Var(riscv_ss_subext)
+
+Mask(SVUKTE) Var(riscv_sv_subext)
+
+Mask(SV39) Var(riscv_sv_subext)
+
+Mask(SV48) Var(riscv_sv_subext)
+
+Mask(SV57) Var(riscv_sv_subext)
+
+Mask(XSIFIVECDISCARDDLONE) Var(riscv_xsf_subext)
+
+Mask(XSIFIVECFLUSHDLONE) Var(riscv_xsf_subext)
+
+Mask(XSFPGFLUSHDLONE) Var(riscv_xsf_subext)
+
+Mask(XSFPMPMT) Var(riscv_xsf_subext)
+
+Mask(XSFSCI) Var(riscv_xsf_subext)
+
+Mask(XSFVQDOTQ) Var(riscv_xsf_subext)
+
+Mask(XSFVFWMACCQQQ) Var(riscv_xsf_subext)
+
+Mask(XSFVFHBFMIN) Var(riscv_xsf_subext)
+
+Mask(XSFVFBFA) Var(riscv_xsf_subext)
+
+Mask(XSFVFEXPA) Var(riscv_xsf_subext)
+
+Mask(XSFVFEXPA64E) Var(riscv_xsf_subext)
+
+Mask(XSFVFEXP32E) Var(riscv_xsf_subext)
+
+Mask(XSFVFEXP16E) Var(riscv_xsf_subext)
+
+Mask(XSFVFBFEXP16E) Var(riscv_xsf_subext)
+
+Mask(XSFMMBASE) Var(riscv_xsf_subext)
+
+Mask(XSFMM32A8I) Var(riscv_xsf_subext)
+
+Mask(XSFMM32A8F) Var(riscv_xsf_subext)
+
+Mask(XSFMM32A16F) Var(riscv_xsf_subext)
+
+Mask(XSFMM32A32F) Var(riscv_xsf_subext)
+
+Mask(XSFMM32A) Var(riscv_xsf_subext)
+
+Mask(XSFMM64A64F) Var(riscv_xsf_subext)
+
+Mask(XSFMM128T) Var(riscv_xsf_subext)
+
+Mask(XSFMM64T) Var(riscv_xsf_subext)
+
+Mask(XSFMM32T) Var(riscv_xsf_subext)
+
+Mask(XSFMM16T) Var(riscv_xsf_subext)
+
+Mask(ZVFOFP8MIN) Var(riscv_zvf_subext)
+
+Mask(ZVFOFP4MIN) Var(riscv_zvf_subext)
+
+Mask(ZVQDOTQ) Var(riscv_zve_subext)
+
+Mask(ZVQWBDOTA8I) Var(riscv_zve_subext)
+
+Mask(ZVQWBDOTA16I) Var(riscv_zve_subext)
+
+Mask(ZVFWBDOTA16BF) Var(riscv_zvf_subext)
+
+Mask(ZVFQWBDOTA8F) Var(riscv_zvf_subext)
+
+Mask(ZVFBDOTA32F) Var(riscv_zvf_subext)
+

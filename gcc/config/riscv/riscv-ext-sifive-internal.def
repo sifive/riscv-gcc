@@ -21,3 +21,781 @@ Please run `make riscv-regen` in build folder to make sure updated anything.
 
 Format of DEFINE_RISCV_EXT, please refer to riscv-ext.def.  */
 
+/* =========================================================================
+   Base Extensions (p, zi*, z*)
+   ========================================================================= */
+
+/* P extension (Packed SIMD) - draft version 0.15.  */
+DEFINE_RISCV_EXT(
+  /* NAME */ p,
+  /* UPPERCASE_NAME */ RVP,
+  /* FULL_NAME */ "Packed SIMD extension",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{0, 15, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ base,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Zibi (Branch with immediate).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ zibi,
+  /* UPPERCASE_NAME */ ZIBI,
+  /* FULL_NAME */ "Branch with immediate extension",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zi,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Zalasr (Load-acquire/store-release) - ratified 1.0.  */
+DEFINE_RISCV_EXT(
+  /* NAME */ zalasr,
+  /* UPPERCASE_NAME */ ZALASR,
+  /* FULL_NAME */ "Load-acquire and store-release",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ za,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* =========================================================================
+   Vector Crypto Extensions (zvk*) - old/draft versions
+   ========================================================================= */
+
+/* Zvknf (NIST Cipher full-round AES, draft version before ratification).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ zvknf,
+  /* UPPERCASE_NAME */ ZVKNF,
+  /* FULL_NAME */ "Vector crypto NIST AES full-round (draft)",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zvk,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Zvkns (NIST Cipher single-round AES, draft version before ratification).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ zvkns,
+  /* UPPERCASE_NAME */ ZVKNS,
+  /* FULL_NAME */ "Vector crypto NIST AES single-round (draft)",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zvk,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* =========================================================================
+   Miscellaneous Z* Extensions (zj*, other zi*, z*)
+   ========================================================================= */
+
+/* Zjid - unratified.  */
+DEFINE_RISCV_EXT(
+  /* NAME */ zjid,
+  /* UPPERCASE_NAME */ ZJID,
+  /* FULL_NAME */ "Zjid extension",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{0, 0, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zi,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* =========================================================================
+   Supervisor/Machine Mode Extensions (ss*, sm*, sv*, sd*)
+   ========================================================================= */
+
+/* Sspmp (S-level Physical Memory Protection).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ sspmp,
+  /* UPPERCASE_NAME */ SSPMP,
+  /* FULL_NAME */ "S-level Physical Memory Protection",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"sscsrind"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 9, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Smwg (Machine WorldGuard).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ smwg,
+  /* UPPERCASE_NAME */ SMWG,
+  /* FULL_NAME */ "Machine WorldGuard",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{0, 3, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ sm,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Smwgd (Machine WorldGuard delegation).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ smwgd,
+  /* UPPERCASE_NAME */ SMWGD,
+  /* FULL_NAME */ "Machine WorldGuard delegation",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"smwg"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 3, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ sm,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Sswg (Supervisor WorldGuard).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ sswg,
+  /* UPPERCASE_NAME */ SSWG,
+  /* FULL_NAME */ "Supervisor WorldGuard",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{0, 3, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Zvlsseg (obsolete vector segment load/store) - unratified.  */
+DEFINE_RISCV_EXT(
+  /* NAME */ zvlsseg,
+  /* UPPERCASE_NAME */ ZVLSSEG,
+  /* FULL_NAME */ "Vector segment load/store extension (obsolete)",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{0, 10, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zve,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Smctr (Machine Control Transfer Records).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ smctr,
+  /* UPPERCASE_NAME */ SMCTR,
+  /* FULL_NAME */ "Machine Control Transfer Records",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sm,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Ssctr (Supervisor Control Transfer Records).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ ssctr,
+  /* UPPERCASE_NAME */ SSCTR,
+  /* FULL_NAME */ "Supervisor Control Transfer Records",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Sdext (Debug external) - ratified v1.0.  */
+DEFINE_RISCV_EXT(
+  /* NAME */ sdext,
+  /* UPPERCASE_NAME */ SDEXT,
+  /* FULL_NAME */ "Debug external",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sd,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Ss (Supervisor specification version).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ ss,
+  /* UPPERCASE_NAME */ SS,
+  /* FULL_NAME */ "Supervisor specification version",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 13}, {1, 12}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Ssqosid (Supervisor QoS ID) - ratified v1.0.  */
+DEFINE_RISCV_EXT(
+  /* NAME */ ssqosid,
+  /* UPPERCASE_NAME */ SSQOSID,
+  /* FULL_NAME */ "Supervisor QoS ID",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Svukte (User-mode kernel trap entry) - unratified v0.4.  */
+DEFINE_RISCV_EXT(
+  /* NAME */ svukte,
+  /* UPPERCASE_NAME */ SVUKTE,
+  /* FULL_NAME */ "User-mode kernel trap entry",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{0, 4, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ sv,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Sv39 (page-based 39-bit virtual memory).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ sv39,
+  /* UPPERCASE_NAME */ SV39,
+  /* FULL_NAME */ "Sv39 page-based virtual memory",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 12}}),
+  /* FLAG_GROUP */ sv,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Sv48 (page-based 48-bit virtual memory).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ sv48,
+  /* UPPERCASE_NAME */ SV48,
+  /* FULL_NAME */ "Sv48 page-based virtual memory",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 12}}),
+  /* FLAG_GROUP */ sv,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Sv57 (page-based 57-bit virtual memory).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ sv57,
+  /* UPPERCASE_NAME */ SV57,
+  /* FULL_NAME */ "Sv57 page-based virtual memory",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 12}}),
+  /* FLAG_GROUP */ sv,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* =========================================================================
+   SiFive Vendor Extensions (xsf*, xsifive*)
+   ========================================================================= */
+
+/* Xsifivecdiscarddlone (SF.CDISCARD.D.L1 - cache line discard).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsifivecdiscarddlone,
+  /* UPPERCASE_NAME */ XSIFIVECDISCARDDLONE,
+  /* FULL_NAME */ "SiFive cache line discard",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsifivecflushdlone (SF.CFLUSH.D.L1 - cache line flush).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsifivecflushdlone,
+  /* UPPERCASE_NAME */ XSIFIVECFLUSHDLONE,
+  /* FULL_NAME */ "SiFive cache line flush",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfpgflushdlone (SF.PGFLUSH.D.L1 - power-gate cache flush).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfpgflushdlone,
+  /* UPPERCASE_NAME */ XSFPGFLUSHDLONE,
+  /* FULL_NAME */ "SiFive power-gate cache flush",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfpmpmt (PMP-based memory types).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfpmpmt,
+  /* UPPERCASE_NAME */ XSFPMPMT,
+  /* FULL_NAME */ "SiFive PMP-based Memory Types extension",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfsci (SiFive Supervisor Cache Instructions).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfsci,
+  /* UPPERCASE_NAME */ XSFSCI,
+  /* FULL_NAME */ "SiFive supervisor cache instructions",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfvqdotq (4x8-bit integer dot product into 32-bit: sf.vqdot[u][su].vv/vx).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfvqdotq,
+  /* UPPERCASE_NAME */ XSFVQDOTQ,
+  /* FULL_NAME */ "SiFive vector quad-widening 8-bit dot product",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfvfwmaccqqq (BF16 matrix multiply-accumulate into FP32).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfvfwmaccqqq,
+  /* UPPERCASE_NAME */ XSFVFWMACCQQQ,
+  /* FULL_NAME */ "SiFive vector BF16 matrix multiply-accumulate",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}, {0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfvfhbfmin (FP16/BF16 conversions, deprecated by Zvfbfmin).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfvfhbfmin,
+  /* UPPERCASE_NAME */ XSFVFHBFMIN,
+  /* FULL_NAME */ "SiFive vector FP16/BF16 conversions (deprecated)",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfvfbfa (additional BF16 vector compute with vtype.altfmt).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfvfbfa,
+  /* UPPERCASE_NAME */ XSFVFBFA,
+  /* FULL_NAME */ "SiFive additional BF16 vector compute support",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32f", "zfbfmin"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfvfexpa (vector FP 2^x approximation).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfvfexpa,
+  /* UPPERCASE_NAME */ XSFVFEXPA,
+  /* FULL_NAME */ "SiFive vector FP 2^x approximation",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 2, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfvfexpa64e (vector FP64 2^x approximation).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfvfexpa64e,
+  /* UPPERCASE_NAME */ XSFVFEXPA64E,
+  /* FULL_NAME */ "SiFive vector FP64 2^x approximation",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"xsfvfexpa", "zve64d"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 2, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfvfexp32e (vector FP32 exp(x)).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfvfexp32e,
+  /* UPPERCASE_NAME */ XSFVFEXP32E,
+  /* FULL_NAME */ "SiFive vector FP32 exp(x)",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfvfexp16e (vector FP16 exp(x)).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfvfexp16e,
+  /* UPPERCASE_NAME */ XSFVFEXP16E,
+  /* FULL_NAME */ "SiFive vector FP16 exp(x)",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zvfh"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfvfbfexp16e (sf.vfexp.v: exp(x) for BF16, uses vtype.altfmt).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfvfbfexp16e,
+  /* UPPERCASE_NAME */ XSFVFBFEXP16E,
+  /* FULL_NAME */ "SiFive vector BF16 exp(x)",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* =========================================================================
+   SiFive Mammoth Matrix Extensions (xsfmm*)
+   ========================================================================= */
+
+/* Xsfmmbase (Mammoth base: sf.vset*, sf.vtmv*, sf.vlte*, sf.vste*, sf.vtzero.t, sf.vtdiscard).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfmmbase,
+  /* UPPERCASE_NAME */ XSFMMBASE,
+  /* FULL_NAME */ "SiFive Mammoth matrix base instructions",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32x"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 6, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfmm32a8i (Mammoth TEW=32 with 8-bit integer operands, TWIDEN=4).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfmm32a8i,
+  /* UPPERCASE_NAME */ XSFMM32A8I,
+  /* FULL_NAME */ "SiFive Mammoth 32-bit accum, 8-bit int",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"xsfmmbase"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 6, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfmm32a8f (Mammoth TEW=32 with OCP FP8 operands, TWIDEN=4).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfmm32a8f,
+  /* UPPERCASE_NAME */ XSFMM32A8F,
+  /* FULL_NAME */ "SiFive Mammoth 32-bit accum, OCP FP8",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"xsfmmbase", "zve32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 6, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfmm32a16f (Mammoth TEW=32 with FP16/BF16 operands, TWIDEN=2).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfmm32a16f,
+  /* UPPERCASE_NAME */ XSFMM32A16F,
+  /* FULL_NAME */ "SiFive Mammoth 32-bit accum, FP16/BF16",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"xsfmmbase", "zve32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 6, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfmm32a32f (Mammoth TEW=32 with FP32 operands, TWIDEN=1).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfmm32a32f,
+  /* UPPERCASE_NAME */ XSFMM32A32F,
+  /* FULL_NAME */ "SiFive Mammoth 32-bit accum, FP32",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"xsfmmbase", "zve32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 6, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfmm32a (Mammoth TEW=32 combined: Xsfmm32a8i + Xsfmm32a16f + Xsfmm32a32f).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfmm32a,
+  /* UPPERCASE_NAME */ XSFMM32A,
+  /* FULL_NAME */ "SiFive Mammoth 32-bit accum combined",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"xsfmmbase", "zve32f", "xsfmm32a8i", "xsfmm32a16f", "xsfmm32a32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 6, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfmm64a64f (Mammoth TEW=64 with FP64 operands, TWIDEN=1).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfmm64a64f,
+  /* UPPERCASE_NAME */ XSFMM64A64F,
+  /* FULL_NAME */ "SiFive Mammoth 64-bit accum, FP64",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"xsfmmbase", "zve64d"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 6, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfmm128t (Mammoth tile size TE >= 128, requires Zvl512b).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfmm128t,
+  /* UPPERCASE_NAME */ XSFMM128T,
+  /* FULL_NAME */ "SiFive Mammoth TE >= 128 tile",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"xsfmmbase", "zvl512b"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 6, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfmm64t (Mammoth tile size TE >= 64, requires Zvl256b).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfmm64t,
+  /* UPPERCASE_NAME */ XSFMM64T,
+  /* FULL_NAME */ "SiFive Mammoth TE >= 64 tile",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"xsfmmbase", "zvl256b"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 6, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfmm32t (Mammoth tile size TE >= 32, requires Zvl128b).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfmm32t,
+  /* UPPERCASE_NAME */ XSFMM32T,
+  /* FULL_NAME */ "SiFive Mammoth TE >= 32 tile",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"xsfmmbase", "zvl128b"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 6, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Xsfmm16t (Mammoth tile size TE >= 16, requires Zvl64b).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ xsfmm16t,
+  /* UPPERCASE_NAME */ XSFMM16T,
+  /* FULL_NAME */ "SiFive Mammoth TE >= 16 tile",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"xsfmmbase", "zvl64b"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 6, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ xsf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* =========================================================================
+   Vector Floating-Point Format Extensions (zvfofp*)
+   ========================================================================= */
+
+/* Zvfofp8min (OCP FP8 to/from BF16 and F32 conversions).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ zvfofp8min,
+  /* UPPERCASE_NAME */ ZVFOFP8MIN,
+  /* FULL_NAME */ "Vector OCP FP8 format support",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 2, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zvf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Zvfofp4min (OCP FP4 to OCP FP8 E4M3 conversion).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ zvfofp4min,
+  /* UPPERCASE_NAME */ ZVFOFP4MIN,
+  /* FULL_NAME */ "Vector OCP FP4 format support",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 1, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zvf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* =========================================================================
+   Zvqdotq: Vector Quad-Widening Dot Product Extension
+   ========================================================================= */
+
+/* Zvqdotq (vector quad widening 4D dot product).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ zvqdotq,
+  /* UPPERCASE_NAME */ ZVQDOTQ,
+  /* FULL_NAME */ "Vector quad widening 4D Dot Product",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32x"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 0, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zve,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* =========================================================================
+   Zvbdota: Vector Batched Dot-Product Extensions
+   See: https://github.com/aswaterman/riscv-misc/blob/main/isa/ldot-bdot/ldot-bdot.adoc
+   ========================================================================= */
+
+/* Zvqwbdota8i (8-bit integer batched dot-product, accumulates to 32-bit).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ zvqwbdota8i,
+  /* UPPERCASE_NAME */ ZVQWBDOTA8I,
+  /* FULL_NAME */ "8-bit integer batched dot-product",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32x"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 2, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zve,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Zvqwbdota16i (16-bit integer batched dot-product, accumulates to 64-bit).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ zvqwbdota16i,
+  /* UPPERCASE_NAME */ ZVQWBDOTA16I,
+  /* FULL_NAME */ "16-bit integer batched dot-product",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve64x"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 2, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zve,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Zvfwbdota16bf (BF16 batched dot-product, accumulates to FP32).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ zvfwbdota16bf,
+  /* UPPERCASE_NAME */ ZVFWBDOTA16BF,
+  /* FULL_NAME */ "BF16 batched dot-product",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 2, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zvf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Zvfqwbdota8f (OCP FP8 batched dot-product, accumulates to FP32).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ zvfqwbdota8f,
+  /* UPPERCASE_NAME */ ZVFQWBDOTA8F,
+  /* FULL_NAME */ "OCP FP8 batched dot-product",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 2, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zvf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* Zvfbdota32f (FP32 batched dot-product).  */
+DEFINE_RISCV_EXT(
+  /* NAME */ zvfbdota32f,
+  /* UPPERCASE_NAME */ ZVFBDOTA32F,
+  /* FULL_NAME */ "FP32 batched dot-product",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 2, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zvf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
