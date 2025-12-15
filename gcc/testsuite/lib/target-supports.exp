@@ -2265,10 +2265,17 @@ proc check_effective_target_riscv_v_ok { } {
     }
 
     # check if we can execute vector insns with the given hardware or
-    # simulator
-    set gcc_march [regsub {[[:alnum:]]*} [riscv_get_arch] &v]
-    if { [check_runtime ${gcc_march}_exec {
-	  int main() {  asm("vsetivli t0, 9, e8, m1, tu, ma"); return 0; } } "-march=${gcc_march}"] } {
+    # simulator.  Use .option arch,+v to avoid modifying -march and
+    # potentially creating duplicate extensions.
+    set gcc_march [riscv_get_arch]
+    if { [check_runtime ${gcc_march}_v_exec {
+	  int main() {
+	    asm(".option push\n\t"
+		".option arch,+v\n\t"
+		"vsetivli t0, 9, e8, m1, tu, ma\n\t"
+		".option pop");
+	    return 0;
+	  } } "-march=${gcc_march}"] } {
 	return 1
     }
 
@@ -2316,13 +2323,17 @@ proc check_effective_target_riscv_zvfh_ok { } {
     }
 
     # check if we can execute vector insns with the given hardware or
-    # simulator
-    set gcc_march [regsub {[[:alnum:]]*} [riscv_get_arch] &v]
+    # simulator.  Use .option arch,+v,+zvfh to avoid modifying -march and
+    # potentially creating duplicate extensions.
+    set gcc_march [riscv_get_arch]
     if { [check_runtime ${gcc_march}_zvfh_exec {
 	int main()
 	{
-	    asm ("vsetivli zero,8,e16,m1,ta,ma");
-	    asm ("vfadd.vv v8,v8,v16" : : : "v8");
+	    asm (".option push\n\t"
+		 ".option arch,+v,+zvfh\n\t"
+		 "vsetivli zero,8,e16,m1,ta,ma\n\t"
+		 "vfadd.vv v8,v8,v16\n\t"
+		 ".option pop" : : : "v8");
 	    return 0;
 	} } "-march=${gcc_march}"] } {
 	    return 1
