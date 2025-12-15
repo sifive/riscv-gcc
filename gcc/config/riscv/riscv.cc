@@ -3090,27 +3090,15 @@ riscv_call_tls_get_addr (rtx sym, rtx result)
 
   if (riscv_lpad_type == LPAD_FUNC_SIG)
     {
-      /* When using function signature-based CFI, we need to provide the
-	 signature for __tls_get_addr() to enable proper LPAD verification.
-
-	 The signature "FPvP9tls_indexE" represents:
-	   F           - Function type start
-	   Pv          - Return type: void* (pointer to void)
-	   P9tls_index - Parameter: tls_index* (pointer to struct tls_index)
-	   E           - Function type end
-
-	 This matches the glibc prototype:
-	   void *__tls_get_addr (tls_index *ti);
-
-	 The signature is passed as part of the call arguments so the
-	 backend can generate the appropriate LPAD label hash.  */
+      /* The symbol refers to the TLS function signature for
+	 __tls_get_addr() from glibc.  */
       rtx tls_func_sig = gen_rtx_SYMBOL_REF (Pmode, "FPvP9tls_indexE");
       rtx variant_cc = gen_int_mode (RISCV_CC_BASE, SImode);
-      rtx call_args = gen_rtx_PARALLEL (VOIDmode,
-					gen_rtvec (2, variant_cc,
-						   tls_func_sig));
+      rtx tls_func_params = gen_rtx_PARALLEL (VOIDmode,
+					      gen_rtvec (2, variant_cc,
+							 tls_func_sig));
       insn = emit_call_insn (gen_call_value (result, func, const0_rtx,
-					     call_args));
+					     tls_func_params));
     }
   else
     {
@@ -6171,32 +6159,20 @@ riscv_init_call_lpad_func_sig (CUMULATIVE_ARGS *cum, tree fntype,
 {
   cum->lpad_sig = riscv_attribute_get_func_sig (sub_fntype);
 
-  /* Try to retrieve the `lpad_func_sig` attribute for the target function.
+/* Try to retrieve the `lpad_func_sig` attribute for the target function.
 
-     We first attempt to get the signature from `sub_fntype`, which
-     represents the immediate type of the callee. However, in many indirect
-     call cases - such as virtual calls, function pointers from structures,
-     or devirtualized SSA expressions - this type may not carry attributes
-     due to casting or generic pointer usage.
+   We first attempt to get the signature from `sub_fntype`, which represents
+   the immediate type of the callee. However, in many indirect call cases —
+   such as virtual calls, function pointers from structures, or devirtualized
+   SSA expressions — this type may not carry attributes due to casting or
+   generic pointer usage.
 
-     If the signature is not found and the original `fntype` is a NOP_EXPR,
-     we walk through its operand (typically an SSA_NAME) and trace back its
-     definition to recover a more specific type with potential attributes.
+   If the signature is not found and the original `fntype` is a NOP_EXPR,
+   we walk through its operand (typically an SSA_NAME) and trace back its
+   definition to recover a more specific type with potential attributes.
 
-     The most common patterns we handle include:
-
-       - COMPONENT_REF to a function pointer field (e.g. `h->chunkfun`)
-	 -> recover the function type from the struct field
-
-       - MEM_REF to a virtual function table or raw memory
-	 -> extract the function type from the pointer's target
-
-       - Fallback to SSA_NAME type directly
-	 -> e.g. indirect pointer assignment without explicit struct access
-
-     These heuristics allow us to reconstruct the correct function type
-     even when type information is partially lost, ensuring we can still
-     extract the `lpad_func_sig` attribute where applicable.  */
+   Since lpad_func_sig is now stored in TYPE_ATTRIBUTES (after refactoring),
+   we can simply check the SSA_NAME's type directly as a fallback.  */
 
   if (cum->lpad_sig == NULL_RTX
       && TREE_CODE (fntype) == NOP_EXPR)
@@ -6205,48 +6181,15 @@ riscv_init_call_lpad_func_sig (CUMULATIVE_ARGS *cum, tree fntype,
 
       if (TREE_CODE (fntype) == SSA_NAME)
 	{
-	  gimple *def_stmt = SSA_NAME_DEF_STMT (fntype);
-
-	  if (def_stmt && gimple_assign_single_p (def_stmt))
-	    {
-	      tree rhs = gimple_assign_rhs1 (def_stmt);
-	      if (TREE_CODE (rhs) == COMPONENT_REF)
-		{
-		  /* If RHS is a COMPONENT_REF to a function pointer field
-		     (e.g. `h->chunkfun`), we retrieve the field's type and
-		     its function type. Example:
-		       (nop_expr (ssa_name pretmp_99 = h_53(D)->chunkfun)).  */
-		  tree field = TREE_OPERAND (rhs, 1);
-
-		  if (TREE_CODE (field) == FIELD_DECL
-		      && POINTER_TYPE_P (TREE_TYPE (field)))
-		    {
-		      tree func_type = TREE_TYPE (TREE_TYPE (field));
-		      cum->lpad_sig = riscv_attribute_get_func_sig (func_type);
-		    }
-		}
-	      else if (TREE_CODE (rhs) == MEM_REF)
-		{
-		  /* If RHS is a MEM_REF (e.g. `*_2`), treat it as a virtual
-		     call or raw indirect. Use the MEM_REF type to recover the
-		     function pointer type. Example:
-		       (nop_expr (ssa_name _3 = *_2)).  */
-		  tree ptr_type = TREE_TYPE (rhs);
-		  if (TREE_CODE (ptr_type) == POINTER_TYPE)
-		    {
-		      tree func_type = TREE_TYPE (ptr_type);
-		      cum->lpad_sig = riscv_attribute_get_func_sig (func_type);
-		    }
-		}
-	    }
-
 	  tree fptr = TREE_TYPE (fntype);
 	  if (cum->lpad_sig == NULL_RTX
 	      && TREE_CODE (fptr) == POINTER_TYPE)
 	    {
-	      /* If no COMPONENT_REF or MEM_REF is found, check the
-		 SSA_NAME's type directly. Example:
-		   (nop_expr (ssa_name _3 = *_2)).  */
+	      /* Check the SSA_NAME's type directly.  Example pattern:
+		   (nop_expr (ssa_name _3 = _2)), where _3 (and _2) are
+		   function pointers.  The SSA_NAME's TREE_TYPE gives us
+		   the pointer type, and TREE_TYPE of that gives us the
+		   function type with potential lpad_func_sig attribute.  */
 	      tree func_type = TREE_TYPE (fptr);
 	      cum->lpad_sig = riscv_attribute_get_func_sig (func_type);
 	    }
@@ -7171,8 +7114,7 @@ riscv_attribute_get_func_sig (tree decl)
 {
   /* Get the function type. For FUNCTION_DECL, extract the type;
      for type nodes, use directly.  */
-  tree func_type = (TREE_CODE (decl) == FUNCTION_DECL)
-		   ? TREE_TYPE (decl) : decl;
+  tree func_type = (TREE_CODE (decl) == FUNCTION_DECL) ? TREE_TYPE (decl) : decl;
 
   /* All lpad_func_sig attributes are stored in TYPE_ATTRIBUTES.
      This simplifies lookup and ensures consistency across all functions
@@ -7269,7 +7211,7 @@ riscv_legitimize_cfi_call_args (rtx func_arg, bool indirect_p)
       rtx func_sig;
 
       switch (riscv_lpad_type)
-	{
+        {
 	  case LPAD_FIXED_ONE:
 	    func_sig = const1_rtx;
 	    break;
