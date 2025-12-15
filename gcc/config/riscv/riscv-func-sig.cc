@@ -1192,16 +1192,22 @@ write_name (tree decl, const int ignore_local_scope)
 static void
 write_class_enum_type (const tree type)
 {
-  if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
+  tree type_name = TYPE_NAME (type);
+
+  /* If TYPE_NAME is an IDENTIFIER_NODE (C language), we need to create
+     a temporary TYPE_DECL for mangling purposes. Do NOT modify the
+     original TYPE_NAME as it would affect subsequent passes (e.g., strub).  */
+  if (TREE_CODE (type_name) == IDENTIFIER_NODE)
     {
       tree typedef_decl = build_decl (UNKNOWN_LOCATION, TYPE_DECL,
-				      TYPE_NAME (type), type);
+				      type_name, type);
       TREE_TYPE (typedef_decl) = type;
       DECL_ARTIFICIAL (typedef_decl) = 1;
       DECL_CONTEXT (typedef_decl) = NULL_TREE;
-      TYPE_NAME (type) = typedef_decl;
+      type_name = typedef_decl;
+      /* Do NOT modify TYPE_NAME (type) here!  */
     }
-  write_name (TYPE_NAME (type), /*ignore_local_scope=*/0);
+  write_name (type_name, /*ignore_local_scope=*/0);
 }
 
 static void
