@@ -19,7 +19,7 @@
 @samp{zifencei}.
 
 @item e
-@tab 2.0
+@tab 1.9 2.0
 @tab Reduced base integer extension
 
 @item i
@@ -51,7 +51,7 @@
 @tab b extension
 
 @item v
-@tab 1.0
+@tab 0.10 1.0
 @tab Vector extension
 
 @item h
@@ -171,11 +171,11 @@
 @tab Zama16b extension, Misaligned loads, stores, and AMOs to main memory regions that do not cross a naturally aligned 16-byte boundary are atomic.
 
 @item zfa
-@tab 1.0
+@tab 0.2 1.0
 @tab Additional floating-point extension
 
 @item zfbfmin
-@tab 1.0
+@tab 0.8 1.0
 @tab zfbfmin extension
 
 @item zfh
@@ -231,11 +231,11 @@
 @tab Compressed load/store pair instructions extension
 
 @item zba
-@tab 1.0
+@tab 0.93 1.0
 @tab Address calculation extension
 
 @item zbb
-@tab 1.0
+@tab 0.93 1.0
 @tab Basic bit manipulation extension
 
 @item zbc
@@ -331,11 +331,11 @@
 @tab Vector extensions for embedded processors
 
 @item zvfbfmin
-@tab 1.0
+@tab 0.8 1.0
 @tab Vector BF16 converts extension
 
 @item zvfbfwma
-@tab 1.0
+@tab 0.8 1.0
 @tab zvfbfwma extension
 
 @item zvfh
@@ -347,11 +347,11 @@
 @tab Vector minimal half-precision floating-point extension
 
 @item zvkb
-@tab 1.0
+@tab 0.1 1.0
 @tab Vector cryptography bit-manipulation extension
 
 @item zvkg
-@tab 1.0
+@tab 0.1 1.0
 @tab Vector GCM/GMAC extension
 
 @item zvkn
@@ -371,11 +371,11 @@
 @tab Vector NIST Algorithm Suite with GCM extension, @samp{zvkng} will expand
 
 @item zvknha
-@tab 1.0
+@tab 0.1 1.0
 @tab Vector SHA-2 secure hash extension
 
 @item zvknhb
-@tab 1.0
+@tab 0.1 1.0
 @tab Vector SHA-2 secure hash extension
 
 @item zvks
@@ -387,7 +387,7 @@
 @tab Vector ShangMi algorithm suite with carryless multiplication extension,
 
 @item zvksed
-@tab 1.0
+@tab 0.1 1.0
 @tab Vector SM4 Block Cipher extension
 
 @item zvksg
@@ -395,7 +395,7 @@
 @tab Vector ShangMi algorithm suite with GCM extension, @samp{zvksg} will expand
 
 @item zvksh
-@tab 1.0
+@tab 0.1 1.0
 @tab Vector SM3 Secure Hash extension
 
 @item zvkt
@@ -639,23 +639,23 @@
 @tab xcvsimd extension
 
 @item xsfcease
-@tab 1.0
+@tab 0.1 1.0
 @tab xsfcease extension
 
 @item xsfvcp
-@tab 1.0
+@tab 0.1 1.0
 @tab xsfvcp extension
 
 @item xsfvfnrclipxfqf
-@tab 1.0
+@tab 0.1 1.0
 @tab xsfvfnrclipxfqf extension
 
 @item xsfvqmaccdod
-@tab 1.0
+@tab 0.1 1.0
 @tab xsfvqmaccdod extension
 
 @item xsfvqmaccqoq
-@tab 1.0
+@tab 0.1 1.0
 @tab xsfvqmaccqoq extension
 
 @item xtheadba
