@@ -292,7 +292,8 @@ ipa_param_adjustments::type_attribute_allowed_p (tree name)
       || is_attribute_p ("returns_nonnull", name)
       || is_attribute_p ("assume_aligned", name)
       || is_attribute_p ("nocf_check", name)
-      || is_attribute_p ("warn_unused_result", name))
+      || is_attribute_p ("warn_unused_result", name)
+      || is_attribute_p ("lpad_func_sig", name))
     return true;
   return false;
 }
@@ -303,7 +304,8 @@ static bool
 drop_type_attribute_if_params_changed_p (tree name)
 {
   if (is_attribute_p ("fn spec", name)
-      || is_attribute_p ("access", name))
+      || is_attribute_p ("access", name)
+      || is_attribute_p ("lpad_func_sig", name))
     return true;
   return false;
 }
