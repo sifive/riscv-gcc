@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcp -mabi=lp64 -O2" } */
+/* { dg-options "-march=rv64gcp0p15 -mabi=lp64 -O2" } */
 
 /* Test auto-vectorization of RVP comparison operations.
    This tests that all comparison operators are correctly synthesized

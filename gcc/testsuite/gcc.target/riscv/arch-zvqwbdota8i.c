@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64im_zvqwbdota8i -mabi=lp64" } */
+/* { dg-options "-march=rv64im_zvqwbdota8i0p2 -mabi=lp64" } */
 int foo()
 {
 }
