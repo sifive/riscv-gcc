@@ -43,6 +43,7 @@
 #include "tree-pass.h"
 #include "cgraph.h"
 #include "output.h"
+#include "insn-opinit.h"
 
 /* This pass implements forward-CFI landing pad checks for RISCV. This is
    a security feature similar to BTI (branch target identification) in
@@ -148,7 +149,7 @@ rest_of_insert_landing_pad (void)
   rtx lpad_insn;
   rtx_insn *insn;
   basic_block bb;
-  rtx lp_value = riscv_get_lp_value ();
+  rtx lp_value = riscv_get_lp_value (cfun->decl);
 
   int attribute_lp_value = riscv_attribute_get_lp_value (cfun->decl);
   if (attribute_lp_value != -1)
@@ -173,14 +174,14 @@ rest_of_insert_landing_pad (void)
 
 	  if (INSN_P (insn) && INSN_CODE (insn) == CODE_FOR_gpr_save)
 	    {
-	      emit_move_insn (RISCV_CALL_ADDRESS_LPAD (Pmode), lp_value);
+	      emit_insn (gen_set_lpl (Pmode, lp_value));
 	      emit_insn_before (gen_lpad_align (), insn);
 	      emit_insn_after (gen_lpad (lp_value), insn);
 	      continue;
 	    }
 
 	  if (INSN_P (insn) && INSN_CODE (insn) == CODE_FOR_gpr_restore)
-	    emit_move_insn (RISCV_CALL_ADDRESS_LPAD (Pmode), lp_value);
+	    emit_insn (gen_set_lpl (Pmode, lp_value));
 
 	  /* Check for calls that may return indirectly, such as setjmp
 	     or functions marked with indirect_return attribute,
@@ -196,7 +197,8 @@ rest_of_insert_landing_pad (void)
 
   c_node = cgraph_node::get (cfun->decl);
   if (!c_node->only_called_directly_p ()
-      && !is_interrupt_handler_p (TREE_TYPE (cfun->decl)))
+      && !is_interrupt_handler_p (TREE_TYPE (cfun->decl))
+      && !flag_gimple)
     {
       bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
       insn = BB_HEAD (bb);
