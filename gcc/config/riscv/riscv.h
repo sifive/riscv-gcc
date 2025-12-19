@@ -819,10 +819,19 @@ typedef struct {
   /* The used state of args in vector registers, true for used by prev arg,
      initial to false.  */
   bool used_vrs[MAX_ARGS_IN_VECTOR_REGISTERS];
+
+  rtx lpad_sig;
+
 } CUMULATIVE_ARGS;
 
 /* Return riscv calling convention of call_insn.  */
 extern enum riscv_cc get_riscv_cc (const rtx use);
+
+#define INIT_CALL_LPAD_FUNC_SIG(CUM, FNTYPE, SUB_FNTYPE)		\
+  do {									\
+    if (riscv_lpad_type == LPAD_FUNC_SIG)				\
+      riscv_init_call_lpad_func_sig (&(CUM), (FNTYPE), (SUB_FNTYPE));	\
+  } while (0)
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.

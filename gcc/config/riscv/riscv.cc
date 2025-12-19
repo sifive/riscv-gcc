@@ -761,6 +761,7 @@ static const attribute_spec riscv_gnu_attributes[] =
      starts from 0 to 0xfffff.  */
   { "landing_pad_value", 1, 1, false, false, false, false,
     riscv_handle_lpad_value_attribute, NULL },
+  {"lpad_func_sig", 0, 0, false, true, false, true, NULL, NULL},
 
   /* The following two are used for the built-in properties of the Vector type
      and are not used externally */
@@ -6123,6 +6124,62 @@ riscv_pass_vls_aggregate_in_gpr (struct riscv_arg_info *info, machine_mode mode,
   return gen_rtx_PARALLEL (mode, gen_rtvec (1, x));
 }
 
+/* Initialize a lpad function signature of type CUMULATIVE_ARGS
+   for a call to a function whose data type is FNTYPE.
+   SUB_FNTYPE is from FNTYPE, it extract from SSA_NAME (PTR (FUN))).  */
+void
+riscv_init_call_lpad_func_sig (CUMULATIVE_ARGS *cum, tree fntype,
+			       tree sub_fntype)
+{
+  cum->lpad_sig = riscv_attribute_get_func_sig (sub_fntype);
+  if (cum->lpad_sig == NULL_RTX
+      && TREE_CODE (fntype) == NOP_EXPR)
+    {
+      fntype = TREE_OPERAND (fntype, 0);
+
+      if (TREE_CODE (fntype) == SSA_NAME)
+	{
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (fntype);
+
+	  if (def_stmt && gimple_assign_single_p (def_stmt))
+	    {
+	      tree rhs = gimple_assign_rhs1 (def_stmt);
+	      if (TREE_CODE (rhs) == COMPONENT_REF)
+		{
+		  tree base = TREE_OPERAND (rhs, 0);
+		  tree field = TREE_OPERAND (rhs, 1);
+		  if (TREE_CODE (field) == FIELD_DECL
+		      && POINTER_TYPE_P (TREE_TYPE (field)))
+		    {
+		      /* gcc.c-torture/compile/20010102-1.c */
+		      tree func_type = TREE_TYPE (TREE_TYPE (field));
+		      cum->lpad_sig = riscv_attribute_get_func_sig (func_type);
+		    }
+		}
+	      else if (TREE_CODE (rhs) == MEM_REF)
+		{
+		  tree ptr_type = TREE_TYPE (rhs);
+		  if (TREE_CODE (ptr_type) == POINTER_TYPE)
+		    {
+		      /* g++.dg/torture/pr60315.C */
+		      tree func_type = TREE_TYPE (ptr_type);
+		      cum->lpad_sig = riscv_attribute_get_func_sig (func_type);
+		    }
+		}
+	    }
+
+	  tree fptr = TREE_TYPE (fntype);
+	  if (cum->lpad_sig == NULL_RTX
+	      && TREE_CODE (fptr) == POINTER_TYPE)
+	    {
+	      /* gcc.target/riscv/lpad-3.c */
+	      tree func_type = TREE_TYPE (fptr);
+	      cum->lpad_sig = riscv_attribute_get_func_sig (func_type);
+	    }
+	}
+    }
+}
+
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
@@ -6355,8 +6412,13 @@ riscv_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   struct riscv_arg_info info;
 
   if (arg.end_marker_p ())
-    /* Return the calling convention that used by the current function. */
-    return gen_int_mode (cum->variant_cc, SImode);
+    {
+      rtx variant_cc = gen_int_mode (cum->variant_cc, SImode);
+      rtx lpad_attr =  cum->lpad_sig;
+
+      /* Return the calling convention that used by the current function. */
+      return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, variant_cc, lpad_attr));
+    }
 
   return riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
 }
@@ -7019,7 +7081,40 @@ riscv_need_setup_lp_p ()
 }
 
 rtx
-riscv_get_lp_value ()
+riscv_attribute_get_func_sig (tree decl)
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_ARTIFICIAL (decl)
+      && (DECL_EXTERNAL (decl) == 0))
+    return const1_rtx;
+
+  tree attr = NULL_TREE;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    attr = lookup_attribute ("lpad_func_sig", DECL_ATTRIBUTES (decl));
+  else if (TREE_CODE (decl) != FUNCTION_DECL)
+    attr = lookup_attribute ("lpad_func_sig", TYPE_ATTRIBUTES (decl));
+
+  if (!attr)
+    attr = lookup_attribute ("lpad_func_sig",
+			     TYPE_ATTRIBUTES (TREE_TYPE (decl)));
+
+  if (attr)
+    {
+      tree attr_args = TREE_VALUE (attr);
+      const char *func_sig_symbol
+	= IDENTIFIER_POINTER (TREE_VALUE (attr_args));
+      if (func_sig_symbol == NULL || *func_sig_symbol == '\0')
+	gcc_unreachable ();
+
+      return gen_rtx_SYMBOL_REF (Pmode, func_sig_symbol);
+    }
+
+  return NULL_RTX;
+}
+
+rtx
+riscv_get_lp_value (tree decl)
 {
   switch (riscv_lpad_type)
     {
@@ -7027,9 +7122,15 @@ riscv_get_lp_value ()
       return const1_rtx;
     case LPAD_UNLABELED:
       return const0_rtx;
-    /* TODO: For function signature schcme, not needed for now.  */
     case LPAD_FUNC_SIG:
-      return const1_rtx;
+      {
+	/* Get the function signature hash from the lpad_func_sig attribute
+	   for CFI protection.  */
+	rtx lp_value = riscv_attribute_get_func_sig (decl);
+	/* If no function signature attribute is found, return const0_rtx
+	   as a safe default (LPAD 0 - no check required).  */
+	return lp_value ? lp_value : const0_rtx;
+      }
     default:
       gcc_unreachable ();
     }
@@ -7061,6 +7162,46 @@ riscv_va_start (tree valist, rtx nextarg)
   std_expand_builtin_va_start (valist, nextarg);
 }
 
+/* TARGET_FUNCTION_ARG create a parallel to save 2 arguments,
+   the first is variant_cc, and second is lpad signature string.  */
+rtx
+riscv_legitimize_cfi_call_args (rtx func_arg, bool indirect_p)
+{
+  if (riscv_need_setup_lp_p () && indirect_p)
+    {
+      rtx func_sig;
+
+      switch (riscv_lpad_type)
+	{
+	  case LPAD_FIXED_ONE:
+	    func_sig = const1_rtx;
+	    break;
+	  case LPAD_UNLABELED:
+	    func_sig = const0_rtx;
+	    break;
+	  case LPAD_FUNC_SIG:
+	    {
+	      if (GET_CODE (func_arg) == PARALLEL)
+		func_sig = XVECEXP (func_arg, 0, 1);
+	      else
+		func_sig = const1_rtx;
+	    }
+	    break;
+	  default:
+	    gcc_unreachable ();
+	}
+
+      emit_insn (gen_set_lpl (Pmode, func_sig));
+    }
+
+  /* TODO: riscv_output_mi_thunk (), riscv_call_tls_get_addr (),
+	   untyped_call pattern do not assign function signature.  */
+  if (GET_CODE (func_arg) == PARALLEL)
+    func_arg = XVECEXP (func_arg, 0, 0);
+
+  return func_arg;
+}
+
 /* Make ADDR suitable for use as a call or sibcall target.  */
 
 rtx
@@ -7080,9 +7221,6 @@ riscv_legitimize_call_address (rtx addr)
 
       return reg;
     }
-
-  if (riscv_need_setup_lp_p () && REG_P (addr))
-    emit_insn (gen_set_lpl (Pmode, riscv_get_lp_value ()));
 
   return addr;
 }
@@ -7266,6 +7404,7 @@ riscv_asm_output_opcode (FILE *asm_out_file, const char *p)
    '~'	Print w if TARGET_64BIT is true; otherwise not print anything.
    'N'  Print register encoding as integer (0-31).
    'x'	Print CONST_INT OP as a CSR register name or as a hex number.
+   'F'  Print function signature string with lpad_hash.
 
    Note please keep this list and the list in riscv.md in sync.  */
 
@@ -7498,6 +7637,22 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 
     case 'B':
       fputs (GET_RTX_NAME (code), file);
+      break;
+
+    case 'F':
+      if (CONST_INT_P (op))
+	{
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (op));
+	}
+      else if (SYMBOL_REF_P (op))
+	{
+	  const char *str = XSTR (op, 0);
+	  fprintf (file, "%%lpad_hash(\"%s\")", str);
+	}
+      else
+	{
+	  output_operand_lossage ("invalid operand for %%F");
+	}
       break;
 
     case 'S':
@@ -11019,7 +11174,8 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   if (is_zicfilp_p ())
     {
-      rtx lp_value = riscv_get_lp_value ();
+      /* FIXME: Should check thunk_fndecl.  */
+      rtx lp_value = riscv_get_lp_value (thunk_fndecl);
 
       if (cfun->machine->attribute_lp_value != -1)
 	lp_value = GEN_INT (cfun->machine->attribute_lp_value);
@@ -14872,6 +15028,14 @@ bool riscv_pext_mode_supported_p (machine_mode mode)
     }
 }
 
+static bool
+riscv_function_attribute_inlinable_p (const_tree fndecl)
+{
+  if (lookup_attribute ("lpad_func_sig", DECL_ATTRIBUTES (fndecl)))
+    return true;
+  return false;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -15111,6 +15275,10 @@ bool riscv_pext_mode_supported_p (machine_mode mode)
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE riscv_attribute_table
+
+#undef TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P
+#define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P \
+  riscv_function_attribute_inlinable_p
 
 #undef TARGET_WARN_FUNC_RETURN
 #define TARGET_WARN_FUNC_RETURN riscv_warn_func_return

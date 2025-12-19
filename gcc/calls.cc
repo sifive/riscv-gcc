@@ -2990,6 +2990,9 @@ expand_call (tree exp, rtx target, int ignore)
      INIT_CUMULATIVE_ARGS tells the backend if this is an indirect call
      or not.  */
   INIT_CUMULATIVE_ARGS (args_so_far_v, funtype, NULL_RTX, fndecl, n_named_args);
+#ifdef INIT_CALL_LPAD_FUNC_SIG
+  INIT_CALL_LPAD_FUNC_SIG (args_so_far_v, addr, funtype);
+#endif
   args_so_far = pack_cumulative_args (&args_so_far_v);
 
   /* Now possibly adjust the number of named args.
