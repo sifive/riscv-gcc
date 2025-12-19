@@ -81,6 +81,8 @@ extern tree cxx_simulate_record_decl (location_t, const char *,
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL cxx_dup_lang_specific_decl
 #undef LANG_HOOKS_SET_DECL_ASSEMBLER_NAME
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME mangle_decl
+#undef LANG_HOOKS_MANGLE_TYPE
+#define LANG_HOOKS_MANGLE_TYPE mangle_type_string
 #undef LANG_HOOKS_OVERWRITE_DECL_ASSEMBLER_NAME
 #define LANG_HOOKS_OVERWRITE_DECL_ASSEMBLER_NAME overwrite_mangling
 #undef LANG_HOOKS_PRINT_STATISTICS

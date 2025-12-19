@@ -180,6 +180,15 @@ lhd_set_decl_assembler_name (tree decl)
   SET_DECL_ASSEMBLER_NAME (decl, id);
 }
 
+/* Default implementation of lang_hooks.mangle_type.  Returns NULL to
+   indicate that no language-specific mangling is available.  Languages
+   that support type mangling (like C++) should override this hook.  */
+const char *
+lhd_mangle_type (const tree type)
+{
+  return NULL;
+}
+
 /* Forcibly overwrite the DECL_ASSEMBLER_NAME for DECL to NAME.  */
 void
 lhd_overwrite_decl_assembler_name (tree decl, tree name)
