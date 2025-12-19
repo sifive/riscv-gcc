@@ -911,7 +911,6 @@ decl_mangling_context (tree decl)
   if (tcontext != NULL_TREE)
     return tcontext;
 
-  /* FIXME: 20040625-1.c with flto.  */
   if (TREE_CODE (decl) != IDENTIFIER_NODE)
     tcontext = CP_DECL_CONTEXT (decl);
   else
@@ -1211,9 +1210,14 @@ write_array_type (const tree type)
 	    }
 	  else
 	    {
-	      max = TREE_OPERAND (max, 0);
-	      /* FIXME: case from gcc.c-torture/compile/20010202-1.c. */
-	      // write_expression (max);
+	      /* Detected VLA: its bound is not an INTEGER_CST, so the number
+		 of elements is only known at runtime and cannot be encoded in
+		 a compile-time function signature.  We intentionally omit the
+		 element count and element type from the mangled representation
+		 so that VLAs are not included in the CFI signature mangling.
+		 This is safe for CFI purposes because VLA parameters are
+		 typically passed as pointers anyway.  */
+	      return;
 	    }
 	}
     }
@@ -1287,6 +1291,9 @@ write_type (tree type)
     {
       tree type_orig = type;
 
+      /* See through any typedefs.  */
+      type = TYPE_MAIN_VARIANT (type);
+
       /* According to the C++ ABI, some library classes are passed the
 	 same as the scalar type of their single member and use the same
 	 mangling.  */
@@ -1342,24 +1349,8 @@ write_type (tree type)
 	      /* Filter out problematic anonymous structs like:
 		 void f(struct {int b;}) {}. and struct { char (*p)[++n]; }  */
 	      if (TYPE_NAME (type))
-		{
-		  if (TREE_CODE (type) == RECORD_TYPE
-		      || TREE_CODE (type) == UNION_TYPE)
-		    {
-		      for (tree field = TYPE_FIELDS (type); field;
-			   field = TREE_CHAIN (field))
-			{
-			  tree ftype = TREE_TYPE (field);
-			  if (TREE_CODE (ftype) == ARRAY_TYPE)
-			    return;
-			  /* Check pointer to array.  */
-			  if (TREE_CODE (ftype) == POINTER_TYPE
-			      && TREE_CODE (TREE_TYPE (ftype)) == ARRAY_TYPE)
-			    return;
-			}
-		    }
-		  write_class_enum_type (type);
-		}
+		write_class_enum_type (type);
+
 	      break;
 
 	    case POINTER_TYPE:
@@ -1744,6 +1735,39 @@ static unsigned int
 rest_of_insert_func_sig_wrapper (void)
 {
   cgraph_node *node;
+
+  struct varpool_node *vnode;
+  FOR_EACH_VARIABLE (vnode)
+    {
+      tree decl = vnode->decl;
+
+      const char *sec = DECL_SECTION_NAME (decl);
+      if (!sec || (
+	  strcmp (sec, ".init_array") != 0 &&
+	  strcmp (sec, ".fini_array") != 0 &&
+	  strcmp (sec, ".preinit_array") != 0))
+	continue;
+
+      tree init = DECL_INITIAL (decl);
+      if (!init || TREE_CODE (init) != ADDR_EXPR)
+	continue;
+
+      tree func = TREE_OPERAND (init, 0);
+      if (!func || TREE_CODE (func) != FUNCTION_DECL)
+	continue;
+
+      if (lookup_attribute ("lpad_func_sig", DECL_ATTRIBUTES (func)))
+	continue;
+
+      tree value = tree_cons (NULL_TREE, get_identifier ("0"), NULL_TREE);
+      tree attr = tree_cons (get_identifier ("lpad_func_sig"), value,
+			     DECL_ATTRIBUTES (func));
+      DECL_ATTRIBUTES (func) = merge_attributes (attr, DECL_ATTRIBUTES (func));
+
+      if (dump_file)
+	fprintf (dump_file, "Inserted lpad_func_sig(\"0\") for init_array"
+		 "function %s\n", IDENTIFIER_POINTER (DECL_NAME (func)));
+    }
 
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
     {
