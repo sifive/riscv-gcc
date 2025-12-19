@@ -145,9 +145,11 @@ extern void riscv_p_expand_vec_cmp (rtx *);
 extern void riscv_p_expand_vcond_mask (rtx *);
 extern int riscv_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 extern int riscv_attribute_get_lp_value (tree);
-extern rtx riscv_get_lp_value ();
+extern rtx riscv_get_lp_value (tree);
 extern bool riscv_need_setup_lp_p ();
 extern bool riscv_pext_mode_supported_p (machine_mode);
+extern rtx riscv_attribute_get_func_sig (tree);
+extern const char *riscv_mangle_type_string (const tree);
 
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx, bool *invert_ptr = 0);
@@ -210,6 +212,8 @@ rtl_opt_pass * make_pass_shorten_memrefs (gcc::context *ctxt);
 rtl_opt_pass * make_pass_avlprop (gcc::context *ctxt);
 rtl_opt_pass * make_pass_vsetvl (gcc::context *ctxt);
 rtl_opt_pass * make_pass_insert_landing_pad (gcc::context *ctxt);
+rtl_opt_pass * make_pass_insert_func_sig (gcc::context *ctxt);
+rtl_opt_pass * make_pass_insert_func_sig_late (gcc::context *ctxt);
 
 /* Routines implemented in riscv-string.c.  */
 extern bool riscv_expand_block_compare (rtx, rtx, rtx, rtx);
@@ -823,6 +827,8 @@ extern const char *th_output_move (rtx, rtx);
 extern bool th_print_operand_address (FILE *, machine_mode, rtx);
 #endif
 
+rtx riscv_legitimize_cfi_call_args (rtx, bool);
+void riscv_init_call_lpad_func_sig (CUMULATIVE_ARGS *, tree, tree);
 extern bool riscv_use_divmod_expander (void);
 void riscv_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 extern bool
