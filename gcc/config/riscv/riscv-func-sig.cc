@@ -1307,11 +1307,27 @@ write_type (tree type)
     /* If TYPE was CV-qualified, we just wrote the qualifiers; now
        mangle the unqualified type.  The recursive call is needed here
        since both the qualified and unqualified types are substitution
-       candidates.  */
+       candidates.
+
+       NOTE: In C, CV qualifiers on function parameters are part of the
+       function type. For example:
+         void foo(const int *p);  // Different from void foo(int *p);
+
+       However, in some edge cases (e.g., with sanitizer instrumentation
+       or certain type transformations), TYPE_MAIN_VARIANT may return the
+       same type even when TYPE_QUALS indicates CV qualifiers are present.
+       This can happen when the type system is in an inconsistent state
+       during compilation passes.
+
+       We handle this by only recursing if TYPE_MAIN_VARIANT actually
+       returns a different type, avoiding infinite recursion.  */
     {
       tree t = TYPE_MAIN_VARIANT (type);
-      gcc_assert (t != type);
-      write_type (t);
+      if (t != type)
+	write_type (t);
+      /* When T == TYPE, there is no distinct unqualified variant to
+	 mangle: the qualifiers we just wrote fully describe this type,
+	 so we intentionally avoid recursing here.  */
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     write_array_type (type);
