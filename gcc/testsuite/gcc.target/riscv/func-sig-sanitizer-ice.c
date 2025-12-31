@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zicfilp -mabi=lp64d -fcf-protection=branch -O2 -flto -fno-use-linker-plugin -flto-partition=none -fsanitize=object-size" } */
+/* { dg-options "-march=rv64gc_zicfilp -mabi=lp64d -fcf-protection=branch -mcf-branch-label-scheme=func-sig -O2 -flto -fno-use-linker-plugin -flto-partition=none -fsanitize=object-size" } */
 
 /* Test that function signature CFI works with sanitizer instrumentation.
    This used to cause an ICE when TYPE_MAIN_VARIANT returned the same type

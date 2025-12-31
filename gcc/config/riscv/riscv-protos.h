@@ -214,6 +214,8 @@ rtl_opt_pass * make_pass_vsetvl (gcc::context *ctxt);
 rtl_opt_pass * make_pass_insert_landing_pad (gcc::context *ctxt);
 
 class gimple_opt_pass;
+class simple_ipa_opt_pass;
+extern simple_ipa_opt_pass * make_pass_insert_func_sig_early (gcc::context *ctxt);
 extern gimple_opt_pass * make_pass_insert_func_sig (gcc::context *ctxt);
 
 /* Routines implemented in riscv-string.c.  */

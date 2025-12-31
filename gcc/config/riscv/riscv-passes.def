@@ -21,4 +21,9 @@ INSERT_PASS_AFTER (pass_rtl_store_motion, 1, pass_shorten_memrefs);
 INSERT_PASS_AFTER (pass_split_all_insns, 1, pass_avlprop);
 INSERT_PASS_BEFORE (pass_fast_rtl_dce, 1, pass_vsetvl);
 INSERT_PASS_BEFORE (pass_shorten_branches, 1, pass_insert_landing_pad);
+/* Insert function signatures early, before pass_ipa_free_lang_data clears
+   C++ type information. This allows us to handle pointer-to-member types
+   correctly even with LTO. */
+INSERT_PASS_BEFORE (pass_ipa_free_lang_data, 1, pass_insert_func_sig_early);
+/* Insert function signature checks at call sites. This requires SSA form. */
 INSERT_PASS_BEFORE (pass_local_fn_summary, 2, pass_insert_func_sig);

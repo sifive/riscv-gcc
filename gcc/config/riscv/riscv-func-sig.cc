@@ -2006,57 +2006,15 @@ rest_of_insert_func_sig (function *fun)
   return 0;
 }
 
+/* Late pass wrapper: Only insert function signature checks at call sites.
+   Function signatures themselves are already inserted by the early pass. */
 static unsigned int
-rest_of_insert_func_sig_wrapper (void)
+rest_of_insert_func_sig_late_wrapper (void)
 {
   cgraph_node *node;
 
-  struct varpool_node *vnode;
-  FOR_EACH_VARIABLE (vnode)
-    {
-      tree decl = vnode->decl;
-
-      const char *sec = DECL_SECTION_NAME (decl);
-      if (!sec || (
-	  strcmp (sec, ".init_array") != 0 &&
-	  strcmp (sec, ".fini_array") != 0 &&
-	  strcmp (sec, ".preinit_array") != 0))
-	continue;
-
-      tree init = DECL_INITIAL (decl);
-      if (!init || TREE_CODE (init) != ADDR_EXPR)
-	continue;
-
-      tree func = TREE_OPERAND (init, 0);
-      if (!func || TREE_CODE (func) != FUNCTION_DECL)
-	continue;
-
-      if (lookup_attribute ("lpad_func_sig", DECL_ATTRIBUTES (func)))
-	continue;
-
-      tree value = tree_cons (NULL_TREE, get_identifier ("0"), NULL_TREE);
-      tree attr = tree_cons (get_identifier ("lpad_func_sig"), value,
-			     DECL_ATTRIBUTES (func));
-      DECL_ATTRIBUTES (func) = merge_attributes (attr, DECL_ATTRIBUTES (func));
-
-      if (dump_file)
-	fprintf (dump_file, "Inserted lpad_func_sig(\"0\") for init_array"
-		 "function %s\n", IDENTIFIER_POINTER (DECL_NAME (func)));
-    }
-
-  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
-    {
-      if (!gimple_has_body_p (node->decl))
-	continue;
-
-      function *fun = DECL_STRUCT_FUNCTION (node->decl);
-      if (!fun || !fun->cfg)
-	continue;
-
-      push_cfun (fun);
-      rest_of_insert_func_sig (fun);
-      pop_cfun ();
-    }
+  if (dump_file)
+    fprintf (dump_file, "\n=== LPAD FUNC_SIG LATE PASS ===\n");
 
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
     {
@@ -2101,12 +2059,12 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return is_zicfilp_p ();
+      return is_zicfilp_p () && riscv_lpad_type == LPAD_FUNC_SIG;
     }
 
   virtual unsigned int execute (function *)
     {
-      return rest_of_insert_func_sig_wrapper ();
+      return rest_of_insert_func_sig_late_wrapper ();
     }
 }; // class pass_insert_func_sig
 
@@ -2116,4 +2074,130 @@ gimple_opt_pass *
 make_pass_insert_func_sig (gcc::context *ctxt)
 {
   return new pass_insert_func_sig (ctxt);
+}
+
+/* Early pass: Insert function signatures before pass_ipa_free_lang_data.
+   This ensures TYPE_LANG_FLAG_2 and other C++ type information is still
+   available, allowing us to handle pointer-to-member types correctly even
+   with LTO. */
+
+static unsigned int
+rest_of_insert_func_sig_early_wrapper (void)
+{
+  struct cgraph_node *node;
+
+  if (dump_file)
+    fprintf (dump_file, "\n=== LPAD FUNC_SIG EARLY PASS ===\n");
+
+  /* Process init_array/fini_array functions BEFORE computing signatures.
+     Functions in these sections are declared with void(void) prototype but
+     invoked using a generic function pointer void (*)(int, char**, char**).
+     This leads to LPAD signature mismatches, so we set their signature
+     to lpad_func_sig("0") (unlabeled) to avoid CFI violations at runtime.
+
+     We do this before rest_of_insert_func_sig so that when the function
+     is processed, it will see the lpad_func_sig("0") attribute and skip
+     computing a signature.  */
+  struct varpool_node *vnode;
+  FOR_EACH_VARIABLE (vnode)
+    {
+      tree decl = vnode->decl;
+
+      const char *sec = DECL_SECTION_NAME (decl);
+      if (!sec || (
+	  strcmp (sec, ".init_array") != 0 &&
+	  strcmp (sec, ".fini_array") != 0 &&
+	  strcmp (sec, ".preinit_array") != 0))
+	continue;
+
+      tree init = DECL_INITIAL (decl);
+      if (!init || TREE_CODE (init) != ADDR_EXPR)
+	continue;
+
+      tree func = TREE_OPERAND (init, 0);
+      if (!func || TREE_CODE (func) != FUNCTION_DECL)
+	continue;
+
+      tree fntype = TREE_TYPE (func);
+      if (!fntype)
+	continue;
+
+      /* Check if user already specified lpad_func_sig attribute in source.
+	 If so, respect the user's choice.  */
+      if (lookup_attribute ("lpad_func_sig", TYPE_ATTRIBUTES (fntype)))
+	continue;
+
+      /* Set lpad_func_sig("0") for init_array functions.  */
+      tree value = tree_cons (NULL_TREE, get_identifier ("0"), NULL_TREE);
+      tree attr = tree_cons (get_identifier ("lpad_func_sig"), value,
+			     TYPE_ATTRIBUTES (fntype));
+      TYPE_ATTRIBUTES (fntype)
+	= merge_attributes (attr, TYPE_ATTRIBUTES (fntype));
+
+      if (dump_file)
+	fprintf (dump_file,
+		 "Set lpad_func_sig(\"0\") for init_array function %s\n",
+		 DECL_NAME (func)
+		 ? IDENTIFIER_POINTER (DECL_NAME (func))
+		 : "<unnamed>");
+    }
+
+  /* Process all functions with GIMPLE body.  */
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+    {
+      if (!gimple_has_body_p (node->decl))
+	continue;
+
+      function *fun = DECL_STRUCT_FUNCTION (node->decl);
+      if (!fun)
+	continue;
+
+      push_cfun (fun);
+      rest_of_insert_func_sig (fun);
+      pop_cfun ();
+    }
+
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_insert_func_sig_early =
+{
+  SIMPLE_IPA_PASS, /* type.  */
+  "func_sig_early", /* name.  */
+  OPTGROUP_NONE, /* optinfo_flags.  */
+  TV_NONE, /* tv_id.  */
+  0, /* properties_required - no CFG or SSA needed.  */
+  0, /* properties_provided.  */
+  0, /* properties_destroyed.  */
+  0, /* todo_flags_start.  */
+  0, /* todo_flags_finish.  */
+};
+
+class pass_insert_func_sig_early : public simple_ipa_opt_pass
+{
+public:
+  pass_insert_func_sig_early (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_insert_func_sig_early, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return is_zicfilp_p () && riscv_lpad_type == LPAD_FUNC_SIG;
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_insert_func_sig_early_wrapper ();
+    }
+}; // class pass_insert_func_sig_early
+
+} // anon namespace
+
+simple_ipa_opt_pass *
+make_pass_insert_func_sig_early (gcc::context *ctxt)
+{
+  return new pass_insert_func_sig_early (ctxt);
 }
