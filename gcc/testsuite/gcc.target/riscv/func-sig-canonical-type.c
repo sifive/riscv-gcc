@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { riscv64*-*-* } } } */
 /* { dg-options "-march=rv64gc_zicfilp -mabi=lp64d -fcf-protection=branch -mcf-branch-label-scheme=func-sig -O2" } */
 
 /* Test that function signature CFI doesn't cause ICE with typedef and enum.
@@ -53,14 +53,17 @@ int main()
 }
 
 /* Check that function signatures are generated correctly:
-   - get_category: F8categoryS_E (returns enum category, takes wint_t/unsigned)
-   - get_value: Fj8categoryE (returns wint_t/unsigned, takes enum category)
+   - get_category: F8categoryjE (returns enum category, takes wint_t/unsigned int)
+   - get_value: Fj8categoryE (returns wint_t/unsigned int, takes enum category)
    - main: FiiPPcE (standard main signature)
 
-   Note: 'S_' represents the typedef wint_t (unsigned int)
-         '8category' represents enum category (8 chars in name)
-         'j' represents unsigned int (wint_t's underlying type) */
-/* { dg-final { scan-assembler "lpad\\s+%lpad_hash\\(\"F8categoryS_E\"\\)" } } */
+   Note: '8category' represents enum category (8 chars in name)
+         'j' represents unsigned int (wint_t's underlying type)
+
+   Important: enum category and wint_t (unsigned int) should NOT share
+   substitutions because they are different types (ENUMERAL_TYPE vs INTEGER_TYPE).
+   The fix ensures TREE_CODE is checked before same_type_p() in find_substitution(). */
+/* { dg-final { scan-assembler "lpad\\s+%lpad_hash\\(\"F8categoryjE\"\\)" } } */
 /* { dg-final { scan-assembler "lpad\\s+%lpad_hash\\(\"Fj8categoryE\"\\)" } } */
 /* { dg-final { scan-assembler "lpad\\s+%lpad_hash\\(\"FiiPPcE\"\\)" } } */
 

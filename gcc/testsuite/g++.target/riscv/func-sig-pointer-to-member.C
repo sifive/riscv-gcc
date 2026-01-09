@@ -1,5 +1,5 @@
 /* { dg-do compile { target { riscv64*-*-* } } } */
-/* { dg-options "-march=rv64gc_zicfilp -mabi=lp64d -fcf-protection=branch -mcf-branch-label-scheme=func-sig -O2" } */
+/* { dg-options "-march=rv64gc_zicfiss_zicfilp -mabi=lp64d -fcf-protection=full -mcf-branch-label-scheme=func-sig -O2" } */
 
 /* Test that CFI works correctly with pointer-to-member types.
 
@@ -28,12 +28,14 @@ struct T {
 };
 
 /* Test 1: Pointer-to-data-member (OFFSET_TYPE) */
+__attribute__((noinline))
 int test_pointer_to_data_member(T& obj, int T::*pdm)
 {
     return obj.*pdm;
 }
 
 /* Test 2: Pointer-to-member-function (RECORD_TYPE with TYPE_LANG_FLAG_2) */
+__attribute__((noinline))
 int test_pointer_to_member_function(T& obj, int (T::*pmf)())
 {
     return (obj.*pmf)();
@@ -48,22 +50,25 @@ R invoke_impl(Fn&& f, Tp&& t)
 }
 
 /* Test 4: Using the template with pointer-to-member-function */
+__attribute__((noinline))
 int test_template_invoke()
 {
     T obj;
     obj.value = 42;
-    
+
     int (T::*pmf)() = &T::get_value;
     return invoke_impl<int>(pmf, obj);
 }
 
 /* Test 5: Reference to pointer-to-member */
+__attribute__((noinline))
 int test_reference_to_pointer_to_member(T& obj, int (T::*& pmf)())
 {
     return (obj.*pmf)();
 }
 
 /* Test 6: Pointer to pointer-to-member */
+__attribute__((noinline))
 int test_pointer_to_pointer_to_member(T& obj, int (T::**ppmf)())
 {
     return (obj.**ppmf)();
@@ -71,6 +76,7 @@ int test_pointer_to_pointer_to_member(T& obj, int (T::**ppmf)())
 
 /* Test 7: Array of pointer-to-member */
 typedef int (T::*MemberFuncPtr)();
+__attribute__((noinline))
 int test_array_of_pointer_to_member(T& obj, MemberFuncPtr funcs[], int index)
 {
     return (obj.*(funcs[index]))();
@@ -84,6 +90,7 @@ struct Invoker {
     }
 };
 
+__attribute__((noinline))
 int test_nested_template()
 {
     T obj;
@@ -92,8 +99,9 @@ int test_nested_template()
 }
 
 /* Test 9: Multiple pointer-to-member parameters */
-void test_multiple_pointer_to_member(T& obj, 
-                                      int T::*pdm1, 
+__attribute__((noinline))
+void test_multiple_pointer_to_member(T& obj,
+                                      int T::*pdm1,
                                       int T::*pdm2,
                                       int (T::*pmf)())
 {
@@ -102,6 +110,7 @@ void test_multiple_pointer_to_member(T& obj,
 }
 
 /* Test 10: Const pointer-to-member */
+__attribute__((noinline))
 int test_const_pointer_to_member(const T& obj, int (T::*pmf)() const)
 {
     return (obj.*pmf)();
@@ -146,5 +155,32 @@ int main()
 
    This provides full CFI protection without compiler crashes. */
 
-/* { dg-final { scan-assembler "lpad" } } */
+/* Check for pointer-to-member-function type: M<class><return><function>E
+   Example: M1TFivE = pointer to member function of class T returning int */
+/* { dg-final { scan-assembler "lpad.*M1.*Fiv" } } */
+
+/* Check for function taking pointer-to-data-member: FiR1TMS_iE
+   R1T = reference to class T
+   MS_i = pointer-to-data-member of type int */
+/* { dg-final { scan-assembler "lpad.*MS_" } } */
+
+/* Check for function taking pointer-to-member-function: FiR1TMS_FivEE
+   MS_FivE = pointer-to-member-function returning int with void params */
+/* { dg-final { scan-assembler "lpad.*MS_Fiv" } } */
+
+/* Check for reference to pointer-to-member: TRMS_
+   R = reference, M = pointer-to-member */
+/* { dg-final { scan-assembler "lpad.*TRMS_" } } */
+
+/* Check for pointer to pointer-to-member: TPMS_
+   P = pointer, M = pointer-to-member */
+/* { dg-final { scan-assembler "lpad.*TPMS_" } } */
+
+/* Check for const pointer-to-member: RK1TMS_KFivE
+   RK1T = reference to const class T
+   MS_KFivE = pointer-to-member-function that is const */
+/* { dg-final { scan-assembler "lpad.*RK1TMS_KFiv" } } */
+
+/* Check for main function */
+/* { dg-final { scan-assembler "lpad.*FiiPPcE" } } */
 

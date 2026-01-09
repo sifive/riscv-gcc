@@ -20,5 +20,15 @@ void test() {
   callsite(real_cb, 0);
 }
 
+/* Expected signature: FvP10foo_structE
+   - F = Function
+   - v = void return type
+   - P = Pointer
+   - 10foo_struct = struct name "foo_struct" (10 characters)
+   - E = End of signature
+
+   The typedef "foo" is canonicalized to the underlying struct name
+   "foo_struct" by calling TYPE_MAIN_VARIANT in write_type(), matching
+   the behavior of the C++ mangler (cp/mangle.cc). */
 /* { dg-final { scan-assembler "lui\\tt2, %lpad_hash\\(\"FvP10foo_structE\"\\)" } } */
 /* { dg-final { scan-assembler "lpad\t%lpad_hash\\(\"FvP10foo_structE\"\\)" } } */
