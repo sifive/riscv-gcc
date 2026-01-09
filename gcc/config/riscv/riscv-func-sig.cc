@@ -309,8 +309,16 @@ structural_comptypes (tree t1, tree t2, int strict)
 
   /* Allow for two different type nodes which have essentially the same
      definition.  Note that we already checked for equality of the type
-     qualifiers (just above).  */
+     qualifiers (just above).
+
+     We exclude ENUMERAL_TYPE because TYPE_MAIN_VARIANT on an enum may
+     return the underlying integer type, causing different enums to be
+     incorrectly considered the same.  For example:
+       enum color { RED, GREEN };
+       enum category { A, B };
+     Both may have TYPE_MAIN_VARIANT == unsigned int.  */
   if (TREE_CODE (t1) != ARRAY_TYPE
+      && TREE_CODE (t1) != ENUMERAL_TYPE
       && TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
     goto check_alias;
 
@@ -351,6 +359,21 @@ structural_comptypes (tree t1, tree t2, int strict)
     case RECORD_TYPE:
     case UNION_TYPE:
       return false;
+
+    case ENUMERAL_TYPE:
+      /* For enums, we need to check if they are the same enum type.
+	 Different enum types are never the same, even if they have
+	 the same underlying representation.  For example:
+	   enum color { RED, GREEN };
+	   enum category { A, B };
+	 These are different types even though both are unsigned int.
+
+	 However, the same enum type (possibly with different qualifiers)
+	 should be considered the same.  This is important for hardbool
+	 types which are implemented as ENUMERAL_TYPE.  */
+      if (TYPE_NAME (t1) != TYPE_NAME (t2))
+	return false;
+      break;
 
     case REFERENCE_TYPE:
       if (TYPE_REF_IS_RVALUE (t1) != TYPE_REF_IS_RVALUE (t2))
@@ -436,6 +459,13 @@ comptypes (tree t1, tree t2, int strict)
 
       if (flag_checking && param_use_canonical_types)
 	{
+	  /* For ENUMERAL_TYPE, we must use structural comparison because
+	     different enums may have the same TYPE_CANONICAL (their
+	     underlying integer type).  This includes hardbool types.
+	     Skip the canonical type consistency check for enums.  */
+	  if (TREE_CODE (t1) == ENUMERAL_TYPE || TREE_CODE (t2) == ENUMERAL_TYPE)
+	    return structural_comptypes (t1, t2, strict);
+
 	  bool result = structural_comptypes (t1, t2, strict);
 
 	  if (result && TYPE_CANONICAL (t1) != TYPE_CANONICAL (t2))
@@ -456,7 +486,15 @@ comptypes (tree t1, tree t2, int strict)
 	  return result;
 	}
       if (!flag_checking && param_use_canonical_types)
-	return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
+	{
+	  /* For ENUMERAL_TYPE, we must use structural comparison because
+	     different enums may have the same TYPE_CANONICAL (their
+	     underlying integer type).  structural_comptypes will check
+	     TYPE_NAME to distinguish different enum types.  */
+	  if (TREE_CODE (t1) == ENUMERAL_TYPE || TREE_CODE (t2) == ENUMERAL_TYPE)
+	    return structural_comptypes (t1, t2, strict);
+	  return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
+	}
       else
 	return structural_comptypes (t1, t2, strict);
     }
@@ -538,6 +576,12 @@ find_substitution (tree node)
 
 	  if (decl == candidate
 	      || (TYPE_P (candidate) && type && TYPE_P (node)
+		  /* Ensure TREE_CODE matches to avoid matching enum with
+		     its underlying integer type. For example:
+		       enum category { A, B };  // underlying: unsigned int
+		       typedef unsigned int wint_t;
+		     We don't want enum category to match unsigned int.  */
+		  && TREE_CODE (type) == TREE_CODE (candidate)
 		  && same_type_p (type, candidate)))
 	    {
 	      write_substitution (i);
