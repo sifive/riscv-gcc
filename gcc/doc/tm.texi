@@ -12935,3 +12935,20 @@ libatomic.  The default value is false.
 If non-NULL, this value is a string used for locating target-specific documentation for this target.
 The default value is NULL.
 @end deftypevr
+
+@deftypefn {Target Hook} bool TARGET_TYPE_ATTRIBUTE_ALLOWED_P (tree @var{name})
+This hook returns true if the type attribute @var{name} should be
+allowed during IPA parameter adjustments.  Some target-specific
+attributes (like CFI-related attributes) should not prevent
+optimizations like IPA-SRA from adjusting function parameters.
+The default implementation returns false.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_DROP_TYPE_ATTRIBUTE_IF_PARAMS_CHANGED_P (tree @var{name})
+This hook returns true if the type attribute @var{name} should be
+dropped when function parameters are changed during IPA transformations.
+Some target-specific attributes (like CFI signature attributes) encode
+information about the original function signature and become invalid
+after parameter modifications.
+The default implementation returns false.
+@end deftypefn

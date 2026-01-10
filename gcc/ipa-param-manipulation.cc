@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "sreal.h"
 #include "ipa-cp.h"
 #include "ipa-prop.h"
+#include "target.h"
 
 /* Actual prefixes of different newly synthetized parameters.  Keep in sync
    with IPA_PARAM_PREFIX_* defines.  */
@@ -292,8 +293,11 @@ ipa_param_adjustments::type_attribute_allowed_p (tree name)
       || is_attribute_p ("returns_nonnull", name)
       || is_attribute_p ("assume_aligned", name)
       || is_attribute_p ("nocf_check", name)
-      || is_attribute_p ("warn_unused_result", name)
-      || is_attribute_p ("lpad_func_sig", name))
+      || is_attribute_p ("warn_unused_result", name))
+    return true;
+  /* Allow target-specific attributes that should not prevent
+     IPA parameter adjustments.  */
+  if (targetm.type_attribute_allowed_p (name))
     return true;
   return false;
 }
@@ -304,8 +308,11 @@ static bool
 drop_type_attribute_if_params_changed_p (tree name)
 {
   if (is_attribute_p ("fn spec", name)
-      || is_attribute_p ("access", name)
-      || is_attribute_p ("lpad_func_sig", name))
+      || is_attribute_p ("access", name))
+    return true;
+  /* Allow target-specific attributes that should be dropped when
+     function parameters are changed.  */
+  if (targetm.drop_type_attribute_if_params_changed_p (name))
     return true;
   return false;
 }

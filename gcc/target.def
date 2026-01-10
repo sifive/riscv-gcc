@@ -7575,6 +7575,33 @@ DEFHOOKPOD
 The default value is NULL.",
  const char *, NULL)
 
+/* Return true if the given type attribute should be allowed during
+   IPA parameter adjustments.  This hook allows targets to specify
+   target-specific attributes that should not prevent type adjustments.  */
+DEFHOOK
+(type_attribute_allowed_p,
+ "This hook returns true if the type attribute @var{name} should be\n\
+allowed during IPA parameter adjustments.  Some target-specific\n\
+attributes (like CFI-related attributes) should not prevent\n\
+optimizations like IPA-SRA from adjusting function parameters.\n\
+The default implementation returns false.",
+ bool, (tree name),
+ hook_bool_tree_false)
+
+/* Return true if the given type attribute should be dropped when
+   function parameters are changed.  This hook allows targets to specify
+   target-specific attributes that become invalid after parameter changes.  */
+DEFHOOK
+(drop_type_attribute_if_params_changed_p,
+ "This hook returns true if the type attribute @var{name} should be\n\
+dropped when function parameters are changed during IPA transformations.\n\
+Some target-specific attributes (like CFI signature attributes) encode\n\
+information about the original function signature and become invalid\n\
+after parameter modifications.\n\
+The default implementation returns false.",
+ bool, (tree name),
+ hook_bool_tree_false)
+
 /* Close the 'struct gcc_target' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)
 

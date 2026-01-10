@@ -15078,6 +15078,34 @@ riscv_function_attribute_inlinable_p (const_tree fndecl)
   return false;
 }
 
+/* Implement TARGET_TYPE_ATTRIBUTE_ALLOWED_P.
+   Return true if the given type attribute should be allowed during
+   IPA parameter adjustments.  The lpad_func_sig attribute is used for
+   CFI (Control Flow Integrity) and should not prevent IPA-SRA from
+   optimizing function parameters.  */
+
+static bool
+riscv_type_attribute_allowed_p (tree name)
+{
+  if (is_attribute_p ("lpad_func_sig", name))
+    return true;
+  return false;
+}
+
+/* Implement TARGET_DROP_TYPE_ATTRIBUTE_IF_PARAMS_CHANGED_P.
+   Return true if the given type attribute should be dropped when
+   function parameters are changed.  The lpad_func_sig attribute encodes
+   the original function signature for CFI, so it becomes invalid after
+   parameter modifications and must be dropped.  */
+
+static bool
+riscv_drop_type_attribute_if_params_changed_p (tree name)
+{
+  if (is_attribute_p ("lpad_func_sig", name))
+    return true;
+  return false;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -15484,6 +15512,13 @@ riscv_function_attribute_inlinable_p (const_tree fndecl)
 
 #undef TARGET_DOCUMENTATION_NAME
 #define TARGET_DOCUMENTATION_NAME "RISC-V"
+
+#undef TARGET_TYPE_ATTRIBUTE_ALLOWED_P
+#define TARGET_TYPE_ATTRIBUTE_ALLOWED_P riscv_type_attribute_allowed_p
+
+#undef TARGET_DROP_TYPE_ATTRIBUTE_IF_PARAMS_CHANGED_P
+#define TARGET_DROP_TYPE_ATTRIBUTE_IF_PARAMS_CHANGED_P \
+  riscv_drop_type_attribute_if_params_changed_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
