@@ -93,6 +93,28 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "<MODE>")])
 
+;; Signed packed multiply high for all packed element sizes (bytes/halfwords/words)
+(define_insn "smul<mode>3_highpart"
+  [(set (match_operand:PVALL 0 "register_operand" "=r")
+        (smul_highpart:PVALL
+          (match_operand:PVALL 1 "register_operand" "r")
+          (match_operand:PVALL 2 "register_operand" "r")))]
+  "TARGET_RVP"
+  "pmulh.<rvp_width>\t%0,%1,%2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
+
+;; Unsigned packed multiply high for all packed element sizes (bytes/halfwords/words)
+(define_insn "umul<mode>3_highpart"
+  [(set (match_operand:PVALL 0 "register_operand" "=r")
+        (umul_highpart:PVALL
+          (match_operand:PVALL 1 "register_operand" "r")
+          (match_operand:PVALL 2 "register_operand" "r")))]
+  "TARGET_RVP"
+  "pmulhu.<rvp_width>\t%0,%1,%2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
+
 ;; Averaging arithmetic operations
 ;; paadd/paaddu: signed/unsigned averaging add: (a + b) >> 1
 ;; pasub/pasubu: signed/unsigned averaging subtract: (a - b) >> 1
