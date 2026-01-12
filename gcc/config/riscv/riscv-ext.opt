@@ -551,3 +551,10 @@ Mask(ZVFQWBDOTA8F) Var(riscv_zvf_subext)
 
 Mask(ZVFBDOTA32F) Var(riscv_zvf_subext)
 
+Mask(ZVQWDOTA8I) Var(riscv_zve_subext)
+
+Mask(ZVQWDOTA16I) Var(riscv_zve_subext)
+
+Mask(ZVFWDOTA16BF) Var(riscv_zvf_subext)
+
+Mask(ZVFQWDOTA8F) Var(riscv_zvf_subext)

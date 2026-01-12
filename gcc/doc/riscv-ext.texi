@@ -926,4 +926,20 @@
 @tab 0.2
 @tab FP32 batched dot-product
 
+@item @samp{zvqwdota8i}
+@tab 0.2
+@tab 8-bit integer dot-product
+
+@item @samp{zvqwdota16i}
+@tab 0.2
+@tab 16-bit integer dot-product
+
+@item @samp{zvfqwdota8f}
+@tab 0.2
+@tab OCP FP8 dot-product
+
+@item @samp{zvfwdota16bf}
+@tab 0.2
+@tab BF16 dot-product
+
 @end multitable

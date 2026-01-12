@@ -799,3 +799,59 @@ DEFINE_RISCV_EXT(
   /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
   /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
   /* EXTRA_EXTENSION_FLAGS */ 0)
+
+/* =========================================================================
+   Zvdota: Vector Long Dot-Product Extensions
+   See: https://github.com/aswaterman/riscv-misc/blob/main/isa/ldot-bdot/ldot-bdot.adoc
+   ========================================================================= */
+DEFINE_RISCV_EXT(
+  /* NAME */ zvqwdota8i,
+  /* UPPERCASE_NAME */ ZVQWDOTA8I,
+  /* FULL_NAME */ "8-bit integer dot-product",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32x"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 2, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zve,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ zvqwdota16i,
+  /* UPPERCASE_NAME */ ZVQWDOTA16I,
+  /* FULL_NAME */ "16-bit integer dot-product",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve64x"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 2, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zve,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ zvfqwdota8f,
+  /* UPPERCASE_NAME */ ZVFQWDOTA8F,
+  /* FULL_NAME */ "OCP FP8 dot-product",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 2, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zvf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ zvfwdota16bf,
+  /* UPPERCASE_NAME */ ZVFWDOTA16BF,
+  /* FULL_NAME */ "BF16 dot-product",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS */ ({{0, 2, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* FLAG_GROUP */ zvf,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
