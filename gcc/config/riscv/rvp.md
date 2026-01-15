@@ -218,7 +218,7 @@
 	(vec_duplicate:PVALL
 	  (match_operand:<PVALL_ELT> 1 "const_int_operand" "<dpli>")))]
   "TARGET_RVP"
-  "pli.<pli_suffix>\t%0,%1"
+  "pli.<rvp_width>\t%0,%1"
   [(set_attr "type" "arith")
    (set_attr "mode" "<MODE>")])
 
@@ -226,11 +226,11 @@
 (define_insn "*riscv_plui_vec"
   [(set (match_operand:PVPLUI 0 "register_operand" "=r")
 	(vec_duplicate:PVPLUI
-	  (match_operand:<PVPLUI_ELT> 1 "const_int_operand" "<dplui>")))]
+	  (match_operand:<PVALL_ELT> 1 "const_int_operand" "<dplui>")))]
   "TARGET_RVP"
   {
     operands[2] = GEN_INT (INTVAL (operands[1]) >> <plui_shift>);
-    return "plui.<plui_suffix>\t%0,%2";
+    return "plui.<rvp_width>\t%0,%2";
   }
   [(set_attr "type" "arith")
    (set_attr "mode" "<MODE>")])

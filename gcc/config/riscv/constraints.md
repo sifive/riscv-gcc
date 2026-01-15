@@ -326,24 +326,26 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 0, IMM_REACH-1)")))
 
-;; P-extension PLI/PLUI constraints (all 4 characters starting with "Ypl")
+;; P-extension PLI/PLUI constraints
+;; PLI: Os<bits> for signed immediates (matches Ou<bits> naming)
+;; PLUI: Yph<shift> for upper/shifted immediates
 
 ;; 8-bit signed immediate for PLI.B (-128 to 127)
-(define_constraint "Yplb"
+(define_constraint "Os08"
   "@internal
    An 8-bit signed immediate for P-extension PLI.B."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, -128, 127)")))
 
 ;; 10-bit signed immediate for PLI.H/PLI.W (-512 to 511)
-(define_constraint "Yplh"
+(define_constraint "Os10"
   "@internal
    A 10-bit signed immediate for P-extension PLI.H/PLI.W."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, -512, 511)")))
 
 ;; PLUI.H immediate: (imm10 << 6) where imm10 in [-512, 511]
-(define_constraint "Ypuh"
+(define_constraint "Yph06"
   "@internal
    A shifted 10-bit immediate for P-extension PLUI.H (imm10 << 6)."
   (and (match_code "const_int")
@@ -351,7 +353,7 @@
 		    && IN_RANGE (ival >> 6, -512, 511)")))
 
 ;; PLUI.W immediate: (imm10 << 22) where imm10 in [-512, 511]
-(define_constraint "Ypuw"
+(define_constraint "Yph22"
   "@internal
    A shifted 10-bit immediate for P-extension PLUI.W (imm10 << 22)."
   (and (match_code "const_int")
