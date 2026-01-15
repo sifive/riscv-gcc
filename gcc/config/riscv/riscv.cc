@@ -4958,7 +4958,7 @@ riscv_split_sum_of_two_s12 (HOST_WIDE_INT val, HOST_WIDE_INT *base,
 
 
 /* Forward declaration for P-extension PLI/PLUI output.  */
-static const char *riscv_output_pli (HOST_WIDE_INT);
+static const char *riscv_output_pli (rtx, HOST_WIDE_INT);
 
 /* Return the appropriate instructions to move SRC into DEST.  Assume
    that SRC is operand 1 and DEST is operand 0.  */
@@ -5021,9 +5021,9 @@ riscv_output_move (rtx dest, rtx src)
 	  /* P-extension packed load immediate instructions.  */
 	  if (TARGET_RVP)
 	    {
-	      const char *pli_template = riscv_output_pli (INTVAL (src));
-	      if (pli_template)
-		return pli_template;
+	      const char *pli_result = riscv_output_pli (dest, INTVAL (src));
+	      if (pli_result)
+		return pli_result;
 	    }
 
 	  gcc_unreachable ();
@@ -15197,19 +15197,22 @@ riscv_pli_operand_p (HOST_WIDE_INT val)
   return false;
 }
 
-/* Output a P-extension PLI/PLUI instruction for constant VAL.
-   Returns the instruction template string, or NULL if not applicable.  */
+/* Output a P-extension PLI/PLUI instruction for constant VAL to DEST.
+   Returns "" if instruction was output, NULL if not applicable.  */
 
 static const char *
-riscv_output_pli (HOST_WIDE_INT val)
+riscv_output_pli (rtx dest, HOST_WIDE_INT val)
 {
-  static char buf[32];
+  rtx operands[2];
+
+  operands[0] = dest;
 
   /* PLI.B: replicated byte (any 8-bit value).  */
   if (riscv_replicated_const_p (val, QImode))
     {
-      snprintf (buf, sizeof (buf), "pli.b\t%%0,%d", (int) sext_hwi (val, 8));
-      return buf;
+      operands[1] = GEN_INT (sext_hwi (val, 8));
+      output_asm_insn ("pli.b\t%0,%1", operands);
+      return "";
     }
 
   /* PLI.H / PLUI.H: replicated halfword.  */
@@ -15218,13 +15221,15 @@ riscv_output_pli (HOST_WIDE_INT val)
       HOST_WIDE_INT hw = sext_hwi (val, 16);
       if (IN_RANGE (hw, -512, 511))
 	{
-	  snprintf (buf, sizeof (buf), "pli.h\t%%0,%d", (int) hw);
-	  return buf;
+	  operands[1] = GEN_INT (hw);
+	  output_asm_insn ("pli.h\t%0,%1", operands);
+	  return "";
 	}
       if ((hw & 0x3f) == 0 && IN_RANGE (hw >> 6, -512, 511))
 	{
-	  snprintf (buf, sizeof (buf), "plui.h\t%%0,%d", (int) (hw >> 6));
-	  return buf;
+	  operands[1] = GEN_INT (hw >> 6);
+	  output_asm_insn ("plui.h\t%0,%1", operands);
+	  return "";
 	}
     }
 
@@ -15234,13 +15239,15 @@ riscv_output_pli (HOST_WIDE_INT val)
       HOST_WIDE_INT word = sext_hwi (val, 32);
       if (IN_RANGE (word, -512, 511))
 	{
-	  snprintf (buf, sizeof (buf), "pli.w\t%%0,%d", (int) word);
-	  return buf;
+	  operands[1] = GEN_INT (word);
+	  output_asm_insn ("pli.w\t%0,%1", operands);
+	  return "";
 	}
       if ((word & 0x3fffff) == 0 && IN_RANGE (word >> 22, -512, 511))
 	{
-	  snprintf (buf, sizeof (buf), "plui.w\t%%0,%d", (int) (word >> 22));
-	  return buf;
+	  operands[1] = GEN_INT (word >> 22);
+	  output_asm_insn ("plui.w\t%0,%1", operands);
+	  return "";
 	}
     }
 
