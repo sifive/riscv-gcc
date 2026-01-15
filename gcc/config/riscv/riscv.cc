@@ -3429,6 +3429,19 @@ riscv_legitimize_const_move (machine_mode mode, rtx dest, rtx src)
 {
   rtx base, offset;
 
+  /* For P-extension, check if this constant can be loaded with PLI/PLUI.
+     These instructions are more efficient than lui+addi for replicated
+     constants.  Skip if li or lui can handle it in one instruction.  */
+  if (TARGET_RVP
+      && CONST_INT_P (src)
+      && !SMALL_OPERAND (INTVAL (src))
+      && !LUI_OPERAND (INTVAL (src))
+      && riscv_pli_operand_p (INTVAL (src)))
+    {
+      riscv_emit_set (dest, src);
+      return;
+    }
+
   /* Split moves of big integers into smaller pieces.  */
   if (splittable_const_int_operand (src, mode))
     {
@@ -4944,6 +4957,9 @@ riscv_split_sum_of_two_s12 (HOST_WIDE_INT val, HOST_WIDE_INT *base,
 }
 
 
+/* Forward declaration for P-extension PLI/PLUI output.  */
+static const char *riscv_output_pli (HOST_WIDE_INT);
+
 /* Return the appropriate instructions to move SRC into DEST.  Assume
    that SRC is operand 1 and DEST is operand 0.  */
 
@@ -5002,8 +5018,15 @@ riscv_output_move (rtx dest, rtx src)
 	      && SINGLE_BIT_MASK_OPERAND (INTVAL (src)))
 	    return "bseti\t%0,zero,%S1";
 
-	  /* Should never reach here.  */
-	  abort ();
+	  /* P-extension packed load immediate instructions.  */
+	  if (TARGET_RVP)
+	    {
+	      const char *pli_template = riscv_output_pli (INTVAL (src));
+	      if (pli_template)
+		return pli_template;
+	    }
+
+	  gcc_unreachable ();
 	}
 
       if (src_code == HIGH)
@@ -15107,6 +15130,121 @@ riscv_drop_type_attribute_if_params_changed_p (tree name)
   if (is_attribute_p ("lpad_func_sig", name))
     return true;
   return false;
+}
+
+/* P-extension packed load immediate (PLI/PLUI) support.
+
+   These instructions broadcast an immediate value to all elements:
+   - PLI.B: 8-bit value to all bytes
+   - PLI.H: 10-bit signed value to all halfwords
+   - PLI.W: 10-bit signed value to all words (RV64 only)
+   - PLUI.H: (10-bit signed << 6) to all halfwords
+   - PLUI.W: (10-bit signed << 22) to all words (RV64 only)
+
+   The 10-bit signed immediate range is [-512, 511].
+   PLUI.H shifts by 6 bits, PLUI.W shifts by 22 bits.  */
+
+/* Helper: check if VAL has a replicated element pattern for MODE.
+   Returns true if all elements of size MODE in VAL have the same value.  */
+
+static bool
+riscv_replicated_const_p (HOST_WIDE_INT val, scalar_int_mode mode)
+{
+  unsigned HOST_WIDE_INT elem = val & GET_MODE_MASK (mode);
+  unsigned HOST_WIDE_INT mask = GET_MODE_MASK (word_mode);
+  int elem_bits = GET_MODE_BITSIZE (mode);
+  unsigned HOST_WIDE_INT replicated = 0;
+
+  for (int i = 0; i < GET_MODE_BITSIZE (word_mode); i += elem_bits)
+    replicated |= elem << i;
+
+  return ((unsigned HOST_WIDE_INT) val & mask) == (replicated & mask);
+}
+
+/* Return true if VAL can be loaded with a P-extension PLI/PLUI instruction.  */
+
+bool
+riscv_pli_operand_p (HOST_WIDE_INT val)
+{
+  /* PLI.B: replicated byte (any 8-bit value).  */
+  if (riscv_replicated_const_p (val, QImode))
+    return true;
+
+  /* PLI.H / PLUI.H: replicated halfword.  */
+  if (riscv_replicated_const_p (val, HImode))
+    {
+      HOST_WIDE_INT hw = sext_hwi (val, 16);
+      /* PLI.H: 10-bit signed immediate [-512, 511].  */
+      if (IN_RANGE (hw, -512, 511))
+	return true;
+      /* PLUI.H: (imm10 << 6) where imm10 in [-512, 511].  */
+      if ((hw & 0x3f) == 0 && IN_RANGE (hw >> 6, -512, 511))
+	return true;
+    }
+
+  /* PLI.W / PLUI.W: replicated word (RV64 only).  */
+  if (TARGET_64BIT && riscv_replicated_const_p (val, SImode))
+    {
+      HOST_WIDE_INT word = sext_hwi (val, 32);
+      /* PLI.W: 10-bit signed immediate [-512, 511].  */
+      if (IN_RANGE (word, -512, 511))
+	return true;
+      /* PLUI.W: (imm10 << 22) where imm10 in [-512, 511].  */
+      if ((word & 0x3fffff) == 0 && IN_RANGE (word >> 22, -512, 511))
+	return true;
+    }
+
+  return false;
+}
+
+/* Output a P-extension PLI/PLUI instruction for constant VAL.
+   Returns the instruction template string, or NULL if not applicable.  */
+
+static const char *
+riscv_output_pli (HOST_WIDE_INT val)
+{
+  static char buf[32];
+
+  /* PLI.B: replicated byte (any 8-bit value).  */
+  if (riscv_replicated_const_p (val, QImode))
+    {
+      snprintf (buf, sizeof (buf), "pli.b\t%%0,%d", (int) sext_hwi (val, 8));
+      return buf;
+    }
+
+  /* PLI.H / PLUI.H: replicated halfword.  */
+  if (riscv_replicated_const_p (val, HImode))
+    {
+      HOST_WIDE_INT hw = sext_hwi (val, 16);
+      if (IN_RANGE (hw, -512, 511))
+	{
+	  snprintf (buf, sizeof (buf), "pli.h\t%%0,%d", (int) hw);
+	  return buf;
+	}
+      if ((hw & 0x3f) == 0 && IN_RANGE (hw >> 6, -512, 511))
+	{
+	  snprintf (buf, sizeof (buf), "plui.h\t%%0,%d", (int) (hw >> 6));
+	  return buf;
+	}
+    }
+
+  /* PLI.W / PLUI.W: replicated word (RV64 only).  */
+  if (TARGET_64BIT && riscv_replicated_const_p (val, SImode))
+    {
+      HOST_WIDE_INT word = sext_hwi (val, 32);
+      if (IN_RANGE (word, -512, 511))
+	{
+	  snprintf (buf, sizeof (buf), "pli.w\t%%0,%d", (int) word);
+	  return buf;
+	}
+      if ((word & 0x3fffff) == 0 && IN_RANGE (word >> 22, -512, 511))
+	{
+	  snprintf (buf, sizeof (buf), "plui.w\t%%0,%d", (int) (word >> 22));
+	  return buf;
+	}
+    }
+
+  return NULL;
 }
 
 /* Initialize the GCC target structure.  */

@@ -151,6 +151,9 @@ extern bool riscv_pext_mode_supported_p (machine_mode);
 extern rtx riscv_attribute_get_func_sig (tree);
 extern const char *riscv_mangle_type_string (const tree);
 
+/* P-extension packed load immediate (PLI/PLUI) support.  */
+extern bool riscv_pli_operand_p (HOST_WIDE_INT);
+
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx, bool *invert_ptr = 0);
 extern void riscv_expand_float_scc (rtx, enum rtx_code, rtx, rtx,

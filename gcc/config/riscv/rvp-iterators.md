@@ -19,6 +19,49 @@
 
 ;; Mode Iterators
 
+;; PVPLUI: Packed vector modes for PLUI instructions (halfword and word)
+(define_mode_iterator PVPLUI [
+  (PV2HI "!TARGET_64BIT") (PV4HI "TARGET_64BIT")
+  (PV2SI "TARGET_64BIT")])
+
+;; Element mode for PLI vec_duplicate
+(define_mode_attr PVALL_ELT [
+  (PV4QI "QI") (PV8QI "QI")
+  (PV2HI "HI") (PV4HI "HI")
+  (PV2SI "SI")])
+
+;; Constraint for PLI vec_duplicate
+(define_mode_attr dpli [
+  (PV4QI "Yplb") (PV8QI "Yplb")
+  (PV2HI "Yplh") (PV4HI "Yplh")
+  (PV2SI "Yplh")])
+
+;; Instruction suffix for PLI (b/h/w)
+(define_mode_attr pli_suffix [
+  (PV4QI "b") (PV8QI "b")
+  (PV2HI "h") (PV4HI "h")
+  (PV2SI "w")])
+
+;; Element mode for PLUI vec_duplicate
+(define_mode_attr PVPLUI_ELT [
+  (PV2HI "HI") (PV4HI "HI")
+  (PV2SI "SI")])
+
+;; Constraint for PLUI vec_duplicate
+(define_mode_attr dplui [
+  (PV2HI "Ypuh") (PV4HI "Ypuh")
+  (PV2SI "Ypuw")])
+
+;; Shift amount for PLUI (6 for halfword, 22 for word)
+(define_mode_attr plui_shift [
+  (PV2HI "6") (PV4HI "6")
+  (PV2SI "22")])
+
+;; Instruction suffix for PLUI (h/w)
+(define_mode_attr plui_suffix [
+  (PV2HI "h") (PV4HI "h")
+  (PV2SI "w")])
+
 ;; PVQIHI: Packed vector modes for byte and halfword elements only
 (define_mode_iterator PVQIHI [(PV4QI "!TARGET_64BIT") (PV2HI "!TARGET_64BIT")
 			      (PV8QI "TARGET_64BIT") (PV4HI "TARGET_64BIT")])

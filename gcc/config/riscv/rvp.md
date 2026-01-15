@@ -199,3 +199,47 @@
   "not\t%0,%1"
   [(set_attr "type" "logical")
    (set_attr "mode" "DI")])
+
+;; ============================================================================
+;; PLI/PLUI: Packed Load Immediate Instructions
+;; ============================================================================
+;;
+;; PLI.B rd, imm8   - Broadcast 8-bit value to all bytes
+;; PLI.H rd, imm10  - Broadcast 10-bit signed value to all halfwords
+;; PLI.W rd, imm10  - Broadcast 10-bit signed value to all words (RV64)
+;; PLUI.H rd, imm10 - Broadcast (imm10 << 6) to all halfwords
+;; PLUI.W rd, imm10 - Broadcast (imm10 << 22) to all words (RV64)
+;;
+;; These patterns are handled by riscv_output_move via riscv_output_pli.
+
+;; vec_duplicate patterns for PLI.B/PLI.H/PLI.W
+(define_insn "*riscv_pli_vec"
+  [(set (match_operand:PVALL 0 "register_operand" "=r")
+	(vec_duplicate:PVALL
+	  (match_operand:<PVALL_ELT> 1 "const_int_operand" "<dpli>")))]
+  "TARGET_RVP"
+  "pli.<pli_suffix>\t%0,%1"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
+
+;; vec_duplicate patterns for PLUI.H/PLUI.W
+(define_insn "*riscv_plui_vec"
+  [(set (match_operand:PVPLUI 0 "register_operand" "=r")
+	(vec_duplicate:PVPLUI
+	  (match_operand:<PVPLUI_ELT> 1 "const_int_operand" "<dplui>")))]
+  "TARGET_RVP"
+  {
+    operands[2] = GEN_INT (INTVAL (operands[1]) >> <plui_shift>);
+    return "plui.<plui_suffix>\t%0,%2";
+  }
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
+
+;; Scalar constant patterns - handled by riscv_output_move
+(define_insn "*riscv_pli_const"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(match_operand:GPR 1 "pli_const_operand" "i"))]
+  "TARGET_RVP"
+  { return riscv_output_move (operands[0], operands[1]); }
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])

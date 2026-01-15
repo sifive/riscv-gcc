@@ -243,6 +243,10 @@
   if (TARGET_ZBS && SINGLE_BIT_MASK_OPERAND (INTVAL (op)))
     return false;
 
+  /* Check whether the constant can be loaded with P-extension PLI/PLUI.  */
+  if (TARGET_RVP && riscv_pli_operand_p (INTVAL (op)))
+    return false;
+
   /* Otherwise check whether the constant can be loaded in a single
      instruction.  */
   return !LUI_OPERAND (INTVAL (op)) && !SMALL_OPERAND (INTVAL (op));
@@ -710,3 +714,10 @@
   (and (match_operand 0 "register_operand")
        (match_test "REGNO (op) == RETURN_ADDR_REGNUM
 		    || REGNO (op) == T0_REGNUM")))
+
+;; P-extension predicates
+
+;; Predicate for constants that can be loaded with PLI/PLUI instructions
+(define_predicate "pli_const_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_pli_operand_p (INTVAL (op))")))

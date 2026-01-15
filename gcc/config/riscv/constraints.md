@@ -326,6 +326,37 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 0, IMM_REACH-1)")))
 
+;; P-extension PLI/PLUI constraints (all 4 characters starting with "Ypl")
+
+;; 8-bit signed immediate for PLI.B (-128 to 127)
+(define_constraint "Yplb"
+  "@internal
+   An 8-bit signed immediate for P-extension PLI.B."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -128, 127)")))
+
+;; 10-bit signed immediate for PLI.H/PLI.W (-512 to 511)
+(define_constraint "Yplh"
+  "@internal
+   A 10-bit signed immediate for P-extension PLI.H/PLI.W."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -512, 511)")))
+
+;; PLUI.H immediate: (imm10 << 6) where imm10 in [-512, 511]
+(define_constraint "Ypuh"
+  "@internal
+   A shifted 10-bit immediate for P-extension PLUI.H (imm10 << 6)."
+  (and (match_code "const_int")
+       (match_test "(ival & 0x3f) == 0
+		    && IN_RANGE (ival >> 6, -512, 511)")))
+
+;; PLUI.W immediate: (imm10 << 22) where imm10 in [-512, 511]
+(define_constraint "Ypuw"
+  "@internal
+   A shifted 10-bit immediate for P-extension PLUI.W (imm10 << 22)."
+  (and (match_code "const_int")
+       (match_test "(ival & 0x3fffff) == 0
+		    && IN_RANGE (ival >> 22, -512, 511)")))
 ;; SiFive constraints
 ;; SSCI
 (define_constraint "Ou12"
