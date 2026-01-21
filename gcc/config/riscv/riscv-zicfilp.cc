@@ -170,13 +170,12 @@ rest_of_insert_landing_pad (void)
 	{
 	  /* If a label is marked to be preserved or can be a non-local goto
 	     target, it must be protected with a lpad instruction.
-	     Insert .align 2 after label, then lpad, to ensure 4-byte alignment.  */
+	     The label alignment is handled by LABEL_ALIGN in riscv.h.  */
 	  if (LABEL_P (insn)
 	       && (LABEL_PRESERVE_P (insn)
 		   || bb->flags & BB_NON_LOCAL_GOTO_TARGET))
 	    {
-	      rtx_insn *align_insn = emit_insn_after (gen_lpad_align (), insn);
-	      emit_insn_after (gen_lpad (lp_value), align_insn);
+	      emit_insn_after (gen_lpad (lp_value), insn);
 	      continue;
 	    }
 
