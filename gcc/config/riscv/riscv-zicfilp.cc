@@ -108,26 +108,84 @@ rest_of_insert_landing_pad (void)
 	   insn = NEXT_INSN (insn))
 	{
 	  /* If a label is marked to be preserved or can be a non-local goto
-	     target, it must be protected with a lpad instruction.  */
+	     target, it must be protected with a lpad instruction.
+	     Insert .align 2 after label, then lpad, to ensure 4-byte alignment.  */
 	  if (LABEL_P (insn)
 	       && (LABEL_PRESERVE_P (insn)
 		   || bb->flags & BB_NON_LOCAL_GOTO_TARGET))
 	    {
-	      emit_insn_before (gen_lpad_align (), insn);
-	      emit_insn_after (gen_lpad (lp_value), insn);
+	      rtx_insn *align_insn = emit_insn_after (gen_lpad_align (), insn);
+	      emit_insn_after (gen_lpad (lp_value), align_insn);
 	      continue;
 	    }
 
+	  /* gpr_save generates "call t0, __riscv_save_N" which returns to
+	     the next instruction (lpad).  When Zca/RVC is enabled, linker
+	     relaxation can convert this call to compressed form, causing
+	     the return address to be misaligned.  Use .option norelax to
+	     prevent this.
+
+	     We insert .p2align 2 before the call to ensure alignment when
+	     linker relaxes preceding instructions.  When Zca is enabled,
+	     we also add .option norelax to prevent call relaxation.  */
 	  if (INSN_P (insn) && INSN_CODE (insn) == CODE_FOR_gpr_save)
 	    {
 	      emit_insn (gen_set_lpl (Pmode, lp_value));
-	      emit_insn_before (gen_lpad_align (), insn);
-	      emit_insn_after (gen_lpad (lp_value), insn);
+	      if (TARGET_ZCA)
+		{
+		  emit_insn_before (gen_lpad_align_norelax (), insn);
+		  rtx_insn *lpad_insn
+		    = emit_insn_after (gen_lpad (lp_value), insn);
+		  emit_insn_after (gen_option_pop (), lpad_insn);
+		}
+	      else
+		{
+		  emit_insn_before (gen_lpad_align (), insn);
+		  emit_insn_after (gen_lpad (lp_value), insn);
+		}
 	      continue;
 	    }
 
 	  if (INSN_P (insn) && INSN_CODE (insn) == CODE_FOR_gpr_restore)
 	    emit_insn (gen_set_lpl (Pmode, lp_value));
+
+	  /* Check for calls that may return indirectly, such as setjmp
+	     or functions marked with indirect_return attribute,
+	     and insert LPAD after them for control flow protection.
+	     Use lpad 0 (unlabeled) since longjmp can return from anywhere.
+
+	     When Zca is enabled, linker relaxation can convert calls to
+	     compressed forms (c.jal on RV32, cm.jalt with Zcmt), which would
+	     cause LPAD misalignment. To prevent this:
+	       .p2align 2
+	       .option push
+	       .option norelax
+	       call foo
+	       .option pop
+	       lpad 0
+
+	     The .p2align 2 generates R_RISCV_ALIGN relocation so the linker
+	     maintains alignment when relaxing preceding instructions.
+	     The .option norelax prevents call relaxation to compressed forms.
+
+	     When Zca is not enabled, calls cannot be relaxed to compressed
+	     forms, but we still need .p2align 2 to ensure lpad alignment when
+	     linker relaxes preceding instructions.  */
+	  if (CALL_P (insn) && call_needs_lpad (insn))
+	    {
+	      if (TARGET_ZCA)
+		{
+		  emit_insn_before (gen_lpad_align_norelax (), insn);
+		  rtx_insn *pop_insn = emit_insn_after (gen_option_pop (), insn);
+		  emit_insn_after (gen_lpad (const0_rtx), pop_insn);
+		}
+	      else
+		{
+		  emit_insn_before (gen_lpad_align (), insn);
+		  emit_insn_after (gen_lpad (const0_rtx), insn);
+		}
+	      continue;
+	    }
 	}
     }
 
@@ -138,6 +196,8 @@ rest_of_insert_landing_pad (void)
     {
       bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
       insn = BB_HEAD (bb);
+      /* Function entry is already 4-byte aligned by the function label,
+	 so we don't need to insert .p2align 2 here.  */
       lpad_insn = gen_lpad (lp_value);
       emit_insn_before (lpad_insn, insn);
     }
