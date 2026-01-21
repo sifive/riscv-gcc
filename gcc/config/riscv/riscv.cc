@@ -11212,8 +11212,13 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   if (is_zicfilp_p ())
     {
       /* Insert .p2align 2 before lpad to ensure 4-byte alignment.
-	 If already aligned, .p2align 2 produces no padding bytes.  */
-      rtx lp_value = riscv_get_lp_value ();
+	 If already aligned, .p2align 2 produces no padding bytes.
+	 Thunk functions are compiler-generated trampolines: they adjust the
+	 'this' pointer and tail-call the actual implementation. Since they
+	 contain no real logic, they should not carry function-specific LPAD
+	 signatures. We emit LPAD 0 to mark them as generic, unlabeled entry
+	 points.  */
+      rtx lp_value = riscv_get_lp_value (thunk_fndecl);
 
       if (cfun->machine->attribute_lp_value != -1)
 	lp_value = GEN_INT (cfun->machine->attribute_lp_value);
