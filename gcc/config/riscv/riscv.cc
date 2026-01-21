@@ -9858,12 +9858,15 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   if (is_zicfilp_p ())
     {
+      /* Insert .p2align 2 before lpad to ensure 4-byte alignment.
+	 If already aligned, .p2align 2 produces no padding bytes.  */
       rtx lp_value = riscv_get_lp_value ();
 
       if (cfun->machine->attribute_lp_value != -1)
 	lp_value = GEN_INT (cfun->machine->attribute_lp_value);
 
-      emit_insn(gen_lpad (lp_value));
+      emit_insn (gen_lpad_align ());
+      emit_insn (gen_lpad (lp_value));
     }
 
   /* Determine if we can use a sibcall to call FUNCTION directly.  */
