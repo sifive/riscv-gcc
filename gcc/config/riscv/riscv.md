@@ -166,6 +166,8 @@
   UNSPECV_LPAD
   UNSPECV_SETLPL
   UNSPECV_LPAD_ALIGN
+  UNSPECV_LPAD_ALIGN_NORELAX
+  UNSPECV_OPTION_POP
   UNSPECV_SET_GUARDED
 
   ;; XTheadInt unspec
@@ -4999,10 +5001,37 @@
   [(set_attr "type" "const")
    (set_attr "mode" "<MODE>")])
 
+;; Insert .p2align 2 to ensure 4-byte alignment for lpad.
+;; Use .p2align instead of .align to generate R_RISCV_ALIGN relocation,
+;; so the linker can adjust padding when relaxing preceding instructions.
+;; Set length to 2 as the alignment may insert up to 2 bytes of padding.
 (define_insn "lpad_align"
   [(unspec_volatile [(const_int 0)] UNSPECV_LPAD_ALIGN)]
   "TARGET_ZICFILP"
-  ".align 2"
+  ".p2align 2"
+  [(set_attr "type" "nop")
+   (set_attr "length" "2")])
+
+;; Insert .p2align 2 followed by .option norelax to prevent call relaxation.
+;; This is used before calls that need LPAD protection (e.g., setjmp).
+;; The .p2align 2 generates R_RISCV_ALIGN relocation so the linker maintains
+;; alignment when relaxing preceding instructions.
+;; The .option norelax prevents linker relaxation of the call instruction.
+;; The .option norvc prevents the assembler from using compressed instructions,
+;; ensuring the call remains 8 bytes (auipc + jalr) so lpad stays aligned.
+;; Set length to 2 as the alignment may insert up to 2 bytes of padding.
+(define_insn "lpad_align_norelax"
+  [(unspec_volatile [(const_int 0)] UNSPECV_LPAD_ALIGN_NORELAX)]
+  "TARGET_ZICFILP"
+  ".p2align 2\n\t.option push\n\t.option norelax\n\t.option norvc"
+  [(set_attr "type" "nop")
+   (set_attr "length" "2")])
+
+;; Restore options after a norelax section.
+(define_insn "option_pop"
+  [(unspec_volatile [(const_int 0)] UNSPECV_OPTION_POP)]
+  "TARGET_ZICFILP"
+  ".option pop"
   [(set_attr "type" "nop")])
 
 (define_insn "@set_guarded<mode>"
