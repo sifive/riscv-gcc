@@ -173,6 +173,11 @@
 (define_register_constraint "zmvr" "(TARGET_ZFA || TARGET_XTHEADFMV) ? GR_REGS : NO_REGS"
   "An integer register for  ZFA or XTheadFmv.")
 
+(define_constraint "zibi"
+  "An immediate that fits unsigned 5 bit or -1 for Zibi"
+  (and (match_code "const_int")
+       (match_test "TARGET_ZIBI && (IN_RANGE (ival, 1, 31) || (ival == -1))")))
+
 ;; Vector constraints.
 
 (define_register_constraint "vr" "TARGET_VECTOR ? V_REGS : NO_REGS"

@@ -134,6 +134,10 @@
 @tab 1.0
 @tab Load/store pair instructions extension
 
+@item @samp{zibi}
+@tab 0.1
+@tab Branch on small immediate extension
+
 @item @samp{zmmul}
 @tab 1.0
 @tab Integer multiplication extension

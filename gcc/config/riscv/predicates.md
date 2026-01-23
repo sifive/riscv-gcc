@@ -236,6 +236,12 @@
   (and (match_code "const_int")
        (match_test "INTVAL (op) >= IMM_BITS - 1")))
 
+(define_predicate "branch_on_immediate_operand"
+  (ior (match_operand 0 "register_operand")
+       (ior (match_operand 0 "const_0_operand")
+	    (and (match_code "const_int")
+		 (match_test "TARGET_ZIBI && ((INTVAL (op) == -1) || IN_RANGE (INTVAL (op), 1, 31))")))))
+
 ;; A legitimate CONST_INT operand that takes more than one instruction
 ;; to load.
 (define_predicate "splittable_const_int_operand"
@@ -388,6 +394,9 @@
 
 (define_predicate "equality_operator"
   (match_code "eq,ne"))
+
+(define_predicate "relational_comparison_operator"
+  (match_code "lt,le,gt,ge,ltu,leu,gtu,geu"))
 
 (define_predicate "signed_order_operator"
   (match_code "eq,ne,lt,le,ge,gt"))

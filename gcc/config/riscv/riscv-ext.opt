@@ -164,6 +164,8 @@ Mask(ZIMOP) Var(riscv_zi_subext)
 
 Mask(ZILSD) Var(riscv_zi_subext)
 
+Mask(ZIBI) Var(riscv_zi_subext)
+
 Mask(ZMMUL) Var(riscv_zm_subext)
 
 Mask(ZA128RS) Var(riscv_za_subext)

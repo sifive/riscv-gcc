@@ -291,7 +291,7 @@
 	(const_string "no")))
 
 ;; ISA attributes.
-(define_attr "ext" "base,f,d,vector"
+(define_attr "ext" "base,f,d,vector,zibi"
   (const_string "base"))
 
 ;; True if the extension is enabled.
@@ -309,6 +309,10 @@
 
 	 (and (eq_attr "ext" "vector")
 	      (match_test "TARGET_VECTOR"))
+	 (const_string "yes")
+
+	 (and (eq_attr "ext" "zibi")
+	      (match_test "TARGET_ZIBI"))
 	 (const_string "yes")
 	]
 	(const_string "no")))
@@ -3280,10 +3284,40 @@
 }
 [(set_attr "type" "branch")])
 
-(define_insn "*branch<mode>"
+(define_insn "*branch<mode>_eqne"
   [(set (pc)
 	(if_then_else
-	 (match_operator 1 "ordered_comparison_operator"
+	 (match_operator 1 "equality_operator"
+			 [(match_operand:X 2 "register_operand"            " r,   r")
+			  (match_operand:X 3 "branch_on_immediate_operand" "rJ,zibi")])
+	 (label_ref (match_operand 0 "" ""))
+	 (pc)))]
+  "!TARGET_XCVBI"
+{
+  bool long_jump_p = get_attr_length (insn) == 12;
+  if (which_alternative == 1)
+    {
+      if (long_jump_p)
+	return "b%N1i\t%2,%z3,1f; jump\t%l0,ra; 1:";
+
+      return "b%C1i\t%2,%z3,%l0";
+    }
+  else
+    {
+      if (long_jump_p)
+	return "b%N1\t%2,%z3,1f; jump\t%l0,ra; 1:";
+
+      return "b%C1\t%2,%z3,%l0";
+    }
+}
+  [(set_attr "type" "branch")
+   (set_attr "mode" "none")
+   (set_attr "ext" "base,zibi")])
+
+(define_insn "*branch<mode>_relational_comparison"
+  [(set (pc)
+	(if_then_else
+	 (match_operator 1 "relational_comparison_operator"
 			 [(match_operand:X 2 "register_operand" "r")
 			  (match_operand:X 3 "reg_or_0_operand" "rJ")])
 	 (label_ref (match_operand 0 "" ""))
