@@ -5026,7 +5026,8 @@ riscv_output_move (rtx dest, rtx src)
 		return pli_result;
 	    }
 
-	  gcc_unreachable ();
+	  /* Should never reach here.  */
+	  abort ();
 	}
 
       if (src_code == HIGH)
