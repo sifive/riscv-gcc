@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcp0p15 -mabi=lp64 -O2" } */
+/* { dg-options "-march=rv64gcp0p19 -mabi=lp64 -O2" } */
 
 /* Test averaging subtract (both signed and unsigned) */
 

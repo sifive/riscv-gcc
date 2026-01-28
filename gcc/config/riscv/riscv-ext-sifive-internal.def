@@ -25,7 +25,7 @@ Format of DEFINE_RISCV_EXT, please refer to riscv-ext.def.  */
    Base Extensions (p, zi*, z*)
    ========================================================================= */
 
-/* P extension (Packed SIMD) - draft version 0.15.  */
+/* P extension (Packed SIMD) - draft version 0.19.  */
 DEFINE_RISCV_EXT(
   /* NAME */ p,
   /* UPPERCASE_NAME */ RVP,
@@ -33,7 +33,7 @@ DEFINE_RISCV_EXT(
   /* DESC */ "",
   /* URL */ ,
   /* DEP_EXTS */ ({}),
-  /* SUPPORTED_VERSIONS */ ({{0, 15, ISA_SPEC_CLASS_UNRATIFIED}}),
+  /* SUPPORTED_VERSIONS */ ({{0, 19, ISA_SPEC_CLASS_UNRATIFIED}}),
   /* FLAG_GROUP */ base,
   /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
   /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,

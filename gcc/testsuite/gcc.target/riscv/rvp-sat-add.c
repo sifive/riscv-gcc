@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcp0p15 -mabi=lp64" } */
+/* { dg-options "-march=rv64gcp0p19 -mabi=lp64" } */
 /* { dg-additional-options "-ftree-vectorize -fno-vect-cost-model" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Os" "-Og" "-Oz" "-funroll-loops" } } */
 
