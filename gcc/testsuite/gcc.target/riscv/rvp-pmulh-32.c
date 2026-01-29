@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcp0p15 -mabi=ilp32 -O2" } */
+/* { dg-options "-march=rv32gcp0p19 -mabi=ilp32 -O2" } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto" } } */
 
 typedef signed short pv2hi __attribute__((vector_size(4)));

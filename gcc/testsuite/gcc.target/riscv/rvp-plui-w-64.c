@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target rv64 } */
-/* { dg-options "-march=rv64gcp0p15 -mabi=lp64 -O2" } */
+/* { dg-options "-march=rv64gcp0p19 -mabi=lp64 -O2" } */
 
 /* Test PLUI.W instruction for P-extension (RV64 only).
    PLUI.W loads (imm10 << 22) to all word positions.  */

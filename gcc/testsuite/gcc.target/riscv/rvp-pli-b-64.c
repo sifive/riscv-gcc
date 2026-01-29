@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target rv64 } */
-/* { dg-options "-march=rv64gcp0p15 -mabi=lp64 -O2" } */
+/* { dg-options "-march=rv64gcp0p19 -mabi=lp64 -O2" } */
 
 /* Test PLI.B instruction for P-extension (RV64).
    PLI.B broadcasts an 8-bit immediate to all byte positions.  */

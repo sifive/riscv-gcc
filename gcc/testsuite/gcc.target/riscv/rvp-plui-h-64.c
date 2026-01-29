@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target rv64 } */
-/* { dg-options "-march=rv64gcp0p15 -mabi=lp64 -O2" } */
+/* { dg-options "-march=rv64gcp0p19 -mabi=lp64 -O2" } */
 
 /* Test PLUI.H instruction for P-extension (RV64).
    PLUI.H loads (imm10 << 6) to all halfword positions.  */

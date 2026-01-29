@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target rv64 } */
-/* { dg-options "-march=rv64gcp0p15 -mabi=lp64 -O2" } */
+/* { dg-options "-march=rv64gcp0p19 -mabi=lp64 -O2" } */
 
 /* Test PLI.H instruction for P-extension (RV64).
    PLI.H broadcasts a 10-bit signed immediate [-512, 511] to all halfwords.  */

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target rv32 } */
-/* { dg-options "-march=rv32gcp0p15 -mabi=ilp32 -O2" } */
+/* { dg-options "-march=rv32gcp0p19 -mabi=ilp32 -O2" } */
 
 /* Test PLI/PLUI with various operations (RV32).  */
 
