@@ -244,8 +244,7 @@ rest_of_insert_landing_pad (void)
 
   c_node = cgraph_node::get (cfun->decl);
   if (!c_node->only_called_directly_p ()
-      && !is_interrupt_handler_p (TREE_TYPE (cfun->decl))
-      && !flag_gimple)
+      && !is_interrupt_handler_p (TREE_TYPE (cfun->decl)))
     {
       bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
       insn = BB_HEAD (bb);
