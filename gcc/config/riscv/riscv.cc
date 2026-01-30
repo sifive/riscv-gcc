@@ -8464,6 +8464,58 @@ riscv_compute_frame_info (void)
 	  && known_lt (offset, frame->multi_push_adj_base
 				 + ZCMP_SP_INC_STEP * ZCMP_MAX_SPIMM))
 	offset = riscv_16bytes_align (offset);
+
+      /* For Zilsd on RV32, ensure the GPR save area is properly aligned
+	 so that even-odd register pairs can be saved/restored with
+	 sd/ld instructions without causing misaligned exceptions.
+	 We only do this when frame pointer is not needed, as Zilsd
+	 is not used when frame pointer is enabled.
+
+	 For Zilsd sd x8, pair_offset(sp):
+	   - x8 (even) is stored at pair_offset
+	   - x9 (odd) is stored at pair_offset + 4
+
+	 We need to calculate the offset of the first even-odd pair and
+	 ensure it's 8-byte aligned.  The pair_offset is calculated as:
+	   pair_offset = offset - (regs_before_pair + 2) * UNITS_PER_WORD
+	 where regs_before_pair is the number of registers saved before
+	 the first pair.  */
+      if (TARGET_ZILSD && !TARGET_64BIT && !frame_pointer_needed
+	  && riscv_zilsd_prolog_epilog && offset.is_constant ())
+	{
+	  /* Find the first even-odd pair and count registers before it.  */
+	  int regs_before_first_pair = 0;
+	  bool found_pair = false;
+
+	  for (unsigned int r = GP_REG_FIRST; r <= GP_REG_LAST; r++)
+	    {
+	      if (!BITSET_P (frame->mask, r - GP_REG_FIRST))
+		continue;
+
+	      /* Check if this is an even register with its odd pair.  */
+	      if ((r % 2) == 0 && r + 1 <= GP_REG_LAST
+		  && BITSET_P (frame->mask, r + 1 - GP_REG_FIRST))
+		{
+		  found_pair = true;
+		  break;
+		}
+	      regs_before_first_pair++;
+	    }
+
+	  if (found_pair)
+	    {
+	      HOST_WIDE_INT off = offset.to_constant ();
+
+	      /* Calculate the pair_offset for the first pair.
+		 pair_offset = offset - (regs_before_first_pair + 2) * 4
+		 We need pair_offset % 8 == 0.  */
+	      HOST_WIDE_INT pair_offset
+		= off - (regs_before_first_pair + 2) * UNITS_PER_WORD;
+
+	      if ((pair_offset % 8) != 0)
+		offset += UNITS_PER_WORD;
+	    }
+	}
     }
   frame->gp_sp_offset = offset - UNITS_PER_WORD;
   /* The hard frame pointer points above the callee-saved GPRs. */
@@ -8649,6 +8701,164 @@ riscv_restore_reg (rtx reg, rtx mem)
 
   REG_NOTES (insn) = dwarf;
   RTX_FRAME_RELATED_P (insn) = 1;
+}
+
+/* Forward declaration for riscv_try_zilsd_save_restore_pair.  */
+static bool riscv_is_eh_return_data_register (unsigned int regno);
+
+/* Return true if Zilsd can be used for prolog/epilog register saves.
+   Zilsd is only used when:
+   - TARGET_ZILSD is enabled
+   - RV32 mode (Zilsd reuses RV64's ld/sd encoding)
+   - Frame pointer is not needed (to avoid unwinder issues)  */
+
+static inline bool
+riscv_use_zilsd_prologue_epilogue_p (void)
+{
+  return TARGET_ZILSD && !TARGET_64BIT && !frame_pointer_needed
+	 && riscv_zilsd_prolog_epilog;
+}
+
+/* Save a register pair using Zilsd's sd instruction.
+   EVEN_REGNO is the even register number (e.g., x8 for s0).
+   OFFSET is the offset from SP where the even register will be stored.
+   The odd register (EVEN_REGNO + 1) will be stored at OFFSET + UNITS_PER_WORD.
+   For Zilsd: sd rs2, offset(rs1) stores rs2 at offset and rs2+1 at offset+4.  */
+
+static void
+riscv_zilsd_save_reg_pair (unsigned int even_regno, HOST_WIDE_INT offset)
+{
+  gcc_assert ((even_regno % 2) == 0);
+  gcc_assert (!TARGET_64BIT);
+
+  rtx mem = gen_frame_mem (DImode,
+			   plus_constant (Pmode, stack_pointer_rtx, offset));
+  rtx reg = gen_rtx_REG (DImode, even_regno);
+  rtx insn = emit_insn (gen_movdi (mem, reg));
+
+  /* Create DWARF info for both registers using a SEQUENCE.  */
+  rtx mem_even = gen_frame_mem (SImode,
+				plus_constant (Pmode, stack_pointer_rtx, offset));
+  rtx mem_odd = gen_frame_mem (SImode,
+			       plus_constant (Pmode, stack_pointer_rtx,
+					      offset + UNITS_PER_WORD));
+  rtx reg_even = gen_rtx_REG (SImode, even_regno);
+  rtx reg_odd = gen_rtx_REG (SImode, even_regno + 1);
+
+  rtx set_even = gen_rtx_SET (mem_even, reg_even);
+  rtx set_odd = gen_rtx_SET (mem_odd, reg_odd);
+
+  rtx dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (2));
+  XVECEXP (dwarf, 0, 0) = set_even;
+  XVECEXP (dwarf, 0, 1) = set_odd;
+  RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 0)) = 1;
+  RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 1)) = 1;
+
+  RTX_FRAME_RELATED_P (insn) = 1;
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
+}
+
+/* Restore a register pair using Zilsd's ld instruction.
+   EVEN_REGNO is the even register number (e.g., x8 for s0).
+   OFFSET is the offset from SP where the even register is stored.
+   The odd register (EVEN_REGNO + 1) is stored at OFFSET + UNITS_PER_WORD.
+   For Zilsd: ld rd, offset(rs1) loads rd from offset and rd+1 from offset+4.
+
+   Note: This function is only called when frame_pointer_needed is false,
+   so we don't need to handle CFA adjustments for frame pointer restoration.  */
+
+static void
+riscv_zilsd_restore_reg_pair (unsigned int even_regno, HOST_WIDE_INT offset)
+{
+  gcc_assert ((even_regno % 2) == 0);
+  gcc_assert (!TARGET_64BIT);
+
+  rtx mem = gen_frame_mem (DImode,
+			   plus_constant (Pmode, stack_pointer_rtx, offset));
+  rtx reg = gen_rtx_REG (DImode, even_regno);
+  rtx insn = emit_insn (gen_movdi (reg, mem));
+
+  /* Create DWARF info for both registers.  */
+  rtx dwarf = NULL_RTX;
+  rtx reg_even = gen_rtx_REG (SImode, even_regno);
+  rtx reg_odd = gen_rtx_REG (SImode, even_regno + 1);
+
+  dwarf = alloc_reg_note (REG_CFA_RESTORE, reg_even, dwarf);
+  dwarf = alloc_reg_note (REG_CFA_RESTORE, reg_odd, dwarf);
+
+  REG_NOTES (insn) = dwarf;
+  RTX_FRAME_RELATED_P (insn) = 1;
+}
+
+/* Try to use Zilsd to save/restore a register pair.
+   REGNO is the current register number.
+   OFFSET is the current offset from SP.
+   LOAD_P is true for restore, false for save.
+   FRAME is the current frame info.
+   EPILOGUE is true if we're in the epilogue.
+   MAYBE_EH_RETURN is true if this might be an EH return.
+
+   Returns true if Zilsd was used (and the caller should skip the odd
+   register), false otherwise.
+
+   Zilsd requires:
+   - RV32 only (checked by riscv_use_zilsd_prologue_epilogue_p)
+   - Even-odd register pair (e.g., x8-x9, x18-x19)
+   - The offset must be 8-byte aligned to avoid misaligned exceptions  */
+
+static bool
+riscv_try_zilsd_save_restore_pair (unsigned int regno, HOST_WIDE_INT offset,
+				   bool load_p,
+				   const struct riscv_frame_info *frame,
+				   bool epilogue, bool maybe_eh_return)
+{
+  /* Only handle even registers.  */
+  if ((regno % 2) != 0)
+    return false;
+
+  unsigned int odd_regno = regno + 1;
+
+  /* Check if the odd register is in the GPR range and is being saved.  */
+  if (odd_regno > GP_REG_LAST)
+    return false;
+
+  if (!BITSET_P (frame->mask, odd_regno - GP_REG_FIRST))
+    return false;
+
+  /* Check if either register is wrapped separately (shrink-wrapping).  */
+  if (cfun->machine->reg_is_wrapped_separately[regno]
+      || cfun->machine->reg_is_wrapped_separately[odd_regno])
+    return false;
+
+  /* Check if either register is an EH return data register.  */
+  if (epilogue && !maybe_eh_return
+      && (riscv_is_eh_return_data_register (regno)
+	  || riscv_is_eh_return_data_register (odd_regno)))
+    return false;
+
+  /* Calculate the offset for the odd register.
+     It will be at offset - UNITS_PER_WORD.  */
+  HOST_WIDE_INT odd_offset = offset - UNITS_PER_WORD;
+
+  /* For Zilsd, we use the lower offset (odd register's offset) as the base.
+     The even register will be at base, and the odd register at base + 4.  */
+  HOST_WIDE_INT pair_offset = odd_offset;
+
+  /* Check if the offset is valid:
+     - Non-negative
+     - Fits in the immediate field
+     - 8-byte aligned (to avoid misaligned exceptions)  */
+  if (pair_offset < 0 || !SMALL_OPERAND (pair_offset)
+      || (pair_offset % 8) != 0)
+    return false;
+
+  /* Use Zilsd to save/restore the pair.  */
+  if (load_p)
+    riscv_zilsd_restore_reg_pair (regno, pair_offset);
+  else
+    riscv_zilsd_save_reg_pair (regno, pair_offset);
+
+  return true;
 }
 
 /* A function to save or store a register.  The first argument is the
@@ -8861,6 +9071,21 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 		  regno = regno2;
 		  continue;
 		}
+	    }
+	}
+
+      /* Try to use Zilsd to save/restore register pairs.  */
+      if (riscv_use_zilsd_prologue_epilogue_p ())
+	{
+	  bool load_p = (fn == riscv_restore_reg);
+	  if (riscv_try_zilsd_save_restore_pair (regno, offset, load_p,
+						 &cfun->machine->frame,
+						 epilogue, maybe_eh_return))
+	    {
+	      /* Skip the odd register since we already handled it.  */
+	      offset -= UNITS_PER_WORD;
+	      regno++;
+	      continue;
 	    }
 	}
 

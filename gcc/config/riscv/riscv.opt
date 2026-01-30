@@ -445,3 +445,9 @@ Enum(lpad_type) String(none) Value(LPAD_NONE)
 
 matomic-store-workaround
 Target Bool Var(atomic_store_workaround) Init(TARGET_RISCV_ATOMIC_WORKAROUND) Undocumented
+
+mzilsd-prolog-epilog
+Target Var(riscv_zilsd_prolog_epilog) Init(1)
+Use Zilsd's ld/sd instructions to save/restore callee-saved register pairs
+in function prolog/epilog on RV32.  This reduces code size but may increase
+stack usage due to alignment padding.
